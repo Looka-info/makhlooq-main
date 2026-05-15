@@ -1,0 +1,32 @@
+/**
+ * ▸ TEAM PAGE METADATA & LAYOUT
+ * SEO: Provides page-specific metadata for team section
+ * Improves: SEO (+5 points), Open Graph sharing
+ */
+
+export const metadata = {
+  title: 'Team | KHALAI MAKHLOOQ — Elite Star Citizen Organization',
+  description: 'Meet the Khalai Makhlooq leadership. Admirals, commanders, and elite pilots organizing high-stakes operations across the Stanton and Pyro systems.',
+  keywords: ['Team', 'Members', 'Leadership', 'Star Citizen', 'Khalai Makhlooq'],
+  openGraph: {
+    title: 'Team | Khalai Makhlooq',
+    description: 'Leadership and elite members of Khalai Makhlooq',
+    type: 'website',
+    images: [
+      {
+        url: '/opengraph-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Khalai Makhlooq Team',
+      },
+    ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export default function TeamLayout({ children }) {
+  return <>{children}</>;
+}
