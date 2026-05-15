@@ -156,7 +156,7 @@ export const MSpaint: React.FC<MSpaintProps> = ({
     // Throttled sync (every 500ms while drawing for real-time feel)
     const now = Date.now();
     if (!lastSyncRef.current || now - lastSyncRef.current > 500) {
-      save(true);
+      save();
       lastSyncRef.current = now;
     }
   };
@@ -167,7 +167,7 @@ export const MSpaint: React.FC<MSpaintProps> = ({
     setStatus('Ready');
     
     // Autosave to Supabase after drawing
-    save(true);
+    save();
   };
 
   const clearCanvas = () => {
@@ -177,12 +177,13 @@ export const MSpaint: React.FC<MSpaintProps> = ({
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     setStatus('Canvas Cleared');
     setTimeout(() => setStatus('Ready'), 2000);
-    save(true);
+    save();
   };
 
   const syncingRef = useRef(false);
 
-  const save = async (isAuto = false) => {
+  const save = async (isManual = false) => {
+    const isAuto = isManual !== true;
     const canvas = canvasRef.current;
     if (!canvas || isSaving || syncingRef.current) return;
     
@@ -221,7 +222,7 @@ export const MSpaint: React.FC<MSpaintProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = `drawing-${Date.now()}.png`;
+    link.download = `khalai-drawing-${Date.now()}.png`;
     link.href = canvas.toDataURL();
     link.click();
     setStatus('Downloaded');
@@ -290,7 +291,7 @@ export const MSpaint: React.FC<MSpaintProps> = ({
             <Trash2 size={20} />
           </button>
           <button 
-            onClick={() => save()} 
+            onClick={() => save(true)} 
             className="p-2.5 text-blue-400/60 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all" 
             title="Save"
           >

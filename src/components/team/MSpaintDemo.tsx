@@ -2,22 +2,6 @@
 import { MSpaint as DrawingCanvas } from "../ui/ms-paint";
 
 export function MSpaintDemo() {
-  const handleSave = (canvas: HTMLCanvasElement) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const fileName = `MyDrawing_${Date.now()}.png`;
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
-    }, "image/png");
-  };
-
   return (
     <div className="w-full flex flex-col items-center py-16 px-4 space-y-10">
       <div className="text-center space-y-3">
@@ -30,7 +14,6 @@ export function MSpaintDemo() {
       <div className="w-full max-w-6xl mx-auto overflow-hidden relative border border-white/5 rounded-[2.5rem] bg-[#111] p-4 sm:p-8">
         <DrawingCanvas
           title="My Drawing App"
-          onSave={handleSave}
           menuItems={["File", "Edit", "Tools", "Help"]}
           width="100%"
           height="75vh"
