@@ -203,7 +203,7 @@ export const MSpaint: React.FC<MSpaintProps> = ({
       
       if (error) throw error;
       
-      if (onSave) onSave(canvas);
+      if (onSave && !isAuto) onSave(canvas);
       if (!isAuto) setStatus('Saved Successfully');
     } catch (err) {
       console.error('Save failed:', err);
