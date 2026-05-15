@@ -46,6 +46,11 @@ export const MSpaint: React.FC<MSpaintProps> = ({
   const drawingRef = useRef(false);
   const lastPointRef = useRef({ x: 0, y: 0 });
   const lastSyncRef = useRef<number>(0);
+  const channelRef = useRef<any>(null);
+  const rectRef = useRef<DOMRect | null>(null);
+  const lastBroadcastRef = useRef(0);
+  const pointsQueueRef = useRef<{ from: { x: number; y: number }; to: { x: number; y: number }; pressure: number }[]>([]);
+  const animationFrameRef = useRef<number | null>(null);
   
   const [tool, setTool] = useState<'brush' | 'eraser'>('brush');
   const [color, setColor] = useState(colorPalette[0]);
@@ -58,7 +63,11 @@ export const MSpaint: React.FC<MSpaintProps> = ({
   const getContext = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
-    const ctx = canvas.getContext('2d');
+    // Optimization: desynchronized for low latency, alpha: false if not needed
+    const ctx = canvas.getContext('2d', {
+      alpha: false,
+      desynchronized: true
+    });
     if (!ctx) return null;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -80,6 +89,7 @@ export const MSpaint: React.FC<MSpaintProps> = ({
           .single();
         if (data?.state) {
           const img = new Image();
+          img.crossOrigin = "anonymous";
           img.onload = () => ctx.drawImage(img, 0, 0);
           img.src = data.state;
         }
@@ -87,16 +97,41 @@ export const MSpaint: React.FC<MSpaintProps> = ({
 
       loadState();
 
-      // REALTIME SUBSCRIPTION: Listen for updates from other users
-      const channel = supabase
-        .channel('public:team_whiteboard')
+      // REALTIME BROADCAST & CHANGES
+      const channel = supabase.channel('whiteboard_realtime', {
+        config: { broadcast: { self: false } }
+      });
+      channelRef.current = channel;
+
+      channel
+        .on('broadcast', { event: 'stroke' }, ({ payload }) => {
+          const { from, to, color: strokeColor, width: strokeWidth, tool: strokeTool, clear } = payload;
+          const remoteCtx = getContext();
+          if (!remoteCtx) return;
+
+          if (clear) {
+            remoteCtx.fillStyle = '#ffffff';
+            remoteCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+            return;
+          }
+          
+          remoteCtx.lineCap = 'round';
+          remoteCtx.lineJoin = 'round';
+          remoteCtx.lineWidth = strokeWidth;
+          remoteCtx.strokeStyle = strokeTool === 'eraser' ? '#ffffff' : strokeColor;
+          
+          remoteCtx.beginPath();
+          remoteCtx.moveTo(from.x, from.y);
+          remoteCtx.lineTo(to.x, to.y);
+          remoteCtx.stroke();
+        })
         .on(
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'team_whiteboard', filter: 'id=eq.team_mspaint_last_drawing' },
           (payload) => {
-            // Only update if we are NOT currently drawing to prevent flicker/clashes
             if (payload.new.state && !drawingRef.current) {
               const img = new Image();
+              img.crossOrigin = "anonymous";
               img.onload = () => ctx.drawImage(img, 0, 0);
               img.src = payload.new.state;
             }
@@ -111,53 +146,82 @@ export const MSpaint: React.FC<MSpaintProps> = ({
   }, [canvasHeight, canvasWidth, getContext]);
 
   const getPointerPosition = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
+    const rect = rectRef.current;
+    if (!rect) return { x: 0, y: 0 };
     return {
       x: (event.clientX - rect.left) / zoom,
       y: (event.clientY - rect.top) / zoom,
     };
   }, [zoom]);
 
-  const drawLine = useCallback((from: { x: number; y: number }, to: { x: number; y: number }, pressure: number = 1) => {
+  const renderStroke = useCallback(() => {
     const ctx = getContext();
     if (!ctx) return;
-    
+
     const baseWidth = tool === 'eraser' ? currentEraseSize : currentBrushSize;
-    // Modulate width by pressure (min 50% width at low pressure)
-    ctx.lineWidth = baseWidth * (0.5 + pressure * 0.5);
-    ctx.strokeStyle = tool === 'eraser' ? '#ffffff' : color;
-    
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
-    ctx.stroke();
+    const finalColor = tool === 'eraser' ? '#ffffff' : color;
+
+    ctx.strokeStyle = finalColor;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    while (pointsQueueRef.current.length > 0) {
+      const point = pointsQueueRef.current.shift();
+      if (!point) continue;
+
+      const finalWidth = baseWidth * (0.5 + point.pressure * 0.5);
+      ctx.lineWidth = finalWidth;
+
+      ctx.beginPath();
+      ctx.moveTo(point.from.x, point.from.y);
+      ctx.lineTo(point.to.x, point.to.y);
+      ctx.stroke();
+
+      // Throttled Broadcast
+      const now = performance.now();
+      if (channelRef.current && now - lastBroadcastRef.current > 24) { // ~40fps broadcast is usually enough
+        lastBroadcastRef.current = now;
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'stroke',
+          payload: { from: point.from, to: point.to, color: finalColor, width: finalWidth, tool }
+        });
+      }
+    }
+    animationFrameRef.current = null;
   }, [color, currentBrushSize, currentEraseSize, getContext, tool]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (event.button !== undefined && event.button !== 0) return;
+    
+    // Cache rect to avoid layout thrashing
+    rectRef.current = event.currentTarget.getBoundingClientRect();
+    
     drawingRef.current = true;
     lastPointRef.current = getPointerPosition(event);
     event.currentTarget.setPointerCapture(event.pointerId);
-    setStatus(tool === 'eraser' ? 'Erasing...' : 'Drawing...');
     
-    // Draw initial point
+    if (status !== 'Drawing...') setStatus(tool === 'eraser' ? 'Erasing...' : 'Drawing...');
+    
     const pos = getPointerPosition(event);
-    drawLine(pos, pos, event.pressure || 1);
+    pointsQueueRef.current.push({ from: pos, to: pos, pressure: event.pressure || 1 });
+    if (!animationFrameRef.current) animationFrameRef.current = requestAnimationFrame(renderStroke);
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current) return;
     const nextPoint = getPointerPosition(event);
-    drawLine(lastPointRef.current, nextPoint, event.pressure || 1);
+    
+    pointsQueueRef.current.push({
+      from: lastPointRef.current,
+      to: nextPoint,
+      pressure: event.pressure || 1,
+    });
+    
     lastPointRef.current = nextPoint;
 
-    // Throttled sync (every 500ms while drawing for real-time feel)
-    const now = Date.now();
-    if (!lastSyncRef.current || now - lastSyncRef.current > 500) {
-      save();
-      lastSyncRef.current = now;
+    if (!animationFrameRef.current) {
+      animationFrameRef.current = requestAnimationFrame(renderStroke);
     }
   };
 
@@ -166,7 +230,7 @@ export const MSpaint: React.FC<MSpaintProps> = ({
     drawingRef.current = false;
     setStatus('Ready');
     
-    // Autosave to Supabase after drawing
+    // Autosave to Supabase after drawing session ends
     save();
   };
 
@@ -177,6 +241,16 @@ export const MSpaint: React.FC<MSpaintProps> = ({
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     setStatus('Canvas Cleared');
     setTimeout(() => setStatus('Ready'), 2000);
+    
+    // Broadcast clear event
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'stroke',
+        payload: { clear: true }
+      });
+    }
+
     save();
   };
 
@@ -194,18 +268,28 @@ export const MSpaint: React.FC<MSpaintProps> = ({
     syncingRef.current = true;
     
     try {
-      const dataUrl = canvas.toDataURL('image/png');
+      // Use toBlob instead of toDataURL for better performance
+      canvas.toBlob(async (blob) => {
+        if (!blob) throw new Error('Blob creation failed');
+        
+        // In a real production app, we'd upload the blob to Supabase Storage.
+        // For this demo context, we'll convert to Base64 only for the final save 
+        // as the schema expects a 'state' string.
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64data = reader.result as string;
+          const { error } = await supabase.from('team_whiteboard').upsert({
+            id: 'team_mspaint_last_drawing',
+            state: base64data,
+            updated_at: new Date().toISOString(),
+          });
+          if (error) throw error;
+          if (onSave && !isAuto) onSave(canvas);
+          if (!isAuto) setStatus('Saved Successfully');
+        };
+        reader.readAsDataURL(blob);
+      }, 'image/webp', 0.8);
       
-      const { error } = await supabase.from('team_whiteboard').upsert({
-        id: 'team_mspaint_last_drawing',
-        state: dataUrl,
-        updated_at: new Date().toISOString(),
-      });
-      
-      if (error) throw error;
-      
-      if (onSave && !isAuto) onSave(canvas);
-      if (!isAuto) setStatus('Saved Successfully');
     } catch (err) {
       console.error('Save failed:', err);
       if (!isAuto) setStatus('Save Failed');
@@ -324,30 +408,34 @@ export const MSpaint: React.FC<MSpaintProps> = ({
         <div ref={viewportRef} className="flex-1 relative overflow-auto bg-[#1a1a1a] custom-scrollbar">
           <div 
             className="relative shadow-2xl mx-auto flex items-center justify-center p-10 min-w-full min-h-full"
-            style={{ 
-              width: `${canvasWidth * zoom}px`, 
-              height: `${canvasHeight * zoom}px`,
-            }}
           >
-            <canvas
-              ref={canvasRef}
-              width={canvasWidth}
-              height={canvasHeight}
-              className="bg-white"
+            <div 
               style={{ 
-                cursor: tool === 'eraser' ? 'crosshair' : 'default',
-                touchAction: 'none',
-                width: `${canvasWidth}px`,
-                height: `${canvasHeight}px`,
                 transform: `scale(${zoom})`,
                 transformOrigin: 'top left',
-                boxShadow: '0 0 0 1px rgba(255,255,255,0.05)'
+                willChange: 'transform'
               }}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={stopDrawing}
-              onPointerLeave={stopDrawing}
-            />
+            >
+              <canvas
+                ref={canvasRef}
+                width={canvasWidth}
+                height={canvasHeight}
+                className="bg-white"
+                style={{ 
+                  cursor: tool === 'eraser' ? 'crosshair' : 'default',
+                  touchAction: 'none',
+                  width: `${canvasWidth}px`,
+                  height: `${canvasHeight}px`,
+                  boxShadow: '0 0 0 1px rgba(255,255,255,0.05)',
+                  imageRendering: 'auto',
+                  willChange: 'transform'
+                }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={stopDrawing}
+                onPointerLeave={stopDrawing}
+              />
+            </div>
           </div>
         </div>
 

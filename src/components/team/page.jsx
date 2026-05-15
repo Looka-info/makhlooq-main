@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { MSpaintDemo } from './MSpaintDemo';
+import ProfileEditor from './ProfileEditor';
 
 // ============================================================
 // CONSTANTS
@@ -457,86 +458,99 @@ const AddMemberModal = ({ onClose, onAdded }) => {
     onAdded(); onClose();
   };
 
-  const inputCls = "w-full px-3 py-2 text-sm text-[#00ff41] placeholder:text-[#1a4a22] focus:outline-none transition-all";
-  const inputStyle = { background:'#010f04', border:'1px solid #0f3a18', borderRadius:'2px', fontFamily:"'Share Tech Mono', monospace", fontSize:'11px' };
+  const inputCls = "w-full px-4 py-3 text-sm text-emerald-400 placeholder:text-emerald-900 focus:outline-none transition-all";
+  const inputStyle = { background:'#020d05', border:'1px solid #0f3a18', borderRadius:'12px', fontFamily:"'Share Tech Mono', monospace" };
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-xl"
       initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
       onClick={onClose}
-      style={{ background: 'rgba(1,8,3,0.9)' }}
+      style={{ background: 'rgba(2,13,5,0.95)' }}
     >
       <motion.div
-        className="w-full max-w-md overflow-y-auto max-h-[90vh]"
-        style={{ background:'#020d05', border:'1px solid #0f5c1e', borderRadius:'4px', fontFamily:"'Rajdhani', sans-serif" }}
-        initial={{ scale:0.9, y:20 }} animate={{ scale:1, y:0 }} exit={{ scale:0.9, y:20 }}
+        className="w-full max-w-md overflow-y-auto max-h-[90vh] shadow-[0_0_50px_rgba(16,185,129,0.1)]"
+        style={{ background:'#020d05', border:'1px solid #0f5c1e', borderRadius:'24px' }}
+        initial={{ scale:0.95, y:20 }} animate={{ scale:1, y:0 }} exit={{ scale:0.95, y:20 }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 h-10 border-b border-[#0f3a18] bg-[#00ff4108]">
-          <span className="font-mono text-[10px] tracking-[0.25em] text-[#00ff41] uppercase">DEPLOY_NEW_MEMBER</span>
-          <button onClick={onClose} className="text-[#00ff41] p-1"><X size={14} /></button>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-mono text-[10px] tracking-[0.3em] text-emerald-500 uppercase font-bold">Deploy New Personnel</span>
+          </div>
+          <button onClick={onClose} className="text-white/20 hover:text-white transition-colors p-1"><X size={18} /></button>
         </div>
 
-        <div className="p-5 space-y-3">
+        <div className="p-6 space-y-5">
           {[
-            { label:'DISCORD_UID *', key:'discord_uid', type:'text' },
-            { label:'DISCORD_TAG',   key:'discord_tag', type:'text' },
-            { label:'DISPLAY_NAME *',key:'name',        type:'text' },
-            { label:'AVATAR_URL',    key:'avatar_url',  type:'url'  },
+            { label:'DISCORD_UID *', key:'discord_uid', type:'text', placeholder: 'e.g. 309682434507800578' },
+            { label:'DISCORD_TAG',   key:'discord_tag', type:'text', placeholder: 'e.g. Commander#0001' },
+            { label:'DISPLAY_NAME *',key:'name',        type:'text', placeholder: 'e.g. John Doe' },
+            { label:'AVATAR_URL',    key:'avatar_url',  type:'url',  placeholder: 'https://...'  },
           ].map(f => (
-            <div key={f.key}>
-              <label className="block font-mono text-[8px] tracking-[0.2em] text-[#2a5c35] uppercase mb-1">{f.label}</label>
+            <div key={f.key} className="space-y-1.5">
+              <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">{f.label}</label>
               <input type={f.type} value={form[f.key]}
+                placeholder={f.placeholder}
                 onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
                 className={inputCls} style={inputStyle}
               />
             </div>
           ))}
 
-          {[
-            { label:'ROLE', key:'role', opts:ROLES },
-            { label:'DIVISION', key:'category', opts:CATEGORIES },
-          ].map(f => (
-            <div key={f.key}>
-              <label className="block font-mono text-[8px] tracking-[0.2em] text-[#2a5c35] uppercase mb-1">{f.label}</label>
-              <select value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                className={inputCls} style={{ ...inputStyle, color:'#00ff41' }}>
-                {f.opts.map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
-            </div>
-          ))}
-
-          <div>
-            <label className="block font-mono text-[8px] tracking-[0.2em] text-[#2a5c35] uppercase mb-1">BIO</label>
-            <textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-              className={inputCls + ' resize-none h-16'} style={inputStyle} />
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label:'ROLE', key:'role', opts:ROLES },
+              { label:'DIVISION', key:'category', opts:CATEGORIES },
+            ].map(f => (
+              <div key={f.key} className="space-y-1.5">
+                <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">{f.label}</label>
+                <select value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                  className={inputCls} style={{ ...inputStyle, color:'#10b981' }}>
+                  {f.opts.map(o => <option key={o} value={o} className="bg-[#020d05]">{o}</option>)}
+                </select>
+              </div>
+            ))}
           </div>
 
-          <div>
-            <label className="block font-mono text-[8px] tracking-[0.2em] text-[#2a5c35] uppercase mb-2">NODE_COLOR</label>
-            <div className="grid grid-cols-6 gap-1.5">
+          <div className="space-y-1.5">
+            <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">TACTICAL BIO</label>
+            <textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+              placeholder="Enter subject background data..."
+              className={inputCls + ' resize-none h-24'} style={inputStyle} />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">SIGNATURE COLOR</label>
+            <div className="grid grid-cols-6 gap-2">
               {PRESET_COLORS.map(c => (
                 <button key={c} onClick={() => setForm(p => ({ ...p, node_color:c }))}
-                  className="w-7 h-7 rounded-sm border-2 transition-transform hover:scale-110"
-                  style={{ background:c, borderColor: form.node_color===c ? 'white' : 'transparent' }} />
+                  className="aspect-square rounded-lg border-2 transition-all hover:scale-110 active:scale-95"
+                  style={{ background:c, borderColor: form.node_color===c ? 'white' : 'transparent', boxShadow: form.node_color===c ? `0 0 15px ${c}40` : 'none' }} />
               ))}
             </div>
           </div>
 
-          <label className="flex items-center gap-3 cursor-pointer py-1">
+          <label className="flex items-center gap-3 cursor-pointer py-3 px-4 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/5 transition-colors group">
             <input type="checkbox" checked={form.is_admin}
               onChange={e => setForm(p => ({ ...p, is_admin: e.target.checked }))}
-              className="accent-[#00ff41]" />
-            <span className="font-mono text-[10px] tracking-widest text-[#2a5c35] uppercase">Grant Admin Access</span>
+              className="w-4 h-4 rounded border-white/10 bg-black accent-emerald-500" />
+            <span className="font-mono text-[10px] tracking-widest text-emerald-500/60 uppercase font-bold group-hover:text-emerald-400 transition-colors">Grant Command Clearance (Admin)</span>
           </label>
 
-          {error && <p className="font-mono text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 p-2">{error}</p>}
+          {error && (
+            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+              className="font-mono text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+              {error}
+            </motion.div>
+          )}
 
           <button onClick={save} disabled={saving}
-            className="w-full py-3 font-bold text-sm tracking-widest uppercase transition-all disabled:opacity-50"
-            style={{ background:'#00ff41', color:'#010f04', borderRadius:'2px', marginTop:'8px' }}>
-            {saving ? 'PROCESSING…' : 'DEPLOY MEMBER'}
+            className="w-full py-4 font-bold text-sm tracking-[0.2em] uppercase transition-all disabled:opacity-50 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.2)]"
+            style={{ background:'#10b981', color:'#010f04', borderRadius:'14px', marginTop:'8px' }}>
+            {saving ? 'SYNCHRONIZING…' : 'INITIALIZE DEPLOYMENT'}
           </button>
         </div>
       </motion.div>
@@ -545,8 +559,72 @@ const AddMemberModal = ({ onClose, onAdded }) => {
 };
 
 // ============================================================
-// MAIN PAGE
+// EDIT PROFILE MODAL
 // ============================================================
+
+const EditProfileModal = ({ member, onClose, onUpdated }) => {
+  const [form, setForm] = useState({ ...member });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const save = async () => {
+    setSaving(true);
+    const { id, created_at, updated_at, ...updateData } = form;
+    const { error } = await supabase.from('team_members').update(updateData).eq('id', member.id);
+    if (error) { setError(error.message); setSaving(false); return; }
+    onUpdated(); onClose();
+  };
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-xl"
+      initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+      onClick={onClose}
+      style={{ background: 'rgba(2,13,5,0.95)' }}
+    >
+      <motion.div
+        className="w-full max-w-2xl overflow-y-auto max-h-[90vh] shadow-[0_0_50px_rgba(16,185,129,0.1)]"
+        style={{ background:'#020d05', border:'1px solid #0f5c1e', borderRadius:'24px' }}
+        initial={{ scale:0.95, y:20 }} animate={{ scale:1, y:0 }} exit={{ scale:0.95, y:20 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <Terminal size={18} className="text-emerald-500" />
+            <span className="font-mono text-xs tracking-[0.3em] text-emerald-500 uppercase font-bold">Edit Personnel Dossier</span>
+          </div>
+          <button onClick={onClose} className="text-white/20 hover:text-white transition-colors p-1"><X size={20} /></button>
+        </div>
+
+        <div className="p-8">
+          <ProfileEditor 
+            member={member} 
+            form={form} 
+            setForm={setForm} 
+            onUploadAvatar={async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              // Add avatar upload logic here if needed
+              // For now we'll just alert that storage needs setup
+              alert("Storage bucket 'avatars' needs to be created in Supabase for uploads to work.");
+            }} 
+            uploading={false} 
+          />
+          
+          <div className="mt-8 flex gap-4">
+            <button onClick={onClose} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all">
+              Cancel
+            </button>
+            <button onClick={save} disabled={saving}
+              className="flex-[2] py-4 bg-emerald-500 text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-[0_0_30px_rgba(16,185,129,0.2)] disabled:opacity-50">
+              {saving ? 'UPDATING DOSSIER…' : 'SAVE CHANGES'}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 export default function FleetDirectoryPage() {
   const [members, setMembers]           = useState([]);
@@ -555,28 +633,85 @@ export default function FleetDirectoryPage() {
   const [roleFilter, setRoleFilter]     = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [selectedMember, setSelectedMember] = useState(null);
-  const [isAdmin] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [session, setSession]             = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const fetchMembers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.from('team_members').select('*').order('role', { ascending:true });
+      if (error) throw error;
+      setMembers(data || []);
+    } catch (err) {
+      console.error('Failed to fetch members:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleUserLogin = useCallback(async (user) => {
+    const dId = user.user_metadata?.provider_id || user.user_metadata?.sub || user.id;
+    const { data: existing } = await supabase.from('team_members').select('*').eq('discord_uid', dId).single();
+    
+    if (!existing) {
+      // Create profile for new authenticated user
+      await supabase.from('team_members').insert({
+        discord_uid: dId,
+        discord_tag: user.user_metadata?.custom_claims?.global_name || user.user_metadata?.full_name || user.email,
+        name: user.user_metadata?.full_name || user.user_metadata?.name || 'New Member',
+        avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+        role: 'Member',
+        status: 'online',
+        joined_at: new Date().toISOString()
+      });
+      fetchMembers();
+    } else if (existing.status !== 'online') {
+      // Mark as online
+      await supabase.from('team_members').update({ status: 'online' }).eq('discord_uid', dId);
+      fetchMembers();
+    }
+  }, [fetchMembers]);
 
   useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase.from('team_members').select('*').order('role', { ascending:true });
-        if (error) throw error;
-        setMembers(data || []);
-      } catch (err) {
-        console.error('Failed to fetch members:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
+    fetchMembers();
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      if (s?.user) handleUserLogin(s.user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      if (s?.user) handleUserLogin(s.user);
+    });
+
     const sub = supabase.channel('team_members_changes')
-      .on('postgres_changes', { event:'*', schema:'public', table:'team_members' }, fetch)
+      .on('postgres_changes', { event:'*', schema:'public', table:'team_members' }, fetchMembers)
       .subscribe();
-    return () => sub.unsubscribe();
-  }, []);
+
+    return () => {
+      subscription.unsubscribe();
+      sub.unsubscribe();
+    };
+  }, [fetchMembers, handleUserLogin]);
+
+  const loginWithDiscord = () => {
+    supabase.auth.signInWithOAuth({ 
+      provider: 'discord', 
+      options: { redirectTo: window.location.origin + '/team' } 
+    });
+  };
+
+  const logout = () => supabase.auth.signOut();
+
+  const currentUserMember = useMemo(() => {
+    if (!session?.user) return null;
+    const dId = session.user.user_metadata?.provider_id || session.user.user_metadata?.sub || session.user.id;
+    return members.find(m => m.discord_uid === dId);
+  }, [session, members]);
+
+  const isAdmin = currentUserMember?.is_admin || false;
 
   const filteredMembers = useMemo(() => {
     let f = [...members];
@@ -615,12 +750,33 @@ export default function FleetDirectoryPage() {
               </div>
             </div>
             
-            {isAdmin && (
-              <button onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm tracking-widest uppercase rounded-xl hover:bg-white/90 transition-all active:scale-95">
-                <Plus size={16} /> Add Member
-              </button>
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              {session ? (
+                <>
+                  {currentUserMember && (
+                    <button onClick={() => setShowEditModal(true)}
+                      className="flex items-center gap-2 px-5 py-3 bg-white/5 border border-white/10 text-white font-bold text-xs tracking-widest uppercase rounded-xl hover:bg-white/10 transition-all active:scale-95">
+                      <User size={14} /> My Profile
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button onClick={() => setShowAddModal(true)}
+                      className="flex items-center gap-2 px-5 py-3 bg-emerald-500 text-black font-bold text-xs tracking-widest uppercase rounded-xl hover:bg-emerald-400 transition-all active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                      <Plus size={14} /> Deploy Member
+                    </button>
+                  )}
+                  <button onClick={logout}
+                    className="flex items-center gap-2 px-5 py-3 bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-xs tracking-widest uppercase rounded-xl hover:bg-red-500/20 transition-all active:scale-95">
+                    <LogOut size={14} /> Exit
+                  </button>
+                </>
+              ) : (
+                <button onClick={loginWithDiscord}
+                  className="flex items-center gap-3 px-6 py-3 bg-[#5865F2] text-white font-bold text-xs tracking-widest uppercase rounded-xl hover:bg-[#4752C4] transition-all active:scale-95 shadow-[0_0_20px_rgba(88,101,242,0.3)]">
+                  <LogIn size={16} /> Sign in with Discord
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -700,10 +856,16 @@ export default function FleetDirectoryPage() {
       </AnimatePresence>
       <AnimatePresence>
         {showAddModal && (
-          <AddMemberModal onClose={() => setShowAddModal(false)} onAdded={() => {
-            setShowAddModal(false);
-            supabase.from('team_members').select('*').then(({ data }) => { if (data) setMembers(data); });
-          }} />
+          <AddMemberModal onClose={() => setShowAddModal(false)} onAdded={fetchMembers} />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showEditModal && currentUserMember && (
+          <EditProfileModal 
+            member={currentUserMember} 
+            onClose={() => setShowEditModal(false)} 
+            onUpdated={fetchMembers} 
+          />
         )}
       </AnimatePresence>
     </div>
