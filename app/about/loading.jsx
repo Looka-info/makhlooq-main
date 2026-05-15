@@ -27,7 +27,7 @@ export default function AboutLoading() {
         <div className="h-32 w-full bg-emerald-500/5 border border-emerald-500/10 rounded-xl animate-pulse" />
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes shimmer {
           100% { transform: translateX(100%); }
         }

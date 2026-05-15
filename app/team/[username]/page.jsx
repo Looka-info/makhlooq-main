@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import PageNavigationButtons from '../../../src/components/PageNavigationButtons';
 
 export default function TeamMemberProfile({ params }) {
   const [member, setMember] = useState(null);
@@ -46,6 +47,8 @@ export default function TeamMemberProfile({ params }) {
         <Link href="/team" className="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-white transition-colors group">
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Team Network
         </Link>
+
+        <PageNavigationButtons current="/team" />
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[320px_1fr] items-start">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-2xl">

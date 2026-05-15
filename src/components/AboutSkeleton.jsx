@@ -13,7 +13,7 @@ export default function AboutSkeleton() {
           <div key={i} className="h-32 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl animate-pulse" />
         ))}
       </div>
-      <style jsx>{`
+      <style>{`
         .animate-spin-slow { animation: spin 10s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>

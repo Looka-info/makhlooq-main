@@ -433,7 +433,7 @@ export default function About() {
       </div>
 
       {/* Scan-line keyframes */}
-      <style jsx>{`
+      <style>{`
         @keyframes about-scanline {
           0%   { top: 0; }
           100% { top: 100%; }

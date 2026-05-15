@@ -4,37 +4,202 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft, Construction, ShieldAlert, Cpu } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
-import { fleetShips } from '../../src/components/fleet/fleetData';
-import FleetShipSelector from '../../src/components/fleet/FleetShipSelector';
 import FleetShipDetails from '../../src/components/fleet/FleetShipDetails';
+import FleetShipSelector from '../../src/components/fleet/FleetShipSelector';
 import FleetHUD from '../../src/components/fleet/FleetHUD';
 import FleetIntro from '../../src/components/fleet/FleetIntro';
+import PageNavigationButtons from '../../src/components/PageNavigationButtons';
 
-// Dynamic import — Three.js cannot run on the server
+// Three.js cannot run on the server
 const FleetScene = dynamic(
   () => import('../../src/components/fleet/FleetScene'),
   { ssr: false, loading: () => null }
 );
 
+/* ─────────────────── Helpers ─────────────────── */
+
+const getShipType = (model = {}) => {
+  const c = (model.classification || model.classificationLabel || '').toLowerCase();
+  if (c.includes('capital') || c.includes('battleship') || c.includes('carrier') || c.includes('corvette')) return 'capital';
+  if (c.includes('fighter') || c.includes('interceptor') || c.includes('gunship')) return 'fighter';
+  if (c.includes('explorer') || c.includes('scout')) return 'explorer';
+  if (c.includes('freighter') || c.includes('industrial') || c.includes('hauler') || c.includes('transport')) return 'industrial';
+  if (c.includes('luxury') || c.includes('yacht')) return 'luxury';
+  return 'medium';
+};
+
+const getAccentColor = (classification = '') => {
+  const n = classification.toLowerCase();
+  if (n.includes('fighter') || n.includes('interceptor')) return '#ff3366';
+  if (n.includes('explore') || n.includes('scout')) return '#ffaa00';
+  if (n.includes('industrial') || n.includes('freighter') || n.includes('transport')) return '#44ff88';
+  if (n.includes('luxury') || n.includes('yacht')) return '#aa88ff';
+  if (n.includes('capital') || n.includes('command') || n.includes('corvette')) return '#10b981';
+  return '#4fc3f7';
+};
+
+const mapVehicleToShip = (vehicle) => {
+  const model = vehicle.model || {};
+  const media = model.media || {};
+  const metrics = model.metrics || {};
+  const name = model.name || vehicle.name || 'Unknown Vessel';
+  const classification = model.classificationLabel || model.classification || 'Unknown';
+  const manufacturer = model.manufacturer?.name || 'Unknown Manufacturer';
+
+  return {
+    id: vehicle.id || vehicle.slug || `${name}-${vehicle.serial || 'unknown'}`,
+    name,
+    manufacturer,
+    class: classification,
+    role: model.focus || classification,
+    crew: model.crew?.maxLabel || (model.crew?.max ? String(model.crew.max) : 'N/A'),
+    length: metrics.lengthLabel || (metrics.length ? `${metrics.length}m` : 'N/A'),
+    mass: metrics.massLabel || (metrics.mass ? `${metrics.mass} kg` : 'N/A'),
+    cargo: metrics.cargoLabel || (metrics.cargo ? `${metrics.cargo} SCU` : 'N/A'),
+    topSpeed: model.speeds?.maxSpeed ? `${model.speeds.maxSpeed} m/s` : 'N/A',
+    description: model.description || 'No description available.',
+    modelPath: '',
+    thumbnail:
+      media.frontView?.url ||
+      media.angledView?.url ||
+      media.storeImage ||
+      media.holo ||
+      '/backgrounds/SC-3.24_20241207_170744_Hornets-Over-Lake_f.png',
+    meshType: getShipType(model),
+    accentColor: getAccentColor(classification),
+    weapons: vehicle.activeLoadout ? 'Configured Loadout' : 'Standard Loadout',
+    features: [
+      model.productionStatus || 'Production status unknown',
+      model.hasPaints ? 'Custom Paint Available' : null,
+    ].filter(Boolean),
+    specs: {
+      shields: { label: 'Shield Status', value: model.hasModules ? 'Equipped' : 'Unknown', pct: model.hasModules ? 72 : 18 },
+      armor: { label: 'Armor Status', value: model.hasPaints ? 'Painted' : 'Unpainted', pct: model.hasPaints ? 60 : 35 },
+      firepower: { label: 'Weapons', value: vehicle.activeLoadout ? 'Configured' : 'Unknown', pct: vehicle.activeLoadout ? 55 : 20 },
+      speed: { label: 'Top Speed', value: model.speeds?.maxSpeed ? `${model.speeds.maxSpeed} m/s` : 'N/A', pct: model.speeds?.maxSpeed ? Math.min(100, model.speeds.maxSpeed / 6) : 10 },
+      stealth: { label: 'Stealth', value: 'Standard', pct: 35 },
+    },
+  };
+};
+
+/* Fallback placeholder for when API has no data */
+const FALLBACK_SHIP = {
+  id: 'placeholder',
+  name: 'Loading Fleet…',
+  manufacturer: 'Khalai Makhlooq',
+  class: 'Fleet',
+  role: 'Standby',
+  crew: '—', length: '—', mass: '—', cargo: '—', topSpeed: '—',
+  description: 'Fetching fleet data from FleetYards…',
+  modelPath: '', thumbnail: '/backgrounds/SC-3.19_20230524_130313_Fleet-selfie_ILW2953_f.png',
+  meshType: 'capital', accentColor: '#10b981', weapons: '—', features: [],
+  specs: {
+    shields: { label: 'Shields', value: '—', pct: 0 },
+    armor: { label: 'Armor', value: '—', pct: 0 },
+    firepower: { label: 'Firepower', value: '—', pct: 0 },
+    speed: { label: 'Speed', value: '—', pct: 0 },
+    stealth: { label: 'Stealth', value: '—', pct: 0 },
+  },
+};
+
+/* ─────────────────── Page ─────────────────── */
+
 export default function FleetPage() {
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
   const [isReady, setIsReady] = useState(false);
-  
-  // Set to true to show the "Under Construction" screen
-  const [underMaintenance] = useState(true);
 
-  const selectedShip = fleetShips[selectedIndex];
+  // Fleet configs from Supabase (admin-managed)
+  const [fleetConfigs, setFleetConfigs] = useState([]);
+  const [selectedFleetIdx, setSelectedFleetIdx] = useState(0);
 
-  const goPrev = useCallback(() => {
-    setSelectedIndex((i) => (i - 1 + fleetShips.length) % fleetShips.length);
+  // Ships fetched from FleetYards for the selected fleet
+  const [ships, setShips] = useState([FALLBACK_SHIP]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [loadingShips, setLoadingShips] = useState(false);
+  const [apiError, setApiError] = useState('');
+
+  // Fleet info banner
+  const [fleetInfo, setFleetInfo] = useState(null);
+  const [loadingFleetInfo, setLoadingFleetInfo] = useState(false);
+
+  /* ── Step 1: Load admin-configured fleet slugs from Supabase ── */
+  useEffect(() => {
+    const loadConfigs = async () => {
+      try {
+        const res = await fetch('/api/fleet-configs');
+        const data = await res.json();
+        const enabled = Array.isArray(data) ? data.filter(c => c.enabled) : [];
+        setFleetConfigs(enabled);
+      } catch {
+        // If Supabase is unreachable, fall back to the default slug
+        setFleetConfigs([{ slug: 'khalai-makhlooq', display_name: 'Khalai Makhlooq' }]);
+      }
+    };
+    loadConfigs();
   }, []);
+
+  /* ── Step 2: When configs load or selected fleet changes, fetch from FleetYards ── */
+  const currentConfig = fleetConfigs[selectedFleetIdx] || null;
+
+  useEffect(() => {
+    if (!currentConfig) return;
+
+    const fetchData = async () => {
+      setLoadingShips(true);
+      setLoadingFleetInfo(true);
+      setApiError('');
+      setShips([FALLBACK_SHIP]);
+      setSelectedIndex(0);
+
+      try {
+        // Fetch fleet info and vehicles in parallel
+        const [infoRes, vehiclesRes] = await Promise.all([
+          fetch(`/api/fleetyards/fleet-info?slug=${encodeURIComponent(currentConfig.slug)}`),
+          fetch(`/api/fleetyards/vehicles?slug=${encodeURIComponent(currentConfig.slug)}&perPage=100`),
+        ]);
+
+        if (infoRes.ok) {
+          const infoData = await infoRes.json();
+          setFleetInfo(infoData);
+        }
+
+        const vehiclesData = await vehiclesRes.json();
+        if (!vehiclesRes.ok) throw new Error(vehiclesData?.error || `FleetYards error (${vehiclesRes.status})`);
+
+        const apiShips = Array.isArray(vehiclesData) ? vehiclesData.map(mapVehicleToShip) :
+          Array.isArray(vehiclesData.items) ? vehiclesData.items.map(mapVehicleToShip) : [];
+
+        if (apiShips.length > 0) {
+          setShips(apiShips);
+          setSelectedIndex(0);
+        } else {
+          setApiError('No public vehicles found for this fleet on FleetYards.');
+          setShips([FALLBACK_SHIP]);
+        }
+      } catch (err) {
+        setApiError(err?.message || 'Failed to fetch fleet data from FleetYards.');
+        setShips([FALLBACK_SHIP]);
+      } finally {
+        setLoadingShips(false);
+        setLoadingFleetInfo(false);
+      }
+    };
+
+    fetchData();
+  }, [currentConfig?.slug]);
+
+  /* ── Navigation ── */
+  const goPrev = useCallback(() => {
+    if (ships.length === 0) return;
+    setSelectedIndex(i => (i - 1 + ships.length) % ships.length);
+  }, [ships.length]);
 
   const goNext = useCallback(() => {
-    setSelectedIndex((i) => (i + 1) % fleetShips.length);
-  }, []);
+    if (ships.length === 0) return;
+    setSelectedIndex(i => (i + 1) % ships.length);
+  }, [ships.length]);
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -45,74 +210,18 @@ export default function FleetPage() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [goNext, goPrev]);
 
+  // Clamp selectedIndex if ships change
+  useEffect(() => {
+    if (ships.length > 0 && selectedIndex >= ships.length) setSelectedIndex(0);
+  }, [ships.length, selectedIndex]);
+
+  const selectedShip = ships[selectedIndex] || ships[0] || FALLBACK_SHIP;
+  const shipCount = ships.length;
+
   const handleIntroComplete = useCallback(() => {
     setShowIntro(false);
     setIsReady(true);
   }, []);
-
-  if (underMaintenance) {
-    return (
-      <div className="min-h-screen bg-[#020403] text-white flex flex-col items-center justify-center relative overflow-hidden font-sans">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.05)_0%,_transparent_70%)]" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(#10b981 0.5px, transparent 0.5px)', backgroundSize: '30px 30px' }} />
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 text-center max-w-2xl px-6"
-        >
-          {/* Main Icon Group */}
-          <div className="relative inline-block mb-10">
-            <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full animate-pulse" />
-            <div className="relative bg-[#0a1a12] border border-emerald-500/30 p-8 rounded-3xl shadow-[0_0_50px_rgba(16,185,129,0.1)]">
-              <div className="grid grid-cols-2 gap-4">
-                <Construction className="text-emerald-400 animate-bounce" size={40} />
-                <Cpu className="text-emerald-500 animate-pulse delay-75" size={40} />
-                <ShieldAlert className="text-emerald-300 animate-pulse delay-150" size={40} />
-                <div className="w-10 h-10 border-2 border-dashed border-emerald-500/50 rounded-lg animate-spin" />
-              </div>
-            </div>
-          </div>
-
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">
-            FLEET COMMAND<br />OFFLINE
-          </h1>
-          
-          <div className="h-[1px] w-32 bg-emerald-500/50 mx-auto mb-8" />
-
-          <p className="text-gray-400 text-lg md:text-xl leading-relaxed mb-10 font-light">
-            We are currently synchronizing 3D telemetry and updating ship class registries. 
-            <span className="block mt-2 text-emerald-400/80 font-medium tracking-wide">
-              The public fleet viewer is under construction.
-            </span>
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link 
-              href="/"
-              className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all group"
-            >
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Return to Base
-            </Link>
-            <div className="px-8 py-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-sm font-mono uppercase tracking-widest flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              Admin Portal Active
-            </div>
-          </div>
-        </motion.div>
-
-        {/* HUD Decoration */}
-        <div className="absolute bottom-10 left-10 text-[10px] font-mono text-emerald-500/30 uppercase tracking-[0.5em] vertical-text hidden lg:block">
-          System Update in Progress // KHLA-9092
-        </div>
-        <div className="absolute top-10 right-10 text-[10px] font-mono text-emerald-500/30 uppercase tracking-[0.5em] hidden lg:block">
-          Connection: Secure // Relay: OK
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fleet-page">
@@ -143,43 +252,90 @@ export default function FleetPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-mono text-gray-600 uppercase tracking-widest hidden md:inline">
-            Khalai Makhlooq
-          </span>
+          {fleetConfigs.length > 1 && (
+            <select
+              value={selectedFleetIdx}
+              onChange={e => { setSelectedFleetIdx(Number(e.target.value)); setFleetInfo(null); }}
+              className="bg-black/50 border border-white/10 text-white text-xs font-mono rounded-lg px-3 py-1.5 outline-none focus:border-emerald-500/40 transition-colors"
+            >
+              {fleetConfigs.map((cfg, i) => (
+                <option key={cfg.id || cfg.slug} value={i}>{cfg.display_name || cfg.slug}</option>
+              ))}
+            </select>
+          )}
           <span className="fleet-status-badge">Online</span>
         </div>
       </header>
+
+      <PageNavigationButtons current="/fleet" />
+
+      {/* Fleet info banner */}
+      {loadingFleetInfo ? (
+        <div className="mx-auto mb-6 max-w-4xl rounded-2xl border border-emerald-500/10 bg-black/40 p-4 backdrop-blur flex items-center gap-3 text-sm text-gray-500">
+          <Loader2 size={14} className="animate-spin text-emerald-500" />
+          Loading fleet data from FleetYards…
+        </div>
+      ) : fleetInfo ? (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto mb-6 max-w-4xl rounded-2xl border border-emerald-500/20 bg-black/40 p-4 backdrop-blur"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-white font-mono mb-0.5">{fleetInfo.name || currentConfig?.display_name || 'Fleet'}</h2>
+              <p className="text-xs text-gray-500 uppercase tracking-widest font-mono">{fleetInfo.slug || currentConfig?.slug}</p>
+            </div>
+            <div className="flex gap-6 text-sm">
+              {fleetInfo.memberCount !== undefined && (
+                <div className="text-center">
+                  <div className="text-emerald-400 font-bold font-mono">{fleetInfo.memberCount}</div>
+                  <div className="text-xs text-gray-600 uppercase tracking-wider">Members</div>
+                </div>
+              )}
+              <div className="text-center">
+                <div className="text-emerald-400 font-bold font-mono">{loadingShips ? '…' : shipCount}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wider">Vessels</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      ) : null}
+
+      {/* API error notice */}
+      {apiError && !loadingShips && (
+        <div className="mx-auto mb-6 max-w-4xl rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-4">
+          <p className="text-yellow-400 text-sm font-mono">{apiError}</p>
+        </div>
+      )}
 
       {/* Main 3-column layout */}
       <div className="fleet-layout">
         {/* Left: Ship list */}
         <FleetShipSelector
-          ships={fleetShips}
+          ships={ships}
           selectedIndex={selectedIndex}
           onSelect={setSelectedIndex}
+          loading={loadingShips}
+          apiError={apiError}
         />
 
         {/* Center: 3D Viewport */}
         <main className="fleet-viewport">
-          {/* Radial gradient background */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#0a1a12_0%,_#020403_100%)]" />
 
-          {/* Three.js canvas */}
           <div className="absolute inset-0">
             {isReady && <FleetScene selectedShip={selectedShip} />}
           </div>
 
-          {/* HUD overlay */}
           <FleetHUD
             ship={selectedShip}
             currentIndex={selectedIndex}
-            totalShips={fleetShips.length}
+            totalShips={shipCount}
+            loading={loadingShips}
             onPrev={goPrev}
             onNext={goNext}
-            onResetCamera={() => {
-              // OrbitControls reset is handled internally;
-              // future: expose reset via ref
-            }}
+            onResetCamera={() => {}}
           />
         </main>
 

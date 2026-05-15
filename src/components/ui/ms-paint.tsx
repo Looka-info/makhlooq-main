@@ -492,7 +492,7 @@ export const MSpaint: React.FC<MSpaintProps> = ({
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
           height: 6px;

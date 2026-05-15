@@ -29,7 +29,7 @@ export default function Loading() {
       <div className="absolute top-10 left-10 w-20 h-20 border-t border-l border-emerald-500/20" />
       <div className="absolute bottom-10 right-10 w-20 h-20 border-b border-r border-emerald-500/20" />
 
-      <style jsx>{`
+      <style>{`
         div { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn {
           from { opacity: 0; }

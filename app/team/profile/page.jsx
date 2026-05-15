@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, LogOut, Shield } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import PageNavigationButtons from '../../../src/components/PageNavigationButtons';
 
 // Modular Components
 import ProfileEditor from '../../../src/components/team/ProfileEditor';
@@ -146,6 +147,8 @@ export default function UserProfilePage() {
             <p className="text-gray-500 text-sm">Customize your presence within the tactical network</p>
           </div>
         </div>
+
+        <PageNavigationButtons current="/team" />
 
         {/* Loading */}
         {loading && (
