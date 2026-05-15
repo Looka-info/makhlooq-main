@@ -1,9 +1,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;700&display=swap');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 @keyframes text-glitch {
   0%   { text-shadow: 2px 0 #00ff41, -2px 0 #ff003c; }
