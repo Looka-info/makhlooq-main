@@ -40,38 +40,38 @@ const NARRATIVES = [
   {
     id: 'intro',
     subtitle: '◈ STANTON SYSTEM — GRID REF 4.7 — KM-FLEET ACTIVE ◈',
-    title: ['Organization', 'Fleet'],
-    desc: 'Specialized vessels ready for dominance across every sector of the Stanton System.'
+    title: ['Org', 'Fleet'],
+    desc: 'Ships ready, crew ready, vibes ready. Stanton mein entry bhi style se hoti hai.'
   },
   {
     id: 'hammerhead',
     subtitle: '◈ FLEET DEFENSE — SQUADRON A ◈',
     title: ['The Shield'],
-    desc: 'Aegis Hammerheads circle our convoys in silent vigilance. Six turrets. Three hundred sixty degrees of deterrence. Nothing breaches the perimeter.'
+    desc: 'Hammerhead convoy ke aas paas aise ghoomta hai jaise bouncer at VIP gate. Entry sirf invite par.'
   },
   {
     id: 'carrack',
     subtitle: '◈ DEEP SPACE — EXPLORATION DIVISION ◈',
     title: ['The Unknown'],
-    desc: 'Anvil Carracks probe beyond charted space. Hospital bays. Rover hangars. Self-sufficient for months. We map what others fear to find.'
+    desc: 'Carrack bolta hai: road khatam? Perfect, ab maza aayega. Unknown ko bhi location pin kar dete hain.'
   },
   {
     id: 'merchantman',
     subtitle: '◈ ECONOMIC DOMINANCE — LOGISTICS CORPS ◈',
     title: ['The Artery'],
-    desc: 'Banu Merchantmen carry three thousand SCU of economic might. Trade routes are lifelines. We control the flow. We set the prices.'
+    desc: 'Merchantman cargo le kar chalta hai aur market ko halka sa eyebrow raise karwa deta hai.'
   },
   {
     id: 'inferno',
     subtitle: '◈ STRIKE WING — HUNTER KILLERS ◈',
     title: ['The Fangs'],
-    desc: 'Ares Star Fighters hunt capital prey. One pilot. One gun. Ships ten times their size learn fear. Strike fast. Vanish faster.'
+    desc: 'Ares ka rule simple hai: one pilot, one big gun, aur dusri side ki confidence low battery.'
   },
   {
     id: 'unity',
     subtitle: '◈ KHALAI MAKHLOOQ — UNIFIED COMMAND ◈',
-    title: ['Together', 'We Rule'],
-    desc: 'One hundred fifty pilots. One fleet. One purpose. From the cold void of MicroTech to the burning sands of Hurston, our presence is law.'
+    title: ['Together', 'We Fly'],
+    desc: 'Crew ek, fleet ek, scene full. MicroTech se Hurston tak, KMHQ ka naam quietly loud hai.'
   }
 ];
 

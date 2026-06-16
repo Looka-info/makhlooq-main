@@ -1,4 +1,5 @@
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
+import InteractiveBackground from '../src/components/InteractiveBackground';
 import './globals.css';
 
 // ▸ FONT OPTIMIZATION (Performance: Prevents layout shift)
@@ -27,7 +28,7 @@ const organizationSchema = {
   alternateName: 'KMHQ',
   url: 'https://makhlooq.com',
   logo: 'https://makhlooq.com/logo.png',
-  description: 'Elite Star Citizen Organization focused on high-stakes operations and tactical dominance.',
+  description: 'Star Citizen crew with big ships, clean ops, and full KMHQ vibe.',
   sameAs: ['https://discord.gg/example'], // Add your Discord/social links
   contactPoint: {
     '@type': 'ContactPoint',
@@ -39,7 +40,7 @@ const organizationSchema = {
 export const metadata = {
   // ▸ CORE SEO
   title: 'KHALAI MAKHLOOQ — Elite Star Citizen Organization',
-  description: 'Khalai Makhlooq is an elite Star Citizen community focused on high-stakes operations and tactical dominance across the Stanton and Pyro systems.',
+  description: 'Khalai Makhlooq is a Star Citizen crew with big ships, chill energy, and serious coordination when the scene gets spicy.',
   keywords: ['Star Citizen', 'Organization', 'KMHQ', 'Khalai Makhlooq', 'Gaming Community'],
   
   metadataBase: new URL('https://makhlooq.com'),
@@ -48,7 +49,7 @@ export const metadata = {
   // ▸ OG TAGS (Social Media & Crawlers)
   openGraph: {
     title: 'KHALAI MAKHLOOQ — Join the Elite',
-    description: 'Elite Star Citizen Organization [KMHQ]. Join the hive.',
+    description: 'Star Citizen crew [KMHQ]. Hangar open hai.',
     url: 'https://makhlooq.com',
     type: 'website',
     siteName: 'Khalai Makhlooq',
@@ -58,7 +59,7 @@ export const metadata = {
         url: '/opengraph-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Khalai Makhlooq - Elite Star Citizen Organization',
+        alt: 'Khalai Makhlooq - Star Citizen Crew',
         type: 'image/jpeg',
       },
     ],
@@ -68,7 +69,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'KHALAI MAKHLOOQ',
-    description: 'Elite Star Citizen Organization [KMHQ]',
+    description: 'Star Citizen crew [KMHQ]',
     images: ['/opengraph-image.jpg'],
     creator: '@makhlooq', // Update with your Twitter handle
   },
@@ -140,7 +141,10 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <InteractiveBackground />
+        {children}
+      </body>
     </html>
   );
 }

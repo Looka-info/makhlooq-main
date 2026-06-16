@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireFleetAdmin } from '../../../../lib/adminAuth';
 
 // Use service role key for admin operations to bypass RLS, fallback to anon key for local dev
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -11,6 +12,11 @@ const supabase = createClient(
 // PUT — update a fleet config
 export async function PUT(request, { params }) {
   try {
+    const auth = await requireFleetAdmin();
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const { id } = params;
     const body = await request.json();
     const { slug, display_name, enabled, sort_order } = body;
@@ -38,6 +44,11 @@ export async function PUT(request, { params }) {
 // DELETE — remove a fleet config
 export async function DELETE(request, { params }) {
   try {
+    const auth = await requireFleetAdmin();
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const { id } = params;
     const { error } = await supabase
       .from('fleet_configs')

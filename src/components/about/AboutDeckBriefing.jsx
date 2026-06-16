@@ -5,9 +5,9 @@ import { motion } from 'motion/react';
 
 export default function AboutDeckBriefing() {
   const stats = [
-    { label: "Status", value: "OPERATIONAL", color: "text-emerald-400" },
-    { label: "Alert Level", value: "CONDITION GREEN", color: "text-cyan-400" },
-    { label: "Fleet Strength", value: "MAXIMAL", color: "text-white" }
+    { label: "Status", value: "SCENE ON", color: "text-emerald-400" },
+    { label: "Mood", value: "CHILL GREEN", color: "text-cyan-400" },
+    { label: "Fleet Flex", value: "MAXIMAL", color: "text-white" }
   ];
 
   return (
@@ -41,7 +41,7 @@ export default function AboutDeckBriefing() {
                 transition={{ duration: 0.8 }}
                 className="block"
               >
-                MISSION
+                MASTI
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
@@ -59,8 +59,8 @@ export default function AboutDeckBriefing() {
               transition={{ duration: 1, delay: 0.4 }}
               className="text-gray-400 text-lg leading-relaxed font-light border-l-2 border-emerald-500/20 pl-6"
             >
-              Strategic oversight across Stanton and Pyro. <br />
-              Deploying elite wings for high-clearance operations.
+              Stanton aur Pyro dono ka route yaad hai. <br />
+              Pro wings deploy hotay hain, lekin attitude halka funny rehta hai.
             </motion.p>
           </div>
 
@@ -91,4 +91,3 @@ export default function AboutDeckBriefing() {
     </section>
   );
 }
-

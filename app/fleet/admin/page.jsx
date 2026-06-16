@@ -5,7 +5,9 @@ import Link from 'next/link';
 import {
   ArrowLeft, Plus, Search, Trash2, Edit3, Save, X,
   RefreshCw, ExternalLink, ToggleLeft, ToggleRight, Loader2, CheckCircle2, AlertCircle,
+  LogOut,
 } from 'lucide-react';
+import { AuthScreen, LoginScreen, DeniedScreen } from '../../../src/components/fleet/admin/FleetAdminAuth';
 
 /* ───────── Helper: validate a slug via FleetYards ───────── */
 async function validateFleetyardsSlug(slug) {
@@ -210,20 +212,20 @@ function AddFleetModal({ onClose, onAdd }) {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.2em]">Fleet Registry</span>
           </div>
-          <h2 className="text-2xl font-bold text-white">Add FleetYards Fleet</h2>
-          <p className="text-gray-500 text-sm mt-1">Enter the FleetYards slug and validate it before adding.</p>
+          <h2 className="text-2xl font-bold text-white">Add FleetYards Slug</h2>
+          <p className="text-gray-500 text-sm mt-1">Enter a FleetYards fleet slug or ship model slug, then validate it before adding.</p>
         </div>
 
         <div className="space-y-4">
           {/* Slug + validate */}
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">FleetYards Slug *</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">FleetYards Fleet or Model Slug *</label>
             <div className="flex gap-2">
               <input
                 value={slug}
                 onChange={e => { setSlug(e.target.value); setValidation(null); }}
                 onKeyDown={e => e.key === 'Enter' && handleValidate()}
-                placeholder="e.g. khalai-makhlooq"
+                placeholder="e.g. 100i, arrow, or khalai-makhlooq"
                 className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white text-sm font-mono outline-none focus:border-emerald-500/40 transition-colors"
               />
               <button
@@ -261,7 +263,7 @@ function AddFleetModal({ onClose, onAdd }) {
             <input
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
-              placeholder="Khalai Makhlooq (auto-filled after validate)"
+              placeholder="Display name (auto-filled after validate)"
               className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white text-sm outline-none focus:border-emerald-500/40 transition-colors"
             />
           </div>
@@ -309,6 +311,10 @@ function AddFleetModal({ onClose, onAdd }) {
 export default function FleetAdminPage() {
   const [configs, setConfigs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authing, setAuthing] = useState(true);
+  const [authed, setAuthed] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [adminUser, setAdminUser] = useState(null);
   const [filter, setFilter] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -329,7 +335,50 @@ export default function FleetAdminPage() {
     }
   }, []);
 
-  useEffect(() => { fetchConfigs(); }, [fetchConfigs]);
+  useEffect(() => {
+    let mounted = true;
+
+    const loadAdminSession = async () => {
+      setAuthing(true);
+      const deniedFromRedirect = window.location.search.includes('denied=1');
+      const res = await fetch('/api/auth/discord/session?admin=1', { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!mounted) return;
+
+      if (res.ok && data?.admin) {
+        setAuthed(true);
+        setAccessDenied(false);
+        setAdminUser(data.user || null);
+        await fetchConfigs();
+      } else {
+        setAuthed(false);
+        setAccessDenied(res.status === 403 || deniedFromRedirect);
+        setAdminUser(null);
+        setConfigs([]);
+        setLoading(false);
+      }
+
+      if (mounted) setAuthing(false);
+    };
+
+    loadAdminSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, [fetchConfigs]);
+
+  const loginWithDiscord = () => {
+    window.location.href = '/api/auth/discord/login?returnTo=/fleet/admin';
+  };
+
+  const logout = async () => {
+    await fetch('/api/auth/discord/logout', { method: 'POST' });
+    setAuthed(false);
+    setAccessDenied(false);
+    setAdminUser(null);
+    setConfigs([]);
+  };
 
   const handleAdd = async (form) => {
     const res = await fetch('/api/fleet-configs', {
@@ -384,21 +433,33 @@ export default function FleetAdminPage() {
 
   const enabledCount = configs.filter(c => c.enabled).length;
 
+  if (authing) return <AuthScreen />;
+  if (accessDenied) return <DeniedScreen onLogout={logout} />;
+  if (!authed) return <LoginScreen onLogin={loginWithDiscord} />;
+
   return (
     <div className="min-h-screen bg-[#040806] text-white selection:bg-emerald-500/30">
       {/* Background */}
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(74,109,86,0.08),transparent_60%)]" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-10 pt-8 pb-24">
+      <div className="relative z-10 w-full px-3 sm:px-5 2xl:px-8 pt-8 pb-24">
 
         {/* Top Nav */}
         <div className="flex items-center justify-between mb-12">
           <Link href="/fleet" className="inline-flex items-center gap-2 text-gray-500 hover:text-emerald-400 transition-colors text-xs uppercase tracking-widest font-bold group">
             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Fleet
           </Link>
-          <button onClick={fetchConfigs} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/5 bg-white/5 text-gray-400 text-xs font-bold hover:text-emerald-400 hover:border-emerald-500/20 transition-all">
-            <RefreshCw size={14} /> Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={fetchConfigs} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/5 bg-white/5 text-gray-400 text-xs font-bold hover:text-emerald-400 hover:border-emerald-500/20 transition-all">
+              <RefreshCw size={14} /> Refresh
+            </button>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/10 transition-all"
+            >
+              <LogOut size={14} /> Sign Out
+            </button>
+          </div>
         </div>
 
         {/* Header */}
@@ -410,8 +471,9 @@ export default function FleetAdminPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">Fleet Registry</h1>
             <p className="text-gray-500 text-sm">
-              Manage which FleetYards fleets are displayed on the fleet page.
+              Manage which FleetYards fleets or ship models are displayed on the fleet page.
               Data is fetched live from <span className="text-emerald-400/70 font-mono">api.fleetyards.net</span>.
+              {adminUser?.name ? <span className="block mt-1 text-gray-600">Signed in as {adminUser.name}</span> : null}
             </p>
           </div>
 
@@ -429,7 +491,7 @@ export default function FleetAdminPage() {
               onClick={() => setShowAdd(true)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]"
             >
-              <Plus size={16} /> Add Fleet
+              <Plus size={16} /> Add Slug
             </button>
           </div>
         </div>
@@ -479,9 +541,9 @@ export default function FleetAdminPage() {
         {/* Info box */}
         <div className="mt-8 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-5 text-sm text-gray-400 space-y-1.5">
           <div className="text-emerald-400 font-bold text-xs uppercase tracking-widest mb-2">How it works</div>
-          <p>• Each entry here represents a FleetYards fleet slug whose vehicles are shown on the public Fleet page.</p>
+          <p>• Each entry can be a FleetYards public fleet slug or a model slug like <code className="text-emerald-400 font-mono text-xs">100i</code>.</p>
           <p>• <strong className="text-white">Validate</strong> a slug before adding to confirm it exists on FleetYards.</p>
-          <p>• <strong className="text-white">Disable</strong> a fleet to hide it temporarily without deleting the config.</p>
+          <p>• <strong className="text-white">Disable</strong> a slug to hide it temporarily without deleting the config.</p>
           <p>• Supabase table: <code className="text-emerald-400 font-mono text-xs">fleet_configs</code></p>
         </div>
       </div>

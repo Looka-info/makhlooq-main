@@ -1,13 +1,10 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { motion, useScroll } from 'motion/react';
+import React from 'react';
+import { motion } from 'motion/react';
 import FleetGlassPanel from './FleetGlassPanel';
 
 export default function FleetHangar({ ships }) {
-  const scrollRef = useRef(null);
-  const { scrollXProgress } = useScroll({ container: scrollRef });
-
   return (
     <div id="hangar" className="min-h-screen flex items-center justify-center relative bg-gradient-to-br from-gray-900/50 to-black/50 py-20">
       <div className="absolute inset-0 pointer-events-none">
@@ -32,7 +29,7 @@ export default function FleetHangar({ ships }) {
           <p className="text-gray-400 font-mono text-lg">Scroll to explore our complete fleet inventory</p>
         </motion.div>
 
-        <div ref={scrollRef} className="flex gap-8 overflow-x-auto scrollbar-hide pb-8 px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="relative flex gap-8 overflow-x-auto scrollbar-hide pb-8 px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {ships.map((ship, index) => (
             <motion.div key={ship.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: index * 0.1 }} className="flex-shrink-0 w-80 md:w-96">
               <FleetGlassPanel className="p-4">

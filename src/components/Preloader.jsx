@@ -9,48 +9,122 @@ export default function Preloader() {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const st = performance.now();
-    const dur = 1500;
-    const imgD = 1000;
-    const pctD = 1000;
+    let cancelled = false;
     let rafId;
+    let displayedProgress = 0;
+    let targetProgress = 0;
+    let canExit = false;
+    const startTime = performance.now();
+    const minDuration = 950;
+    const maxDuration = 8000;
+
+    const setTarget = (value) => {
+      targetProgress = Math.max(targetProgress, Math.min(100, Math.round(value)));
+    };
+
+    const waitForWindowLoad = () => new Promise((resolve) => {
+      if (document.readyState === 'complete') {
+        resolve();
+        return;
+      }
+      window.addEventListener('load', resolve, { once: true });
+    });
+
+    const waitForImages = async () => {
+      const images = Array.from(document.images || []);
+      if (images.length === 0) return;
+
+      let completed = images.filter((img) => img.complete).length;
+      setTarget(20 + (completed / images.length) * 40);
+
+      await Promise.allSettled(images.map((img) => {
+        if (img.complete) return Promise.resolve();
+        if (typeof img.decode === 'function') {
+          return img.decode().catch(() => {});
+        }
+        return new Promise((resolve) => {
+          img.addEventListener('load', resolve, { once: true });
+          img.addEventListener('error', resolve, { once: true });
+        });
+      }));
+    };
+
+    const waitForVideos = async () => {
+      const videos = Array.from(document.querySelectorAll('video'));
+      if (videos.length === 0) return;
+
+      await Promise.allSettled(videos.map((video) => {
+        if (video.readyState >= 1) return Promise.resolve();
+        return new Promise((resolve) => {
+          video.addEventListener('loadedmetadata', resolve, { once: true });
+          video.addEventListener('canplay', resolve, { once: true });
+          video.addEventListener('error', resolve, { once: true });
+        });
+      }));
+    };
+
+    const waitForFonts = async () => {
+      if (!document.fonts?.ready) return;
+      await document.fonts.ready.catch(() => {});
+    };
+
+    const completeLoading = async () => {
+      setTarget(8);
+      await waitForWindowLoad();
+      if (cancelled) return;
+      setTarget(30);
+      await Promise.allSettled([
+        waitForFonts().then(() => setTarget(50)),
+        waitForImages().then(() => setTarget(72)),
+        waitForVideos().then(() => setTarget(88)),
+      ]);
+      if (cancelled) return;
+      setTarget(100);
+      canExit = true;
+    };
+
+    const fallbackTimer = window.setTimeout(() => {
+      setTarget(100);
+      canExit = true;
+    }, maxDuration);
+
+    completeLoading();
 
     function anim(now) {
       if (!preloaderRef.current || !imgBlockRef.current || !percentRef.current) return;
-      
-      const el = now - st;
-      const t = Math.min(el / dur, 1);
-      
-      preloaderRef.current.style.backdropFilter = `blur(${30 * (1 - t)}px)`;
-      
-      if (el >= 1200) {
-        const f = (el - 1200) / 300;
+
+      const elapsed = now - startTime;
+      displayedProgress += (targetProgress - displayedProgress) * 0.08;
+      if (targetProgress === 100 && displayedProgress > 99.2) displayedProgress = 100;
+
+      const progress = Math.min(displayedProgress / 100, 1);
+      preloaderRef.current.style.backdropFilter = `blur(${30 * (1 - progress)}px)`;
+      imgBlockRef.current.style.transform = `translateY(${-75 * progress}%)`;
+      percentRef.current.textContent = String(Math.round(displayedProgress));
+
+      if (canExit && displayedProgress >= 100 && elapsed >= minDuration) {
+        const exitElapsed = elapsed - Math.max(minDuration, elapsed - 300);
+        const f = exitElapsed / 300;
         preloaderRef.current.style.opacity = String(1 - Math.min(f, 1));
+        if (f >= 1) {
+          setVisible(false);
+          document.documentElement.style.removeProperty('overflow');
+          return;
+        }
       }
-      
-      if (el <= imgD) {
-        imgBlockRef.current.style.transform = `translateY(${-75 * (el / imgD)}%)`;
-      } else {
-        imgBlockRef.current.style.transform = 'translateY(-75%)';
-      }
-      
-      if (el <= pctD) {
-        percentRef.current.textContent = Math.round((el / pctD) * 100);
-      } else {
-        percentRef.current.textContent = '100';
-      }
-      
-      if (el < dur) {
+
+      if (!cancelled) {
         rafId = requestAnimationFrame(anim);
-      } else {
-        setVisible(false);
-        document.documentElement.style.removeProperty('overflow');
       }
     }
-    
+
     rafId = requestAnimationFrame(anim);
 
-    return () => cancelAnimationFrame(rafId);
+    return () => {
+      cancelled = true;
+      clearTimeout(fallbackTimer);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   if (!visible) return null;

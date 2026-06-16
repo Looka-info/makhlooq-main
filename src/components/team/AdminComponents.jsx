@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
 
 export const PRESET_COLORS = [
   '#10b981', '#34d399', '#6ee7b7', '#a78bfa',
@@ -58,8 +57,13 @@ export function AddMemberModal({ onClose, onAdded }) {
   const save = async () => {
     if (!form.discord_uid || !form.name) { setError('Discord UID and name are required.'); return; }
     setSaving(true);
-    const { error } = await supabase.from('team_members').insert(form);
-    if (error) { setError(error.message); setSaving(false); return; }
+    const res = await fetch('/api/team-members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { setError(data.error || 'Failed to deploy member.'); setSaving(false); return; }
     onAdded();
     onClose();
   };

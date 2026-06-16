@@ -1,97 +1,101 @@
 'use client';
 
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
+import { Bookmark, DollarSign } from 'lucide-react';
 
-export default function FleetShipSelector({ ships, selectedIndex, onSelect }) {
+const formatCurrency = (value) => {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return 'Price N/A';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(number);
+};
+
+export default function FleetShipSelector({
+  ships,
+  selectedIndex,
+  onSelect,
+  totalValue = 0,
+  totalCrew = 0,
+}) {
   return (
-    <motion.aside
-      initial={{ x: -100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
+    <motion.section
+      initial={{ y: 30, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, delay: 0.2 }}
-      className="fleet-sidebar"
+      className="fleet-showcase rounded-[2.5rem] border border-lime-300/10 bg-white/[0.025] p-5 shadow-[0_30px_120px_rgba(0,0,0,0.35)]"
     >
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-white/5">
-        <h2 className="font-mono text-xs tracking-[0.3em] text-emerald-400 uppercase mb-3">Hangar Assets</h2>
-        <div className="flex justify-between text-[10px] text-gray-500 font-mono uppercase tracking-widest">
-          <span>Ships: {ships.length}</span>
-          <span className="text-emerald-400/70">Fleet Online</span>
+      <div className="mb-4 flex flex-col gap-3 px-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="font-mono text-sm font-black tracking-[0.34em] text-lime-300/55 uppercase">Fleet Showcase</h2>
+          <p className="mt-1 max-w-2xl text-base text-white/40">Apni ride choose karo. Click karo, spotlight us ship par.</p>
+        </div>
+        <div className="flex flex-wrap gap-3 text-xs font-mono uppercase tracking-[0.22em] text-white/40">
+          <span className="rounded-full border border-lime-300/10 bg-black/35 px-3 py-2">Ships: {ships.length}</span>
+          <span className="rounded-full border border-lime-300/10 bg-black/35 px-3 py-2">Value: {formatCurrency(totalValue)}</span>
+          <span className="rounded-full border border-lime-300/10 bg-black/35 px-3 py-2">Crew: {totalCrew || 0}</span>
         </div>
       </div>
 
-      {/* Ship List */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 fleet-scrollbar">
+      <div className="fleet-showcase-grid">
+        {ships.length === 0 && (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-6 text-white/45">
+            Hangar abhi khaali hai. Ships add karo phir yahan full flex hoga.
+          </div>
+        )}
         {ships.map((ship, index) => {
           const isActive = index === selectedIndex;
+          const price = ship.pledgePriceLabel || ship.priceLabel || formatCurrency(ship.pledgePrice || ship.price);
           return (
             <motion.button
               key={ship.id}
               onClick={() => onSelect(index)}
-              className={`w-full text-left flex items-center gap-4 px-4 py-4 mb-1.5 rounded-xl transition-all relative group ${
-                isActive
-                  ? 'bg-gradient-to-r from-emerald-500/10 to-transparent border-l-2'
-                  : 'hover:bg-white/3 border-l-2 border-transparent'
-              }`}
-              style={isActive ? { borderLeftColor: ship.accentColor } : {}}
-              whileHover={{ x: isActive ? 0 : 4 }}
+              className={`fleet-showcase-card group ${isActive ? 'is-active' : ''}`}
+              style={isActive ? { '--ship-accent': ship.accentColor } : {}}
+              whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
               layout
             >
-              {/* Thumbnail */}
-              <div
-                className="w-14 h-10 rounded-lg overflow-hidden border flex-shrink-0 relative"
-                style={{ borderColor: isActive ? ship.accentColor + '60' : '#ffffff10' }}
-              >
-                <img
-                  src={ship.thumbnail}
-                  alt={ship.name}
-                  className="w-full h-full object-cover opacity-60 group-hover:opacity-90 transition-opacity"
-                />
-                {isActive && (
-                  <div
-                    className="absolute inset-0"
-                    style={{ background: `linear-gradient(135deg, ${ship.accentColor}20, transparent)` }}
-                  />
-                )}
-              </div>
+              {ship.thumbnail ? (
+                <img src={ship.thumbnail} alt={ship.name} className="fleet-showcase-card-img" />
+              ) : (
+                <div className="fleet-showcase-card-empty">No Image</div>
+              )}
+              <div className="fleet-showcase-card-shade" />
+              <div className="fleet-showcase-corners" />
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className={`text-sm font-bold truncate transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}>
+              <div className="absolute left-5 top-5 z-10 text-left">
+                <div className="max-w-[85%] text-3xl font-black leading-none tracking-[-0.06em] text-white/95 drop-shadow-lg">
                   {ship.name}
                 </div>
-                <div className="text-[10px] uppercase tracking-wider text-gray-600 truncate font-mono">
-                  {ship.role}
+                <div className="mt-4 text-base font-medium text-lime-100/45 drop-shadow">
+                  {ship.manufacturer}
                 </div>
               </div>
 
-              {/* Active indicator */}
-              {isActive && (
-                <motion.div
-                  layoutId="ship-indicator"
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ background: ship.accentColor, boxShadow: `0 0 8px ${ship.accentColor}` }}
-                />
-              )}
+              <div className="absolute right-5 top-5 z-10 rounded-md border border-lime-300/20 bg-black/20 p-1.5 text-lime-200/80 backdrop-blur-sm">
+                <Bookmark size={22} />
+              </div>
+
+              <div className="absolute left-0 top-[34%] z-10 flex items-center overflow-hidden rounded-r-xl border-y border-r border-lime-300/15 bg-lime-300 text-black shadow-xl">
+                <span className="flex h-14 w-14 items-center justify-center">
+                  <DollarSign size={20} />
+                </span>
+                <span className="max-w-0 whitespace-nowrap text-sm font-black opacity-0 transition-all duration-300 group-hover:max-w-[140px] group-hover:pr-4 group-hover:opacity-100">
+                  {price}
+                </span>
+              </div>
+
+              <div className="absolute bottom-4 right-5 z-10 rounded-full border border-white/15 bg-black/35 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-lime-100/65 backdrop-blur">
+                {ship.role}
+              </div>
             </motion.button>
           );
         })}
       </div>
-
-      {/* Footer Stats */}
-      <div className="px-6 py-4 border-t border-white/5">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-black/30 rounded-lg p-3">
-            <div className="text-[9px] text-gray-600 uppercase tracking-widest font-mono mb-1">Fleet Value</div>
-            <div className="text-emerald-400 text-sm font-bold font-mono">48.2M aUEC</div>
-          </div>
-          <div className="bg-black/30 rounded-lg p-3">
-            <div className="text-[9px] text-gray-600 uppercase tracking-widest font-mono mb-1">Total Crew</div>
-            <div className="text-white text-sm font-bold font-mono">32</div>
-          </div>
-        </div>
-      </div>
-    </motion.aside>
+    </motion.section>
   );
 }

@@ -4,129 +4,155 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import GridOverlay from './GridOverlay';
 
+const navLinks = [
+  { label: 'Home', href: '/' },
+  { label: 'Team', href: '/team' },
+  { label: 'Fleet', href: '/fleet' },
+  { label: 'About', href: '/about' },
+];
+
 export default function Footer() {
   const [timeStr, setTimeStr] = useState('');
-  
+
   useEffect(() => {
-    function updateClock() {
-      const n = new Date();
-      const ds = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-      const d = ds[n.getDay()];
-      const h = String(n.getHours()).padStart(2, '0');
-      const m = String(n.getMinutes()).padStart(2, '0');
-      const s = String(n.getSeconds()).padStart(2, '0');
-      const tz = -(n.getTimezoneOffset() / 60);
-      const sg = tz >= 0 ? '+' : '';
-      setTimeStr(`${d} ${h}:${m}:${s} (GMT${sg}${tz})`);
-    }
-    
+    const updateClock = () => {
+      const now = new Date();
+      const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+      const day = days[now.getDay()];
+      const hours = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const secs = String(now.getSeconds()).padStart(2, '0');
+      const tz = -(now.getTimezoneOffset() / 60);
+      const sign = tz >= 0 ? '+' : '';
+      setTimeStr(`${day} ${hours}:${mins}:${secs} (GMT${sign}${tz})`);
+    };
+
     updateClock();
-    const intervalId = setInterval(updateClock, 1000);
-    return () => clearInterval(intervalId);
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   return (
-    <footer className="footer" style={{ position: 'relative', overflow: 'hidden' }}>
-      <GridOverlay id="footer-grid" triggerSelector=".footer" isFooter={true} />
-      
-      <div className="footer-content" style={{ padding: '40px 24px' }}>
-        <div className="footer-top">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="footer-logo"
-            style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
-          >
-            <img src="/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-            KHALAI MAKHLOOQ
-          </motion.div>
+    <footer className="footer relative overflow-hidden border-t border-lime-300/10 bg-[#020402] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(163,230,53,0.12),transparent_28%),radial-gradient(circle_at_84%_0%,rgba(255,255,255,0.06),transparent_22%),linear-gradient(180deg,transparent,rgba(0,0,0,0.75))]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(rgba(163,230,53,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(163,230,53,0.08)_1px,transparent_1px)] [background-size:76px_76px]" />
+      <GridOverlay id="footer-grid" triggerSelector=".footer" isFooter />
 
-          <div className="footer-links">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="footer-link-group"
-            >
-              <h4 style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', fontSize: '0.75rem' }}>
-                [ COMMS ]
-              </h4>
-              <motion.a whileHover={{ x: 5, color: 'var(--accent)' }} href="#">info@khalai.makhlooq</motion.a>
-              <motion.a whileHover={{ x: 5, color: 'var(--accent)' }} href="https://discord.gg/K7SfxPSwXk" target="_blank" rel="noopener noreferrer">discord.gg/K7SfxPSwXk</motion.a>
-            </motion.div>
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="footer-link-group"
-            >
-              <h4 style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', fontSize: '0.75rem' }}>
-                [ ALLIES ]
-              </h4>
-              <motion.a whileHover={{ x: 5, color: 'var(--accent)' }} href="#">RSI Organization</motion.a>
-              <motion.a whileHover={{ x: 5, color: 'var(--accent)' }} href="#">Star Citizen</motion.a>
-            </motion.div>
-          </div>
-          
-          {/* Transmission log */}
+      <div className="relative z-10 mx-auto w-full max-w-none">
+        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr_0.9fr]">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            style={{
-              padding: '16px',
-              background: 'rgba(12,16,22,0.5)',
-              border: '1px solid rgba(74,109,86,0.2)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.6rem',
-              minWidth: '200px',
-            }}
+            className="rounded-[2rem] border border-lime-300/10 bg-white/[0.03] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl"
           >
-            <div style={{ 
-              color: '#4A6D56', 
-              marginBottom: '8px',
-              letterSpacing: '0.1em',
-            }}>
-              ◈ TRANSMISSION LOG ◈
+            <div className="flex items-center gap-4">
+              <img src="/logo.png" alt="Khalai Makhlooq" className="h-14 w-14 object-contain" />
+              <div>
+                <div className="font-mono text-xs font-black uppercase tracking-[0.34em] text-lime-300/55">Khalai Makhlooq</div>
+                <div className="mt-2 text-4xl font-black uppercase tracking-[-0.08em] text-white sm:text-5xl">
+                  KMHQ
+                </div>
+              </div>
             </div>
-            <div style={{ color: 'rgba(160,170,180,0.6)', lineHeight: 1.6 }}>
-              <div>[14:23] Site update deployed</div>
-              <div>[12:15] Fleet roster synced</div>
-              <div>[09:42] Systems optimal</div>
+
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/50 sm:text-xl">
+              Chill rakho, scene strong hai. Humara hangar, humari vibe, aur thori si straight-up cosmic attitude.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <span className="rounded-full border border-lime-300/15 bg-lime-300/10 px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.22em] text-lime-200">
+                Ready
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.22em] text-white/45">
+                Stay tuned
+              </span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.08 }}
+            className="rounded-[2rem] border border-lime-300/10 bg-white/[0.03] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl"
+          >
+            <div className="font-mono text-xs font-black uppercase tracking-[0.34em] text-lime-300/55">Navigate</div>
+            <div className="mt-5 grid gap-3">
+              {navLinks.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="group flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-lg font-black tracking-[-0.03em] text-white transition-colors hover:border-lime-300/25 hover:bg-lime-300/[0.04]"
+                >
+                  <span>{item.label}</span>
+                  <span className="text-lime-300/40 transition-transform group-hover:translate-x-1">→</span>
+                </a>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.16 }}
+            className="rounded-[2rem] border border-lime-300/10 bg-white/[0.03] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl"
+          >
+            <div className="font-mono text-xs font-black uppercase tracking-[0.34em] text-lime-300/55">Comms</div>
+
+            <div className="mt-5 space-y-4">
+              <a
+                href="mailto:info@khalai.makhlooq"
+                className="block rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-lg font-black tracking-[-0.03em] text-white transition-colors hover:border-lime-300/25 hover:bg-lime-300/[0.04]"
+              >
+                info@khalai.makhlooq
+              </a>
+              <a
+                href="https://discord.gg/K7SfxPSwXk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-lg font-black tracking-[-0.03em] text-white transition-colors hover:border-lime-300/25 hover:bg-lime-300/[0.04]"
+              >
+                discord.gg/K7SfxPSwXk
+              </a>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-lime-300/10 bg-lime-300/[0.04] p-4">
+              <div className="font-mono text-[10px] font-black uppercase tracking-[0.28em] text-lime-300/50">Signal Log</div>
+              <div className="mt-3 space-y-2 font-mono text-sm text-white/45">
+                <div>System: calm</div>
+                <div>Hangar: open</div>
+                <div>Vibe: locked in</div>
+              </div>
             </div>
           </motion.div>
         </div>
-        
-        <div className="footer-bottom" style={{ marginTop: '40px', paddingTop: '24px', borderTop: '1px solid rgba(74,109,86,0.2)' }}>
-          <div className="footer-bottom-text" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem' }}>
+
+        <div className="mt-6 flex flex-col gap-4 border-t border-white/10 pt-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="font-mono text-xs font-black uppercase tracking-[0.26em] text-white/30">
             © {new Date().getFullYear()} KHALAI MAKHLOOQ // SECTOR 7
           </div>
-          <div className="footer-socials">
-            <motion.a whileHover={{ y: -3, color: 'var(--accent)' }} href="#" className="footer-social">
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem' }}>RSI</span>
-            </motion.a>
-            <motion.a whileHover={{ y: -3, color: 'var(--accent)' }} href="https://discord.gg/K7SfxPSwXk" target="_blank" rel="noopener noreferrer" className="footer-social">
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem' }}>DISCORD</span>
-            </motion.a>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <a
+              href="#"
+              className="font-mono text-xs font-black uppercase tracking-[0.24em] text-white/40 transition-colors hover:text-lime-200"
+            >
+              RSI
+            </a>
+            <a
+              href="https://discord.gg/K7SfxPSwXk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-xs font-black uppercase tracking-[0.24em] text-white/40 transition-colors hover:text-lime-200"
+            >
+              Discord
+            </a>
+            <div className="rounded-full border border-lime-300/10 bg-black/35 px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.22em] text-lime-200">
+              {timeStr}
+            </div>
           </div>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="footer-clock" 
-            id="footer-clock"
-            style={{ 
-              fontFamily: 'var(--font-mono)', 
-              fontSize: '0.7rem',
-              color: '#4A6D56',
-              letterSpacing: '0.1em',
-            }}
-          >
-            {timeStr}
-          </motion.div>
         </div>
       </div>
     </footer>

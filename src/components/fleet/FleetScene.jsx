@@ -1,202 +1,204 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Stars, Grid, Float, Environment } from '@react-three/drei';
+import { Grid, OrbitControls, Stars } from '@react-three/drei';
+import { GLTFLoader } from 'three-stdlib';
 import * as THREE from 'three';
 
-/* ── Placeholder ship meshes ─────────────────────────────────────────────────
-   These procedural geometries stand in until real GLB models are added.
-   To swap in a real model: replace <PlaceholderShip/> with useGLTF(ship.modelPath)
-   ────────────────────────────────────────────────────────────────────────── */
+function FleetHoloModel({ url, accentColor, shipKey, onError }) {
+  const group = useRef(null);
+  const [scene, setScene] = useState(null);
+  const model = useMemo(() => scene?.clone(true) || null, [scene]);
 
-function HullMaterial({ color }) {
-  return <meshStandardMaterial color={color} metalness={0.85} roughness={0.15} transparent opacity={0.92} side={THREE.DoubleSide} />;
-}
+  useEffect(() => {
+    let cancelled = false;
+    setScene(null);
 
-function WireMaterial() {
-  return <meshBasicMaterial color="#00f3ff" wireframe transparent opacity={0.08} />;
-}
+    const manager = new THREE.LoadingManager();
+    manager.onError = (assetUrl) => {
+      if (!cancelled) {
+        onError?.(new Error(`Fleet asset failed: ${assetUrl}`));
+      }
+    };
 
-function CapitalShip({ color }) {
-  return (
-    <group>
-      <mesh><boxGeometry args={[2.5, 1.2, 10]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, 1.1, -3]}><boxGeometry args={[1.2, 0.8, 2.5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[1.8, 0, 4]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.35, 0.6, 2]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[-1.8, 0, 4]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.35, 0.6, 2]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, -0.2, 2]}><boxGeometry args={[4, 0.15, 3]} /><HullMaterial color={color} /></mesh>
-      <mesh><boxGeometry args={[2.6, 1.3, 10.1]} /><WireMaterial /></mesh>
-    </group>
-  );
-}
+    const loader = new GLTFLoader(manager);
+    loader.setCrossOrigin('anonymous');
 
-function FighterShip({ color }) {
-  return (
-    <group>
-      <mesh rotation={[Math.PI / 2, 0, 0]}><coneGeometry args={[0.8, 6, 4]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[2, 0, 1]}><boxGeometry args={[2, 0.1, 2.5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[-2, 0, 1]}><boxGeometry args={[2, 0.1, 2.5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, 0, 2.5]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.2, 0.4, 1]} /><HullMaterial color={color} /></mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]}><coneGeometry args={[0.85, 6.1, 4]} /><WireMaterial /></mesh>
-    </group>
-  );
-}
+    try {
+      loader.load(
+        url,
+        (gltf) => {
+          if (!cancelled) {
+            setScene(gltf.scene);
+          }
+        },
+        undefined,
+        (error) => {
+          if (!cancelled) {
+            onError?.(error);
+          }
+        }
+      );
+    } catch (error) {
+      if (!cancelled) {
+        onError?.(error);
+      }
+    }
 
-function ExplorerShip({ color }) {
-  return (
-    <group>
-      <mesh><boxGeometry args={[2, 1.5, 6]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, 0.9, -1.5]}><boxGeometry args={[1.5, 0.6, 2]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[1.6, 0, 2.5]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.4, 0.6, 1.8]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[-1.6, 0, 2.5]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.4, 0.6, 1.8]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, -0.9, 0]}><boxGeometry args={[1.2, 0.5, 2]} /><HullMaterial color={color} /></mesh>
-      <mesh><boxGeometry args={[2.05, 1.55, 6.05]} /><WireMaterial /></mesh>
-    </group>
-  );
-}
+    return () => {
+      cancelled = true;
+    };
+  }, [url, onError]);
 
-function MediumShip({ color }) {
-  return (
-    <group>
-      <mesh><boxGeometry args={[1.8, 1.4, 5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, 0.5, -1.8]}><boxGeometry args={[1.4, 0.5, 1.5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[1.3, -0.2, 2]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.5, 0.7, 1.5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[-1.3, -0.2, 2]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.5, 0.7, 1.5]} /><HullMaterial color={color} /></mesh>
-      <mesh><boxGeometry args={[1.85, 1.45, 5.05]} /><WireMaterial /></mesh>
-    </group>
-  );
-}
+  useEffect(() => {
+    if (!model) return;
 
-function IndustrialShip({ color }) {
-  return (
-    <group>
-      <mesh><boxGeometry args={[4, 3, 10]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, 2.2, -3.5]}><boxGeometry args={[2, 1.5, 2.5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, -0.5, 1]}><boxGeometry args={[6, 0.5, 3]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, -2, 3]}><boxGeometry args={[5, 0.4, 2.5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[2.5, 0, 4]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.5, 0.8, 2]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[-2.5, 0, 4]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.5, 0.8, 2]} /><HullMaterial color={color} /></mesh>
-      <mesh><boxGeometry args={[4.1, 3.1, 10.1]} /><WireMaterial /></mesh>
-    </group>
-  );
-}
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxAxis = Math.max(size.x, size.y, size.z) || 1;
+    const scale = 7 / maxAxis;
 
-function LuxuryShip({ color }) {
-  return (
-    <group>
-      <mesh rotation={[0, 0, Math.PI / 2]}><capsuleGeometry args={[1, 5, 4, 12]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, 0.8, -1.5]}><boxGeometry args={[1.8, 0.4, 2.5]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[2, -0.3, 1]}><boxGeometry args={[2, 0.08, 2]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[-2, -0.3, 1]}><boxGeometry args={[2, 0.08, 2]} /><HullMaterial color={color} /></mesh>
-      <mesh position={[0, 0, 3]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.3, 0.5, 1.2]} /><HullMaterial color={color} /></mesh>
-      <mesh rotation={[0, 0, Math.PI / 2]}><capsuleGeometry args={[1.05, 5.05, 4, 12]} /><WireMaterial /></mesh>
-    </group>
-  );
-}
+    model.position.sub(center);
+    model.scale.setScalar(scale);
 
-const SHIP_COMPONENTS = {
-  capital: CapitalShip,
-  fighter: FighterShip,
-  explorer: ExplorerShip,
-  medium: MediumShip,
-  industrial: IndustrialShip,
-  luxury: LuxuryShip,
-};
+    model.traverse((child) => {
+      if (!child.isMesh) return;
+      child.castShadow = true;
+      child.receiveShadow = true;
 
-/* ── Animated ship wrapper ───────────────────────────────────────────────── */
-
-function ShipModel({ ship, shipKey }) {
-  const group = useRef();
-  const Component = SHIP_COMPONENTS[ship.meshType] || MediumShip;
+      if (child.material) {
+        child.material = child.material.clone();
+        child.material.transparent = true;
+        child.material.opacity = 0.92;
+        child.material.side = THREE.DoubleSide;
+        child.material.emissive = new THREE.Color(accentColor);
+        child.material.emissiveIntensity = 0.08;
+        child.material.metalness = Math.max(child.material.metalness || 0, 0.35);
+        child.material.roughness = Math.min(child.material.roughness ?? 0.55, 0.45);
+      }
+    });
+  }, [model, accentColor]);
 
   useFrame((state) => {
-    if (group.current) {
-      group.current.rotation.y += 0.003;
-      group.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.15;
-    }
+    if (!group.current) return;
+    group.current.rotation.y += 0.0025;
+    group.current.position.y = Math.sin(state.clock.elapsedTime * 0.55) * 0.12;
   });
 
-  return (
-    <Float speed={1} rotationIntensity={0.1} floatIntensity={0.3}>
-      <group ref={group} key={shipKey}>
-        <Component color={ship.accentColor} />
-      </group>
-    </Float>
-  );
-}
+  if (!model) return <LoadingModel />;
 
-/* ── Scan ring effect ────────────────────────────────────────────────────── */
+  return <primitive key={shipKey} ref={group} object={model} />;
+}
 
 function ScanRing({ color }) {
-  const ref = useRef();
+  const ref = useRef(null);
+
   useFrame((state) => {
-    if (ref.current) {
-      ref.current.rotation.x = Math.PI / 2;
-      const s = 3 + Math.sin(state.clock.elapsedTime) * 0.5;
-      ref.current.scale.set(s, s, 1);
-      ref.current.material.opacity = 0.08 + Math.sin(state.clock.elapsedTime * 2) * 0.04;
-    }
+    if (!ref.current) return;
+    ref.current.rotation.x = Math.PI / 2;
+    const scale = 3.2 + Math.sin(state.clock.elapsedTime) * 0.45;
+    ref.current.scale.set(scale, scale, 1);
+    ref.current.material.opacity = 0.08 + Math.sin(state.clock.elapsedTime * 2) * 0.035;
   });
+
   return (
-    <mesh ref={ref} position={[0, -1.5, 0]}>
-      <ringGeometry args={[0.95, 1, 64]} />
+    <mesh ref={ref} position={[0, -1.65, 0]}>
+      <ringGeometry args={[0.95, 1, 96]} />
       <meshBasicMaterial color={color} transparent opacity={0.1} side={THREE.DoubleSide} />
     </mesh>
   );
 }
 
-/* ── Main Scene ──────────────────────────────────────────────────────────── */
+function LoadingModel() {
+  return (
+    <mesh>
+      <torusKnotGeometry args={[1, 0.03, 160, 8]} />
+      <meshBasicMaterial color="#ffffff" wireframe transparent opacity={0.3} />
+    </mesh>
+  );
+}
 
 export default function FleetScene({ selectedShip }) {
-  const accentColor = selectedShip?.accentColor || '#00f3ff';
+  const [modelFailed, setModelFailed] = useState(false);
+  const accentColor = selectedShip?.accentColor || '#d4d4d8';
+  const modelUrl = selectedShip?.modelPath || selectedShip?.holoUrl || '';
+  const modelKey = selectedShip?.id || modelUrl;
+
+  useEffect(() => {
+    setModelFailed(false);
+  }, [modelKey]);
+
+  if (!modelUrl) {
+    return (
+      <div className="flex h-full min-h-[720px] items-center justify-center p-8 text-center">
+        <div>
+          <div className="text-sm font-semibold uppercase tracking-[0.28em] text-white/35">3D Scene Not Ready</div>
+          <p className="mt-4 max-w-md text-sm leading-6 text-white/50">
+            Is ship ka 3D model abhi hangar mein nahi hai. Picture mode bhi kaafi clean lag raha hai.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Canvas
-      camera={{ position: [8, 4, 8], fov: 50 }}
-      gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
-      style={{ background: 'transparent' }}
-    >
-      <fog attach="fog" args={['#020408', 15, 60]} />
+    <div className="relative h-full min-h-[520px] md:min-h-[720px]">
+      {modelFailed ? (
+        <div className="pointer-events-none absolute inset-x-6 top-24 z-20 rounded-2xl border border-lime-300/10 bg-black/55 p-4 text-sm leading-6 text-white/55 backdrop-blur md:left-8 md:right-auto md:max-w-sm">
+          3D file load nahi hui. No tension, ship ka photo mode abhi bhi clean chal raha hai.
+        </div>
+      ) : null}
 
-      {/* Lighting */}
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[10, 10, 5]} intensity={1.5} color="#ffffff" />
-      <pointLight position={[-5, 2, 5]} intensity={2} color={accentColor} distance={20} />
-      <pointLight position={[5, -2, -5]} intensity={1} color="#4400ff" distance={15} />
+      <Canvas
+        camera={{ position: [8, 4, 8], fov: 50 }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
+        style={{ background: 'transparent', minHeight: 'inherit' }}
+      >
+        <fog attach="fog" args={['#050505', 16, 60]} />
 
-      {/* Ship */}
-      {selectedShip && (
-        <ShipModel ship={selectedShip} shipKey={selectedShip.id} />
-      )}
+        <ambientLight intensity={0.45} />
+        <directionalLight position={[10, 10, 5]} intensity={1.8} color="#ffffff" />
+        <pointLight position={[-5, 2, 5]} intensity={1.4} color={accentColor} distance={24} />
+        <pointLight position={[5, -2, -5]} intensity={0.8} color="#71717a" distance={18} />
 
-      {/* Environment */}
-      <ScanRing color={accentColor} />
+        {!modelFailed ? (
+          <FleetHoloModel
+            url={modelUrl}
+            accentColor={accentColor}
+            shipKey={modelKey}
+            onError={(error) => {
+              console.warn('Fleet 3D model failed to load:', error);
+              setModelFailed(true);
+            }}
+          />
+        ) : null}
 
-      <Grid
-        position={[0, -2, 0]}
-        args={[100, 100]}
-        cellSize={1}
-        cellThickness={0.3}
-        cellColor="#1a3a4a"
-        sectionSize={5}
-        sectionThickness={0.8}
-        sectionColor={accentColor}
-        fadeDistance={40}
-        fadeStrength={1}
-        infiniteGrid
-      />
-
-      <Stars radius={80} depth={60} count={3000} factor={3} saturation={0} fade speed={0.5} />
-
-      <OrbitControls
-        enableDamping
-        dampingFactor={0.05}
-        minDistance={5}
-        maxDistance={30}
-        maxPolarAngle={Math.PI / 2 + 0.2}
-        autoRotate={false}
-      />
-    </Canvas>
+        <ScanRing color={accentColor} />
+        <Grid
+          position={[0, -2, 0]}
+          args={[100, 100]}
+          cellSize={1}
+          cellThickness={0.25}
+          cellColor="#27272a"
+          sectionSize={5}
+          sectionThickness={0.5}
+          sectionColor={accentColor}
+          fadeDistance={38}
+          fadeStrength={1}
+          infiniteGrid
+        />
+        <Stars radius={80} depth={60} count={2400} factor={3} saturation={0} fade speed={0.35} />
+        <OrbitControls
+          enableDamping
+          dampingFactor={0.05}
+          minDistance={3}
+          maxDistance={30}
+          maxPolarAngle={Math.PI / 2 + 0.35}
+          enablePan={false}
+        />
+      </Canvas>
+    </div>
   );
 }

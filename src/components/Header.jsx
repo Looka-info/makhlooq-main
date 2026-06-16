@@ -12,9 +12,21 @@ const navItems = [
   { href: '/about', label: 'About' },
 ];
 
-export default function Header({ isMuted, setIsMuted, volume, setVolume }) {
+export default function Header({
+  isMuted: controlledMuted,
+  setIsMuted: setControlledMuted,
+  volume: controlledVolume,
+  setVolume: setControlledVolume,
+}) {
   const [showVolume, setShowVolume] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [localMuted, setLocalMuted] = useState(true);
+  const [localVolume, setLocalVolume] = useState(0.5);
+
+  const isMuted = controlledMuted ?? localMuted;
+  const volume = controlledVolume ?? localVolume;
+  const setIsMuted = setControlledMuted ?? setLocalMuted;
+  const setVolume = setControlledVolume ?? setLocalVolume;
 
   const toggleMusic = () => {
     setIsMuted(!isMuted);

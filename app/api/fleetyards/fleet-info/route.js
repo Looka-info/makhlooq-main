@@ -10,12 +10,15 @@ export async function GET(request) {
     }
 
     const targetUrl = `https://api.fleetyards.net/v1/public/fleets/${encodeURIComponent(slug)}`;
-    const response = await fetch(targetUrl, { method: 'GET' });
+    const response = await fetch(targetUrl, {
+      headers: { Accept: 'application/json' },
+      next: { revalidate: 60 },
+    });
     const data = await response.json();
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: data?.error || `Fleetyards API error (${response.status})` },
+        { error: data?.message || data?.error || `FleetYards API error (${response.status})` },
         { status: response.status }
       );
     }

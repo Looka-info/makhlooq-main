@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Trash2, Edit3, Save, X, Shield, Search, LogOut, RefreshCw } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
 
 // Modular Components
 import { 
@@ -28,65 +27,55 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  const fetch = async (userSession) => {
+  const loadMembers = async () => {
     setLoading(true);
-    let currentAuthed = false;
-
-    if (userSession) {
-      const dId = userSession.user?.user_metadata?.provider_id || 
-                  userSession.user?.user_metadata?.sub || 
-                  userSession.user?.identities?.[0]?.id;
-      if (dId) {
-        const { data: adminCheck } = await supabase
-          .from('team_members')
-          .select('is_admin')
-          .eq('discord_uid', dId)
-          .single();
-        if (adminCheck?.is_admin) {
-          setAuthed(true);
-          currentAuthed = true;
-        } else {
-          setAuthed(false);
-        }
-      }
-    }
-
-    if (currentAuthed) {
-      const { data } = await supabase.from('team_members').select('*').order('joined_at');
-      setMembers(data || []);
-    }
+    const res = await window.fetch('/api/team-members', { cache: 'no-store' });
+    const data = await res.json().catch(() => []);
+    setMembers(Array.isArray(data) ? data : []);
     setLoading(false);
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) fetch(session);
-      else setAuthing(false);
-      setAuthing(false);
-    });
+    let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) fetch(session);
-      else {
+    const loadAdminSession = async () => {
+      setAuthing(true);
+      const deniedFromRedirect = window.location.search.includes('denied=1');
+      const res = await window.fetch('/api/auth/discord/session?admin=1', { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!mounted) return;
+
+      if (res.ok && data?.admin) {
+        setSession(data.user);
+        setAuthed(true);
+        await loadMembers();
+      } else {
+        setSession(res.status === 401 ? null : data.user || null);
         setAuthed(false);
         setMembers([]);
+        setLoading(false);
+        if (deniedFromRedirect) setSession(data.user || { denied: true });
       }
-    });
 
-    return () => subscription.unsubscribe();
+      if (mounted) setAuthing(false);
+    };
+
+    loadAdminSession();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const loginWithDiscord = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: { redirectTo: window.location.origin + '/team/admin' }
-    });
+  const loginWithDiscord = () => {
+    window.location.href = '/api/auth/discord/login?returnTo=/team/admin';
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    await window.fetch('/api/auth/discord/logout', { method: 'POST' });
+    setSession(null);
+    setAuthed(false);
+    setMembers([]);
   };
 
   const startEdit = (m) => { setEditId(m.id); setEditData({ ...m }); };
@@ -95,26 +84,30 @@ export default function AdminPage() {
   const saveEdit = async () => {
     setSaving(true);
     const { name, node_color, role, category, status, bio, is_admin, avatar_url } = editData;
-    await supabase.from('team_members').update({ name, node_color, role, category, status, bio, is_admin, avatar_url }).eq('id', editId);
-    await fetch(session);
+    await window.fetch(`/api/team-members/${editId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, node_color, role, category, status, bio, is_admin, avatar_url }),
+    });
+    await loadMembers();
     cancelEdit();
     setSaving(false);
   };
 
   const remove = async (id) => {
     if (!confirm('Remove this member from the roster?')) return;
-    await supabase.from('team_members').delete().eq('id', id);
-    await fetch(session);
+    await window.fetch(`/api/team-members/${id}`, { method: 'DELETE' });
+    await loadMembers();
   };
 
   const syncDiscord = async () => {
     setSyncing(true);
     try {
-      const res = await fetch('/api/discord/sync', { method: 'POST' });
+      const res = await window.fetch('/api/discord/sync', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         alert(`Successfully synced ${data.synced} members!`);
-        await fetch(session);
+        await loadMembers();
       } else {
         alert(`Sync failed: ${data.error}`);
       }
@@ -204,18 +197,18 @@ export default function AdminPage() {
     <div className="min-h-screen bg-[#040806] text-white selection:bg-emerald-500/30">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(16,185,129,0.06),transparent_55%)]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-12 pb-24">
+      <div className="relative z-10 w-full px-3 sm:px-5 2xl:px-8 pt-12 pb-24">
         {/* Header */}
         <div className="flex flex-col gap-8 mb-12">
           <div className="flex items-center justify-between">
             <Link href="/team" className="inline-flex items-center gap-2 text-gray-500 hover:text-emerald-400 transition-colors text-sm font-medium group">
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Team Graph
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Team pe wapas
             </Link>
             <button
               onClick={logout}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/10 transition-all"
             >
-              <LogOut size={14} /> End Session
+              <LogOut size={14} /> Logout Scene
             </button>
           </div>
 
@@ -224,8 +217,8 @@ export default function AdminPage() {
               <div className="flex items-center gap-3 mb-4">
                 <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-black uppercase tracking-widest">Administrator</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">Fleet Management</h1>
-              <p className="text-gray-500 text-sm">Operational control over personnel and network topology</p>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">Crew Management</h1>
+              <p className="text-gray-500 text-sm">Crew ka roster, roles, colors, aur admin wali masti yahan set hoti hai</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -244,13 +237,13 @@ export default function AdminPage() {
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all disabled:opacity-50"
               >
                 <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
-                {syncing ? 'Syncing...' : 'Sync Discord'}
+                {syncing ? 'Sync ho raha...' : 'Discord Sync'}
               </button>
               <button
                 onClick={() => setShowAdd(true)}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
               >
-                <Plus size={16} /> Deploy Member
+                <Plus size={16} /> Banda Add Karo
               </button>
             </div>
           </div>
@@ -259,9 +252,9 @@ export default function AdminPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[
-            { label: 'Total Personnel', value: members.length },
-            { label: 'Active Roster', value: members.filter(m => m.status === 'online').length },
-            { label: 'Command Clearance', value: members.filter(m => m.is_admin).length },
+            { label: 'Total Crew', value: members.length },
+            { label: 'Online Crew', value: members.filter(m => m.status === 'online').length },
+            { label: 'Admin Power', value: members.filter(m => m.is_admin).length },
             { label: 'Display Count', value: filtered.length },
           ].map(s => (
             <div key={s.label} className="rounded-2xl border border-emerald-500/10 bg-[#040c08]/50 px-6 py-5 backdrop-blur-sm">
@@ -277,16 +270,16 @@ export default function AdminPage() {
             <table className="w-full text-sm text-left">
               <thead>
                 <tr className="border-b border-white/5 bg-white/2">
-                  {['Personnel', 'Tactical Role', 'Network Status', 'Neural Color', 'Clearance', 'Actions'].map(h => (
+                  {['Crew', 'Role', 'Status', 'Color Vibe', 'Power', 'Actions'].map(h => (
                     <th key={h} className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {loading ? (
-                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest animate-pulse">Synchronizing Data...</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest animate-pulse">Crew list aa rahi hai...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-500 font-mono text-xs uppercase tracking-widest">No matching personnel records found</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-500 font-mono text-xs uppercase tracking-widest">Koi matching banda nahi mila</td></tr>
                 ) : filtered.map(m => {
                   const isEditing = editId === m.id;
                   const d = isEditing ? editData : m;
@@ -414,7 +407,7 @@ export default function AdminPage() {
       </div>
 
       <AnimatePresence>
-        {showAdd && <AddMemberModal onClose={() => setShowAdd(false)} onAdded={() => fetch(session)} />}
+        {showAdd && <AddMemberModal onClose={() => setShowAdd(false)} onAdded={loadMembers} />}
       </AnimatePresence>
     </div>
   );

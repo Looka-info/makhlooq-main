@@ -91,10 +91,11 @@ export default function Hero({ isMuted, volume }) {
   const cursorRef = useRef(null);
   const videoRef = useRef(null);
   const [coords, setCoords] = useState({ x: '0000', y: '0000' });
+  const [heroHovered, setHeroHovered] = useState(false);
 
-  const decodedHeading1 = useDecodedText('Join Khalai Makhlooq', 1000, 1200);
-  const decodedHeading2 = useDecodedText('Rule the Stars', 1400, 1200);
-  const decodedLabel = useDecodedText('Elite Star Citizen Organization', 800, 800);
+  const decodedHeading1 = useDecodedText(heroHovered ? 'Fleet Ready Hai' : 'Join Khalai Makhlooq', heroHovered ? 0 : 1000, heroHovered ? 650 : 1200);
+  const decodedHeading2 = useDecodedText(heroHovered ? 'Scene On Hai' : 'Rule the Stars', heroHovered ? 90 : 1400, heroHovered ? 650 : 1200);
+  const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Masti Mode' : 'Elite Star Citizen Org, chill scene', heroHovered ? 0 : 800, heroHovered ? 500 : 800);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -134,7 +135,7 @@ export default function Hero({ isMuted, volume }) {
   }, []);
 
   return (
-    <section id="hero" className="hero-section">
+    <section id="hero" className="hero-section" onMouseEnter={() => setHeroHovered(true)} onMouseLeave={() => setHeroHovered(false)}>
       <div className="hero-bg">
         <motion.video
           ref={videoRef}
@@ -184,7 +185,7 @@ export default function Hero({ isMuted, volume }) {
             <div className="hero-heading-wrapper">
               <motion.h1
                 initial={{ y: '100%' }}
-                animate={{ y: 0 }}
+                animate={{ y: 0, letterSpacing: heroHovered ? '-0.055em' : '-0.03em' }}
                 transition={{ delay: 1, duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
                 className="hero-heading text-glow"
               >
@@ -195,7 +196,7 @@ export default function Hero({ isMuted, volume }) {
             <div className="hero-heading-wrapper">
               <motion.h1
                 initial={{ y: '100%' }}
-                animate={{ y: 0 }}
+                animate={{ y: 0, scale: heroHovered ? 1.025 : 1 }}
                 transition={{ delay: 1.2, duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
                 className="hero-heading accent text-glow"
                 whileHover={{ scale: 1.05, skewX: -5 }}
@@ -220,27 +221,27 @@ export default function Hero({ isMuted, volume }) {
             <div className="hero-subheadings">
               <motion.div
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: 1, color: heroHovered ? '#bef264' : undefined }}
                 transition={{ delay: 1.5, duration: 1 }}
                 className="hero-subheading"
               >
-                Stanton System
+                {heroHovered ? 'Comms bilkul clear' : 'Stanton ka scene'}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: 1, color: heroHovered ? '#a3e635' : undefined }}
                 transition={{ delay: 1.7, duration: 1 }}
                 className="hero-subheading"
               >
-                Fleet Operations
+                {heroHovered ? 'Formation tight hai' : 'Fleet ki masti'}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: 1, color: heroHovered ? '#84cc16' : undefined }}
                 transition={{ delay: 1.9, duration: 1 }}
                 className="hero-subheading"
               >
-                Deep Space Security
+                {heroHovered ? 'Pressure bhi, style bhi' : 'Deep space chill'}
               </motion.div>
             </div>
           </div>

@@ -31,7 +31,7 @@ export default function FleetShipDetails({ ship }) {
       initial={{ x: 100, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.8, delay: 0.3 }}
-      className="fleet-details"
+      className="fleet-details rounded-[2.5rem] border border-lime-300/10 bg-white/[0.03] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.38)] backdrop-blur-xl"
     >
       {/* Scan line divider */}
       <div className="fleet-scanline mb-5" />
@@ -45,12 +45,12 @@ export default function FleetShipDetails({ ship }) {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="text-[10px] font-mono uppercase tracking-[0.2em] mb-1" style={{ color: ship.accentColor }}>
+          <div className="mb-2 text-xs font-mono font-black uppercase tracking-[0.26em] text-lime-300/45">
             {ship.manufacturer}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-1 font-mono">{ship.name}</h1>
-          <div className="text-xs text-gray-500 uppercase tracking-widest font-mono mb-4">{ship.role}</div>
-          <p className="text-sm text-gray-400 leading-relaxed mb-6">{ship.description}</p>
+          <h1 className="mb-2 text-4xl font-black uppercase leading-[0.92] tracking-[-0.08em] text-white">{ship.name}</h1>
+          <div className="mb-5 text-sm font-mono font-black uppercase tracking-[0.24em] text-lime-100/35">{ship.role}</div>
+          <p className="mb-6 text-base leading-relaxed text-white/52">{ship.description}</p>
         </motion.div>
       </AnimatePresence>
 
@@ -69,9 +69,9 @@ export default function FleetShipDetails({ ship }) {
             { label: 'Cargo', val: ship.cargo },
             { label: 'Top Speed', val: ship.topSpeed },
           ].map((s) => (
-            <div key={s.label} className="bg-black/40 rounded-lg p-3 border border-white/5">
-              <div className="text-[9px] font-mono text-gray-600 uppercase tracking-widest mb-1">{s.label}</div>
-              <div className="text-sm font-bold font-mono" style={{ color: ship.accentColor }}>{s.val}</div>
+            <div key={s.label} className="rounded-2xl border border-lime-300/10 bg-black/35 p-4">
+              <div className="mb-1 text-[10px] font-mono font-black uppercase tracking-[0.24em] text-lime-300/35">{s.label}</div>
+              <div className="text-base font-black text-white">{s.val}</div>
             </div>
           ))}
         </motion.div>
@@ -86,7 +86,7 @@ export default function FleetShipDetails({ ship }) {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mb-6"
         >
-          <div className="text-[10px] font-mono text-gray-600 uppercase tracking-widest mb-3">Combat Profile</div>
+          <div className="mb-3 text-xs font-mono font-black uppercase tracking-[0.26em] text-lime-300/35">Combat Profile</div>
           {Object.values(ship.specs).map((spec, i) => (
             <SpecBar
               key={spec.label}
@@ -102,24 +102,24 @@ export default function FleetShipDetails({ ship }) {
 
       {/* Weapons */}
       <div className="mb-6">
-        <div className="text-[10px] font-mono text-gray-600 uppercase tracking-widest mb-2">Armament</div>
-        <div className="text-xs font-mono text-white/80 bg-black/30 rounded-lg px-3 py-2 border border-white/5">
+        <div className="mb-2 text-xs font-mono font-black uppercase tracking-[0.26em] text-lime-300/35">Armament</div>
+        <div className="rounded-2xl border border-lime-300/10 bg-black/35 px-4 py-3 font-mono text-sm text-white/75">
           {ship.weapons}
         </div>
       </div>
 
       {/* Features */}
       <div className="mb-6">
-        <div className="text-[10px] font-mono text-gray-600 uppercase tracking-widest mb-2">Systems</div>
+        <div className="mb-2 text-xs font-mono font-black uppercase tracking-[0.26em] text-lime-300/35">Systems</div>
         <div className="flex flex-wrap gap-1.5">
           {ship.features.map((f) => (
             <span
               key={f}
               className="px-2.5 py-1 rounded-md text-[10px] font-mono border"
               style={{
-                background: ship.accentColor + '08',
-                borderColor: ship.accentColor + '25',
-                color: ship.accentColor,
+                background: 'rgba(255,255,255,0.04)',
+                borderColor: 'rgba(255,255,255,0.08)',
+                color: '#e5e7eb',
               }}
             >
               {f}
@@ -132,7 +132,7 @@ export default function FleetShipDetails({ ship }) {
 
       {/* Actions */}
       <div className="mt-auto space-y-2.5">
-        <button className="fleet-btn-primary w-full" style={{ '--btn-color': ship.accentColor }}>
+        <button className="fleet-btn-primary w-full">
           Equip Loadout
         </button>
         <button className="fleet-btn-secondary w-full">

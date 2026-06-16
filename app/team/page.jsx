@@ -1,13 +1,15 @@
 'use client';
 
 import TeamPageImpl from '../../src/components/team/page';
-import PageNavigationButtons from '../../src/components/PageNavigationButtons';
+import Header from '../../src/components/Header';
 
 export default function TeamPage() {
   return (
     <>
-      <PageNavigationButtons current="/team" />
-      <TeamPageImpl />
+      <Header />
+      <div className="pt-20">
+        <TeamPageImpl />
+      </div>
     </>
   );
 }

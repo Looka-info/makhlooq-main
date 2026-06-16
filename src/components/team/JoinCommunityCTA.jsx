@@ -18,9 +18,9 @@ export default function JoinCommunityCTA() {
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
               <Users className="text-emerald-400" size={32} />
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Join the Community</h2>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Crew Join Karo</h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Become part of the most advanced tactical fleet in the verse. Connect with fellow members, participate in operations, and climb the ranks.
+              Discord par aa jao, pilots se milo, ops mein ghuso, aur apna rank ka scene grow karo.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-4">
               <a
@@ -29,10 +29,10 @@ export default function JoinCommunityCTA() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-8 py-4 bg-emerald-500 text-black font-bold rounded-xl hover:bg-emerald-400 transition-all group"
               >
-                Join Discord <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                Discord Join Karo <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </a>
               <button className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all">
-                Learn More
+                Thora Aur Dekho
               </button>
             </div>
           </motion.div>

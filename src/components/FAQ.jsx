@@ -1,271 +1,216 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import clsx from 'clsx';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const faqs = [
   {
-    q: "How do I join the Khalai Makhlooq organization?",
-    a: "Recruitment is open to all Citizens. You can apply through our RSI page or join our Discord to start your onboarding. We look for pilots, miners, and tactical strategists of all experience levels."
+    q: 'KMHQ join kaise karun?',
+    a: 'Discord par aa jao, handle verify karwao, phir roster mein entry. Simple scene. Tumhara playstyle dekhenge aur jis wing mein fit ho, wahan set kar denge.',
   },
   {
-    q: "Where is the organization's main base of operations?",
-    a: "Our primary technical campus is located at MicroTech in the Stanton System, with satellite logistics hubs at Port Olisar and GrimHEX for deep-space operations. We maintain a persistent presence across all major planetary bodies."
+    q: 'New pilot hun, help milegi?',
+    a: 'Bilkul. Escorts, crewed ships, fleet support, sab mil sakta hai. Tumhe menu mein akela chorne ka koi shauq nahi.',
   },
   {
-    q: "What types of operations do you conduct in the PU?",
-    a: "We run weekly operations ranging from tactical strike missions and bounty hunting to large-scale mining expeditions and trade security. Every Citizen in the fleet is assigned to a squadron based on their expertise."
+    q: 'KMHQ mein hota kya hai?',
+    a: 'Combat patrol, convoy security, recon, cargo, salvage, deep-space staging. Kabhi serious op, kabhi full hangar masti. Lekin coordination tight.',
   },
   {
-    q: "Do you provide ships for new members?",
-    a: "Yes! Our industrial division manages a fleet of loaner ships including Cutlass Blacks and Prospectors for new members to help them get started in the Persistent Universe and earn their own UEC."
+    q: 'Casual hai ya serious?',
+    a: 'Dono ka perfect mix. Chill vibe rakhtay hain, lekin op start ho to comms tight aur fleet ek unit ban jati hai.',
   },
   {
-    q: "What makes Khalai Makhlooq different from other Orgs?",
-    a: "Our tactical integration. We don't just fly together; we coordinate through a unified command structure with real-time telemetry and strategy. This gives us an edge in both high-stakes combat and logistics efficiency."
-  }
+    q: 'KMHQ ka special masala kya hai?',
+    a: 'Noise kam, coordination zyada. Sab ko same plan samajh aaye to choti fleet bhi cinematic lagti hai.',
+  },
 ];
 
 function FAQItem({ faq, index, isOpen, onClick }) {
-  const [loading, setLoading] = useState(false);
-  const [showResponse, setShowResponse] = useState(false);
-  const contentRef = useRef(null);
-  
-  const handleClick = () => {
-    if (!isOpen) {
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        setShowResponse(true);
-      }, 400);
-    } else {
-      setShowResponse(false);
-    }
-    onClick();
-  };
-  
-  useEffect(() => {
-    if (!isOpen) setShowResponse(false);
-  }, [isOpen]);
-
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: -20 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className={clsx("faq-item", isOpen && "open")}
-      onClick={handleClick}
-      style={{
-        border: '1px solid rgba(74,109,86,0.2)',
-        marginBottom: '12px',
-        background: 'rgba(12,16,22,0.5)',
-        cursor: 'pointer',
-        transition: 'all 0.3s',
-      }}
+    <motion.div
+      data-faq-card
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.65, delay: index * 0.06, ease: 'easeOut' }}
+      className={`group relative overflow-hidden rounded-[1.75rem] border transition-all duration-300 ${
+        isOpen
+          ? 'border-lime-300/35 bg-lime-300/[0.075] shadow-[0_0_50px_rgba(132,204,22,0.08)]'
+          : 'border-lime-300/12 bg-white/[0.025] hover:border-lime-300/28 hover:bg-lime-300/[0.045]'
+      }`}
     >
-      <div className="faq-question" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '20px 24px',
-        fontFamily: 'var(--font-mono)',
-        fontSize: '0.85rem',
-        color: '#fff',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ 
-            color: 'rgba(74,109,86,0.6)', 
-            fontSize: '0.7rem',
-            minWidth: '60px',
-          }}>
-            Q-{String(index + 1).padStart(3, '0')}
-          </span>
-          <span>{faq.q}</span>
+      <button
+        type="button"
+        onClick={onClick}
+        className="relative z-10 grid w-full gap-5 p-6 text-left md:grid-cols-[120px_minmax(0,1fr)_56px] md:items-center md:p-8"
+      >
+        <div className="font-mono text-base font-bold uppercase tracking-[0.34em] text-lime-300/55">
+          Q-{String(index + 1).padStart(2, '0')}
         </div>
-        <div style={{
-          width: 20,
-          height: 20,
-          border: '1px solid rgba(74,109,86,0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '0.7rem',
-          color: '#4A6D56',
-          transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
-          transition: 'transform 0.3s',
-        }}>
-          {isOpen ? '×' : '+'}
+        <div className="text-3xl font-semibold leading-none tracking-[-0.055em] text-white md:text-5xl">
+          {faq.q}
         </div>
-      </div>
-      
+        <div className={`ml-auto flex h-12 w-12 items-center justify-center rounded-full border font-mono text-2xl transition-all duration-300 ${
+          isOpen
+            ? 'rotate-45 border-lime-300/50 bg-lime-300 text-[#061006]'
+            : 'border-lime-300/20 text-lime-300/75 group-hover:border-lime-300/45'
+        }`}>
+          +
+        </div>
+      </button>
+
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            style={{ overflow: 'hidden' }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="relative z-10 overflow-hidden"
           >
-            <div 
-              ref={contentRef}
-              style={{ 
-                padding: '0 24px 20px 96px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.8rem',
-                lineHeight: 1.7,
-                color: 'rgba(200,210,220,0.8)',
-              }}
-            >
-              {loading ? (
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px',
-                  color: '#4A6D56',
-                }}>
-                  <span className="blink">◈</span>
-                  <span>RETRIEVING DATA...</span>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ 
-                    fontSize: '0.65rem', 
-                    color: '#4A6D56', 
-                    marginBottom: '8px',
-                    letterSpacing: '0.1em',
-                  }}>
-                    RESPONSE:
-                  </div>
-                  {faq.a}
-                </div>
-              )}
+            <div className="border-t border-lime-300/10 px-6 pb-8 pt-6 md:ml-[120px] md:px-8">
+              <div className="mb-3 font-mono text-sm font-bold uppercase tracking-[0.28em] text-lime-300/55">
+                Seedha jawab
+              </div>
+              <p className="max-w-4xl text-xl leading-9 text-white/55 md:text-2xl md:leading-10">
+                {faq.a}
+              </p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-lime-300/70 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
     </motion.div>
   );
 }
 
 export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const sectionRef = useRef(null);
+  const [openIndex, setOpenIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const filteredFaqs = faqs.filter(faq => 
-    faq.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    faq.a.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+  const filteredFaqs = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return faqs;
+    return faqs.filter((faq) => `${faq.q} ${faq.a}`.toLowerCase().includes(term));
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '[data-faq-title]',
+        { yPercent: 105, opacity: 0, rotateX: -35 },
+        {
+          yPercent: 0,
+          opacity: 1,
+          rotateX: 0,
+          stagger: 0.1,
+          duration: 1,
+          ease: 'power4.out',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 72%',
+          },
+        }
+      );
+
+      gsap.to('[data-faq-title-stack]', {
+        y: -70,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.9,
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <section id="faq" className="faq-section" style={{ position: 'relative' }}>
-      {/* Database header */}
-      <div style={{
-        position: 'absolute',
-        top: '5%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        textAlign: 'center',
-        fontFamily: 'var(--font-mono)',
-        fontSize: '0.65rem',
-        letterSpacing: '0.2em',
-        color: 'rgba(74,109,86,0.6)',
-      }}>
-        ◈ KNOWLEDGE BASE // QUERY SYSTEM ◈
+    <section
+      id="faq"
+      ref={sectionRef}
+      className="relative overflow-hidden bg-[#040704] py-28 text-white md:py-40"
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute right-[-6%] top-[12%] h-[30rem] w-[30rem] rounded-full bg-lime-400/10 blur-[140px]" />
+        <div className="absolute left-[-10%] bottom-[-10%] h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-[150px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(163,230,53,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.035)_1px,transparent_1px)] bg-[size:80px_80px] opacity-45 [mask-image:radial-gradient(circle_at_center,black,transparent_76%)]" />
       </div>
-      
-      <div className="faq-wrapper" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '60px' }}>
-        <div className="faq-header" style={{ marginBottom: '40px' }}>
-          <div className="section-label" style={{ 
-            fontFamily: 'var(--font-mono)', 
-            fontSize: '0.8rem',
-            color: '#4A6D56',
-            letterSpacing: '0.1em',
-            marginBottom: '16px',
-          }}>
-            [ DATABASE: FREQUENT QUERIES ]
+
+      <div className="relative z-10 w-full px-3 sm:px-5 2xl:px-8">
+        <div className="mb-14 grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)] lg:items-end">
+          <div>
+            <div className="mb-5 flex items-center gap-3">
+              <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.8)]" />
+              <span className="font-mono text-base font-bold uppercase tracking-[0.35em] text-lime-300/80">
+                Quick Sawal Jawab
+              </span>
+            </div>
+            <div data-faq-title-stack className="font-black uppercase leading-[0.78] tracking-[-0.09em] will-change-transform">
+              {['Seedhay', 'Jawab'].map((line) => (
+                <div key={line} className="overflow-hidden pb-2">
+                  <div
+                    data-faq-title
+                    className="text-[22vw] text-transparent [-webkit-text-stroke:1.3px_rgba(190,242,100,0.55)] md:text-[14vw] lg:text-[10vw]"
+                  >
+                    {line}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem' }}>FAQ</h2>
+
+          <div className="rounded-[2rem] border border-lime-300/15 bg-white/[0.035] p-6 backdrop-blur-xl">
+            <p className="text-2xl leading-10 text-white/50">
+              Confusion ko airlock se bahar phenk do. Sawal kholo, jawab lo,
+              aur phir hangar mein wapas masti.
+            </p>
+            <div className="mt-8 flex items-center gap-4 rounded-2xl border border-lime-300/15 bg-black/35 px-5 py-4">
+              <span className="font-mono text-lg text-lime-300/70">&gt;_</span>
+              <input
+                value={searchTerm}
+                onChange={(event) => {
+                  setSearchTerm(event.target.value);
+                  setOpenIndex(0);
+                }}
+                placeholder="Sawal search karo..."
+                className="min-w-0 flex-1 bg-transparent text-xl text-white outline-none placeholder:text-white/25"
+              />
+              <span className="font-mono text-sm uppercase tracking-[0.22em] text-lime-300/45">
+                {filteredFaqs.length} jawab
+              </span>
+            </div>
+          </div>
         </div>
-        
-        {/* Search bar */}
-        <div style={{
-          marginBottom: '32px',
-          position: 'relative',
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            border: '1px solid rgba(74,109,86,0.3)',
-            background: 'rgba(12,16,22,0.8)',
-            padding: '12px 16px',
-          }}>
-            <span style={{ 
-              color: '#4A6D56', 
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.8rem',
-              marginRight: '12px',
-            }}>
-              &gt;_
-            </span>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="ENTER SEARCH QUERY..."
-              style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                color: '#fff',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.85rem',
-                outline: 'none',
-              }}
+
+        <div className="space-y-4">
+          {filteredFaqs.map((faq, index) => (
+            <FAQItem
+              key={faq.q}
+              faq={faq}
+              index={index}
+              isOpen={openIndex === index}
+              onClick={() => setOpenIndex(openIndex === index ? null : index)}
             />
-            <span style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              color: 'rgba(74,109,86,0.6)',
-            }}>
-              {filteredFaqs.length} RECORDS
-            </span>
-          </div>
+          ))}
         </div>
-        
-        {filteredFaqs.map((faq, i) => (
-          <FAQItem
-            key={i}
-            faq={faq}
-            index={i}
-            isOpen={openIndex === i}
-            onClick={() => setOpenIndex(openIndex === i ? null : i)}
-          />
-        ))}
-        
+
         {filteredFaqs.length === 0 && (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.85rem',
-            color: 'rgba(160,170,180,0.6)',
-          }}>
-            ◈ NO MATCHING RECORDS FOUND ◈
+          <div className="rounded-[1.75rem] border border-lime-300/12 bg-white/[0.025] p-10 text-center font-mono text-lg uppercase tracking-[0.24em] text-white/35">
+            Koi matching jawab nahi mila, spelling thori seedhi karo
           </div>
         )}
       </div>
-      
-      {/* Blink animation style */}
-      <style>{`
-        .blink {
-          animation: blink 1s step-end infinite;
-        }
-        @keyframes blink {
-          50% { opacity: 0; }
-        }
-      `}</style>
     </section>
   );
 }

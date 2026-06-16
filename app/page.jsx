@@ -95,7 +95,7 @@ export default function Home() {
   }, []);
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {/* ▸ PRELOADER - Critical path, always shown */}
       <Preloader key="preloader" />
 

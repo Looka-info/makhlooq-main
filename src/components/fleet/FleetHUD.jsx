@@ -8,8 +8,7 @@ export default function FleetHUD({ ship, onResetCamera, onPrev, onNext, totalShi
 
   useEffect(() => {
     const tick = () => {
-      const now = new Date();
-      setTime(now.toLocaleTimeString('en-GB', { hour12: false }));
+      setTime(new Date().toLocaleTimeString('en-GB', { hour12: false }));
     };
     tick();
     const id = setInterval(tick, 1000);
@@ -18,14 +17,12 @@ export default function FleetHUD({ ship, onResetCamera, onPrev, onNext, totalShi
 
   return (
     <div className="absolute inset-0 pointer-events-none z-10">
-      {/* Corner brackets */}
       <div className="fleet-bracket fleet-bracket-tl" />
       <div className="fleet-bracket fleet-bracket-tr" />
       <div className="fleet-bracket fleet-bracket-bl" />
       <div className="fleet-bracket fleet-bracket-br" />
 
-      {/* Top-left: ship designation */}
-      <div className="absolute top-6 left-6">
+      <div className="absolute left-6 top-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={ship?.id}
@@ -34,70 +31,67 @@ export default function FleetHUD({ ship, onResetCamera, onPrev, onNext, totalShi
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="text-[10px] font-mono text-emerald-400/60 uppercase tracking-[0.3em] mb-1">
+            <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.3em] text-white/30">
               Active Asset
             </div>
-            <div className="text-lg font-bold font-mono text-white tracking-tight">
+            <div className="font-mono text-lg font-bold tracking-tight text-white">
               {ship?.name || '—'}
             </div>
-            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+            <div className="font-mono text-[10px] uppercase tracking-widest text-white/25">
               {ship?.class || ''}
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Top-right: system time + telemetry */}
-      <div className="absolute top-6 right-6 text-right">
-        <div className="text-[10px] font-mono text-gray-600 uppercase tracking-[0.3em] mb-1">UEE Standard Time</div>
-        <div className="text-lg font-mono text-emerald-400 tabular-nums">{time}</div>
-        <div className="flex items-center justify-end gap-2 mt-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-[9px] font-mono text-green-400 uppercase tracking-widest">All Systems Nominal</span>
+      <div className="absolute right-6 top-6 text-right">
+        <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.3em] text-white/25">
+          UEE Standard Time
+        </div>
+        <div className="font-mono text-lg tabular-nums text-white">{time}</div>
+        <div className="mt-2 flex items-center justify-end gap-2">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white/60" />
+          <span className="font-mono text-[9px] uppercase tracking-widest text-white/35">
+            All Systems Nominal
+          </span>
         </div>
       </div>
 
-      {/* Bottom center: navigation controls */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 pointer-events-auto">
-        <button
-          onClick={onPrev}
-          className="fleet-hud-btn"
-          title="Previous ship"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+      <div className="pointer-events-auto absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-3">
+        <button onClick={onPrev} className="fleet-hud-btn" title="Previous ship">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
 
-        <div className="px-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg">
-          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+        <div className="rounded-lg border border-white/10 bg-black/60 px-4 py-2 backdrop-blur-md">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-white/35">
             {(currentIndex + 1).toString().padStart(2, '0')} / {totalShips.toString().padStart(2, '0')}
           </span>
         </div>
 
-        <button
-          onClick={onNext}
-          className="fleet-hud-btn"
-          title="Next ship"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+        <button onClick={onNext} className="fleet-hud-btn" title="Next ship">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
         </button>
 
-        <div className="w-px h-6 bg-white/10 mx-1" />
+        <div className="mx-1 h-6 w-px bg-white/10" />
 
         <button onClick={onResetCamera} className="fleet-hud-btn" title="Reset camera">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M1 4v6h6M23 20v-6h-6" /><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+            <path d="M1 4v6h6M23 20v-6h-6" />
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
           </svg>
         </button>
       </div>
 
-      {/* Bottom-left: keyboard hint */}
       <div className="absolute bottom-6 left-6">
-        <div className="text-[9px] font-mono text-gray-700 uppercase tracking-widest">
+        <div className="font-mono text-[9px] uppercase tracking-widest text-white/20">
           ← → Navigate &nbsp;·&nbsp; Drag to orbit &nbsp;·&nbsp; Scroll to zoom
         </div>
       </div>
 
-      {/* Scan line animation */}
       <div className="fleet-viewport-scanline" />
     </div>
   );

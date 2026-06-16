@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { fetchDiscordMembers, mapDiscordStatus } from '../../../../lib/discord';
+import { requireFleetAdmin } from '../../../../lib/adminAuth';
+
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, supabaseKey);
 
 export async function POST(request) {
   try {
+    const auth = await requireFleetAdmin();
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     // 1. Fetch live members from Discord
     const discordMembers = await fetchDiscordMembers();
     

@@ -6,8 +6,8 @@ import { motion } from 'motion/react';
 export default function AboutDeckHangar() {
   const stats = [
     { label: "Active Wings", value: "48" },
-    { label: "Capital Ships", value: "06" },
-    { label: "Mission Success", value: "99.8%" }
+    { label: "Big Ships", value: "06" },
+    { label: "Vibe Success", value: "99.8%" }
   ];
 
   return (
@@ -39,7 +39,7 @@ export default function AboutDeckHangar() {
               transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
               className="text-5xl md:text-9xl font-bold text-white tracking-tighter"
             >
-              TACTICAL <span className="text-emerald-500">POWER</span>
+              HANGAR <span className="text-emerald-500">FLEX</span>
             </motion.h2>
           </div>
           
@@ -76,4 +76,3 @@ export default function AboutDeckHangar() {
     </section>
   );
 }
-

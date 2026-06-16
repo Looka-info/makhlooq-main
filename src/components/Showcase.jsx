@@ -1,187 +1,204 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { motion, useInView } from 'motion/react';
+import React, { useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-/* ─────────── Operations Data ─────────── */
+gsap.registerPlugin(ScrollTrigger);
 
-const OPS = [
+const PILLARS = [
   {
-    id: 'combat',
-    label: 'Combat Operations',
-    tag: 'STRIKE',
-    stat: '98.7%',
-    statLabel: 'Sortie success',
-    image: '/backgrounds/SC-3.24_20241207_170744_Hornets-Over-Lake_f.png',
-    desc: 'Coordinated strike wings executing precision engagements across contested sectors. From dogfights to capital-ship sieges, our pilots dominate every theater.',
-    span: 'col-span-2 row-span-2',        // large hero tile
-    minH: 'min-h-[420px] md:min-h-[520px]',
+    code: '01',
+    name: 'Strike Mode',
+    detail: 'Target dikha, squad nikla, scene done. Clean pressure with no extra drama.',
   },
   {
-    id: 'recon',
-    label: 'Reconnaissance',
-    tag: 'INTEL',
-    stat: '24/7',
-    statLabel: 'Surveillance uptime',
-    image: '/backgrounds/SC-4.0_20250128_103506_Pulse-standing-Daymar_f.png',
-    desc: 'Stealth scouts mapping hostile space and feeding live telemetry to fleet command.',
-    span: 'col-span-1 row-span-1',
-    minH: 'min-h-[250px]',
+    code: '02',
+    name: 'Cargo Chill',
+    detail: 'Boxes bhi move hotay hain, vibes bhi. Supply line strong, fleet ka stomach full.',
   },
   {
-    id: 'logistics',
-    label: 'Supply & Logistics',
-    tag: 'SUPPLY',
-    stat: '3,200+',
-    statLabel: 'SCU moved daily',
-    image: '/backgrounds/SC-4.0_20250220_164548_Carrack-Through-Clouds-Pyro-IV_f.png',
-    desc: 'Armored convoys and trade fleets keeping every forward base fueled and armed.',
-    span: 'col-span-1 row-span-1',
-    minH: 'min-h-[250px]',
+    code: '03',
+    name: 'Recovery Jugaad',
+    detail: 'Ship toot jaye? Koi tension nahi. Salvage, extract, rebuild, phir se runway par.',
   },
   {
-    id: 'salvage',
-    label: 'Salvage & Recovery',
-    tag: 'SALVAGE',
-    stat: '48M+',
-    statLabel: 'aUEC recovered',
-    image: '/backgrounds/SC-4.5.0_20251230_153316_Klescher-tunnel_f.png',
-    desc: 'Reclaimer crews strip derelicts to the frame. Nothing goes to waste — every wreck funds the next operation.',
-    span: 'col-span-1 row-span-1',
-    minH: 'min-h-[250px]',
-  },
-  {
-    id: 'exploration',
-    label: 'Deep-Space Exploration',
-    tag: 'PATHFINDER',
-    stat: '12',
-    statLabel: 'Systems charted',
-    image: '/backgrounds/SC-4.0_20250225_100437_Carrack-Over-Bloom_f.png',
-    desc: 'Carrack-led expeditions pushing beyond known space. We chart the unknown and claim it for the fleet.',
-    span: 'col-span-2 row-span-1',
-    minH: 'min-h-[280px]',
+    code: '04',
+    name: 'Deep Orbit',
+    detail: 'Map khatam, KMHQ shuru. Scout karo, mark karo, aur phir chai ke saath plan banao.',
   },
 ];
 
-/* ─────────── Single Tile ─────────── */
-
-function OpTile({ op, index, inView }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: 0.08 * index, ease: 'easeOut' }}
-      className={`${op.span} ${op.minH} relative rounded-2xl overflow-hidden group cursor-default border border-white/5 hover:border-emerald-500/25 transition-colors duration-500`}
-    >
-      {/* Background image */}
-      <img
-        src={op.image}
-        alt={op.label}
-        loading="lazy"
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-105"
-      />
-
-      {/* Dark gradient — always visible */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-
-      {/* Hover reveal — extra darken */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-500" />
-
-      {/* Scan-line accent (top edge) */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-      {/* ── Content ── */}
-      <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 z-10">
-        {/* Tag badge */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 group-hover:animate-pulse" />
-          <span className="font-mono text-[9px] tracking-[0.25em] uppercase text-emerald-400/80">
-            {op.tag}
-          </span>
-        </div>
-
-        {/* Title */}
-        <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight mb-2 leading-tight">
-          {op.label}
-        </h3>
-
-        {/* Description — revealed on hover */}
-        <p className="text-gray-400 text-sm leading-relaxed max-w-md mb-4 max-h-0 opacity-0 group-hover:max-h-40 group-hover:opacity-100 transition-all duration-500 ease-out overflow-hidden">
-          {op.desc}
-        </p>
-
-        {/* Stat bar */}
-        <div className="flex items-end gap-4 border-t border-white/5 pt-3">
-          <span className="text-2xl md:text-3xl font-bold font-mono text-white leading-none"
-            style={{ textShadow: '0 0 20px rgba(16,185,129,0.3)' }}
-          >
-            {op.stat}
-          </span>
-          <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-gray-500 pb-1">
-            {op.statLabel}
-          </span>
-        </div>
-      </div>
-
-      {/* Corner brackets — subtle HUD touch */}
-      <div className="absolute top-3 left-3 w-4 h-4 border-t border-l border-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="absolute top-3 right-3 w-4 h-4 border-t border-r border-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="absolute bottom-3 left-3 w-4 h-4 border-b border-l border-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="absolute bottom-3 right-3 w-4 h-4 border-b border-r border-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-    </motion.div>
-  );
-}
-
-/* ─────────── Main Export ─────────── */
+const METRICS = [
+  { value: '2950', label: 'Scene since' },
+  { value: '6', label: 'Big ships' },
+  { value: '80+', label: 'Active pilots' },
+  { value: '24/7', label: 'Hangar ready' },
+];
 
 export default function Showcase() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '[data-showcase-word]',
+        { yPercent: 120, opacity: 0, rotateX: -40 },
+        {
+          yPercent: 0,
+          opacity: 1,
+          rotateX: 0,
+          stagger: 0.1,
+          duration: 1,
+          ease: 'power4.out',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 72%',
+          },
+        }
+      );
+
+      gsap.fromTo(
+        '[data-pillar-card]',
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.11,
+          duration: 0.9,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '[data-pillar-grid]',
+            start: 'top 75%',
+          },
+        }
+      );
+
+      gsap.to('[data-showcase-stack]', {
+        y: -95,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.8,
+        },
+      });
+
+      gsap.to('[data-metrics-panel]', {
+        y: -64,
+        scale: 1.025,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1,
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <section id="showcase" className="relative bg-[#05070A] py-28 md:py-36 overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/4 blur-[140px] pointer-events-none" />
+    <section
+      id="showcase"
+      ref={sectionRef}
+      className="relative overflow-hidden bg-[#030603] py-28 text-white md:py-40"
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute right-[-8%] top-[10%] h-[32rem] w-[32rem] rounded-full bg-emerald-400/10 blur-[140px]" />
+        <div className="absolute left-[-12%] bottom-[-10%] h-[28rem] w-[28rem] rounded-full bg-lime-400/8 blur-[150px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(132,204,22,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(132,204,22,0.035)_1px,transparent_1px)] bg-[size:88px_88px] opacity-40 [mask-image:radial-gradient(circle_at_center,black,transparent_74%)]" />
+      </div>
 
-      <div ref={ref} className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="mb-14"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-2 h-2 bg-emerald-500 rounded-sm" />
-            <span className="font-mono text-[11px] tracking-[0.3em] uppercase text-emerald-400">
-              Operations Theater
-            </span>
+      <div className="relative z-10 w-full px-3 sm:px-5 2xl:px-8">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:items-end">
+          <div>
+            <div className="mb-5 flex items-center gap-3">
+              <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.8)]" />
+              <span className="font-mono text-base font-bold uppercase tracking-[0.35em] text-lime-300/80">
+                Operations Ka Scene
+              </span>
+            </div>
+
+            <div data-showcase-stack className="max-w-6xl font-black uppercase leading-[0.78] tracking-[-0.09em] text-white will-change-transform">
+              {['Hum', 'Idle', 'Nahi'].map((word) => (
+                <div key={word} className="overflow-hidden pb-2">
+                  <div
+                    data-showcase-word
+                    className="text-[23vw] text-transparent [-webkit-text-stroke:1.3px_rgba(190,242,100,0.55)] md:text-[15vw] lg:text-[10.5vw]"
+                  >
+                    {word}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight leading-tight">
-              What We Do
-            </h2>
-            <p className="text-gray-500 text-sm md:text-base max-w-md leading-relaxed">
-              From surgical strike operations to deep-space logistics, every division
-              operates with tactical precision and fleet-wide coordination.
+
+          <motion.div
+            data-metrics-panel
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="rounded-[2rem] border border-lime-300/15 bg-white/[0.03] p-6 backdrop-blur-xl"
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              {METRICS.map((metric) => (
+                <div key={metric.label} className="rounded-2xl border border-white/8 bg-black/25 p-5">
+                  <div className="font-mono text-sm uppercase tracking-[0.3em] text-lime-300/55">
+                    {metric.label}
+                  </div>
+                  <div className="mt-4 text-5xl font-semibold tracking-[-0.06em] text-white md:text-6xl">
+                    {metric.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-7 max-w-2xl text-2xl leading-10 text-white/48">
+              Har division ka simple rule: jaldi move karo, pehle dekho, aur battlefield ko
+              itna clean choro ke log poochain cleanup crew kaun tha.
             </p>
-          </div>
-        </motion.div>
-
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
-          {OPS.map((op, i) => (
-            <OpTile key={op.id} op={op} index={i} inView={inView} />
-          ))}
+          </motion.div>
         </div>
 
-        {/* Bottom decorative line */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={inView ? { scaleX: 1 } : {}}
-          transition={{ duration: 1.2, delay: 0.6, ease: 'easeOut' }}
-          className="mt-16 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent origin-center"
-        />
+        <div className="mt-16 border-t border-lime-300/10 pt-12">
+          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <h2 className="text-5xl font-bold tracking-[-0.07em] md:text-7xl">
+              Pressure mein bhi style.
+            </h2>
+            <p className="max-w-2xl text-xl leading-9 text-white/48">
+              Fleet ka layout simple hai: clear roles, wide space, aur koi random button mashing nahi.
+              Bas coordinated masti.
+            </p>
+          </div>
+
+          <div data-pillar-grid className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {PILLARS.map((pillar) => (
+              <div
+                key={pillar.code}
+                data-pillar-card
+                className="group rounded-[1.75rem] border border-lime-300/12 bg-[#071006] p-7 transition-transform duration-300 hover:-translate-y-2 hover:border-lime-300/30 hover:bg-[#0b1708]"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <span className="font-mono text-sm uppercase tracking-[0.3em] text-lime-300/55">
+                    {pillar.code}
+                  </span>
+                  <span className="h-2 w-2 rounded-full bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.7)]" />
+                </div>
+                <h3 className="mt-16 text-3xl font-semibold tracking-[-0.05em] md:text-4xl">
+                  {pillar.name}
+                </h3>
+                <p className="mt-6 text-lg leading-8 text-white/45">
+                  {pillar.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
