@@ -149,7 +149,7 @@ export default function Values() {
         height: '100vh',
         width: '100%',
         overflow: 'hidden',
-        background: '#0a0305',
+        background: 'var(--bg)',
       }}>
         {/* ── Layer 1: Background slideshow — crossfading images ── */}
         {BACKGROUNDS.map((bg, i) => {

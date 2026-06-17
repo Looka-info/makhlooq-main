@@ -125,10 +125,15 @@ export default function NetworkGraph({ members, onSelect, physics }) {
   }, [members, size]);
 
   useEffect(() => {
+    let lastFrame = 0;
+
     const loop = () => {
-      if (size.w && size.h) {
+      const now = performance.now();
+
+      if (size.w && size.h && !document.hidden && now - lastFrame > 50) {
         tickPhysics(nodesRef.current, size.w, size.h, pinnedRef.current, physicsRef.current);
         setFrame(f => f + 1);
+        lastFrame = now;
       }
       rafRef.current = requestAnimationFrame(loop);
     };

@@ -128,17 +128,7 @@ export default function FleetShipDetails({ ship }) {
         </div>
       </div>
 
-      <div className="fleet-scanline mb-5" />
-
-      {/* Actions */}
-      <div className="mt-auto space-y-2.5">
-        <button className="fleet-btn-primary w-full">
-          Equip Loadout
-        </button>
-        <button className="fleet-btn-secondary w-full">
-          Request Insurance
-        </button>
-      </div>
+      <div className="fleet-scanline mt-6" />
     </motion.aside>
   );
 }

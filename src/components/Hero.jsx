@@ -110,14 +110,23 @@ export default function Hero({ isMuted, volume }) {
 
     const cursor = cursorRef.current;
     if (!area || !cursor) return;
+    let coordFrame = 0;
+    let nextCoords = { x: '0000', y: '0000' };
 
     const handleMouseMove = (e) => {
       cursor.style.left = e.clientX + 'px';
       cursor.style.top = e.clientY + 'px';
-      setCoords({
+      nextCoords = {
         x: String(e.clientX).padStart(4, '0'),
         y: String(e.clientY).padStart(4, '0')
-      });
+      };
+
+      if (!coordFrame) {
+        coordFrame = requestAnimationFrame(() => {
+          setCoords(nextCoords);
+          coordFrame = 0;
+        });
+      }
     };
 
     const handleEnter = () => cursor.style.opacity = '1';
@@ -131,6 +140,7 @@ export default function Hero({ isMuted, volume }) {
       area.removeEventListener('mousemove', handleMouseMove);
       area.removeEventListener('mouseenter', handleEnter);
       area.removeEventListener('mouseleave', handleLeave);
+      if (coordFrame) cancelAnimationFrame(coordFrame);
     };
   }, []);
 

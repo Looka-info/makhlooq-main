@@ -660,7 +660,7 @@ export default function FleetPage() {
           </div>
 
           <motion.div
-            className="relative min-h-[620px] overflow-hidden rounded-[2.75rem] border border-lime-300/10 bg-[#050805] shadow-[0_34px_140px_rgba(0,0,0,0.5)]"
+            className="fleet-active-card relative min-h-[620px] overflow-hidden rounded-[2.75rem] border border-lime-300/10 bg-[#050805] shadow-[0_34px_140px_rgba(0,0,0,0.5)]"
             whileHover={{ scale: 0.998 }}
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(163,230,53,0.18),transparent_38%),linear-gradient(180deg,transparent,rgba(0,0,0,0.85))]" />
@@ -721,7 +721,7 @@ export default function FleetPage() {
         )}
 
         <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_430px]">
-          <main className="fleet-viewport relative min-h-[760px] overflow-hidden rounded-[2.5rem] border border-lime-300/10 bg-[#030503] shadow-[0_30px_120px_rgba(0,0,0,0.42)]">
+          <main data-no-site-fx className="fleet-viewport relative min-h-[760px] overflow-hidden rounded-[2.5rem] border border-lime-300/10 bg-[#030503] shadow-[0_30px_120px_rgba(0,0,0,0.42)]">
             <div className="pointer-events-none absolute inset-0 z-10 rounded-[2.5rem] border border-white/5" />
             <div className="pointer-events-none absolute left-6 top-6 z-20">
               <div className="font-mono text-xs font-black uppercase tracking-[0.32em] text-lime-300/55">Ship Stage</div>

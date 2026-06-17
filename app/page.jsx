@@ -68,16 +68,16 @@ export default function Home() {
 
     // ▸ SMOOTH SCROLL LIBRARY (Lenis) optimized for performance
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 0.9,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smooth: true,
-      wheelMultiplier: 0.7, // Prevent excessive scroll events
+      wheelMultiplier: 0.9, // Prevent excessive scroll events
     });
 
     // ▸ RAF LOOP - Only tick if user is active (could add visibility API check)
     let rafId;
     function raf(time) {
-      lenis.raf(time);
+      if (!document.hidden) lenis.raf(time);
       rafId = requestAnimationFrame(raf);
     }
     rafId = requestAnimationFrame(raf);
@@ -111,6 +111,7 @@ export default function Home() {
       {/* ▸ MAIN CONTENT WITH SUSPENSE BOUNDARIES */}
       <motion.main
         key="main"
+        className="relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.5 }}

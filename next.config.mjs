@@ -13,6 +13,18 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cdn.discordapp.com', // Discord avatars if needed
       },
+      {
+        protocol: 'https',
+        hostname: 'api.fleetyards.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'fleetyards.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.fltyrd.net',
+      },
     ],
     // Responsive image sizes for breakpoints
     deviceSizes: [640, 750, 828, 1080, 1280, 1440, 1920, 2048, 3840],
@@ -49,7 +61,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.discordapp.com giscus.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: fonts.googleapis.com fonts.gstatic.com; connect-src 'self' *.supabase.co *.discordapp.com giscus.app; frame-src giscus.app; media-src 'self' data:; object-src 'none';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' *.discordapp.com giscus.app fleetyards.net api.fleetyards.net storage.fltyrd.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: fleetyards.net api.fleetyards.net storage.fltyrd.net; font-src 'self' data: fonts.googleapis.com fonts.gstatic.com; connect-src 'self' data: blob: *.supabase.co *.discordapp.com giscus.app fleetyards.net api.fleetyards.net storage.fltyrd.net; frame-src giscus.app fleetyards.net; media-src 'self' data: https: fleetyards.net api.fleetyards.net storage.fltyrd.net; worker-src 'self' blob:; object-src 'none';",
           },
         ],
       },

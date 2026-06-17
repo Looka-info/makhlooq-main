@@ -1,5 +1,4 @@
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
-import InteractiveBackground from '../src/components/InteractiveBackground';
 import './globals.css';
 
 // ▸ FONT OPTIMIZATION (Performance: Prevents layout shift)
@@ -140,9 +139,13 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{document.documentElement.dataset.theme=localStorage.getItem('km-theme')==='white'?'light':'dark'}catch(e){document.documentElement.dataset.theme='dark'}",
+          }}
+        />
       </head>
       <body>
-        <InteractiveBackground />
         {children}
       </body>
     </html>

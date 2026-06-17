@@ -94,15 +94,17 @@ export default function Preloader() {
       if (!preloaderRef.current || !imgBlockRef.current || !percentRef.current) return;
 
       const elapsed = now - startTime;
-      displayedProgress += (targetProgress - displayedProgress) * 0.08;
-      if (targetProgress === 100 && displayedProgress > 99.2) displayedProgress = 100;
+      displayedProgress += (targetProgress - displayedProgress) * 0.12;
+      if (targetProgress === 100 && displayedProgress > 98.5) displayedProgress = 100;
 
       const progress = Math.min(displayedProgress / 100, 1);
       preloaderRef.current.style.backdropFilter = `blur(${30 * (1 - progress)}px)`;
       imgBlockRef.current.style.transform = `translateY(${-75 * progress}%)`;
       percentRef.current.textContent = String(Math.round(displayedProgress));
 
-      if (canExit && displayedProgress >= 100 && elapsed >= minDuration) {
+      if (canExit && displayedProgress >= 98.5 && elapsed >= minDuration) {
+        displayedProgress = 100;
+        percentRef.current.textContent = '100';
         const exitElapsed = elapsed - Math.max(minDuration, elapsed - 300);
         const f = exitElapsed / 300;
         preloaderRef.current.style.opacity = String(1 - Math.min(f, 1));

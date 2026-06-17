@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 
@@ -22,6 +22,7 @@ export default function Header({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [localMuted, setLocalMuted] = useState(true);
   const [localVolume, setLocalVolume] = useState(0.5);
+  const [whiteMode, setWhiteMode] = useState(false);
 
   const isMuted = controlledMuted ?? localMuted;
   const volume = controlledVolume ?? localVolume;
@@ -30,6 +31,22 @@ export default function Header({
 
   const toggleMusic = () => {
     setIsMuted(!isMuted);
+  };
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem('km-theme');
+    const shouldUseWhite = savedTheme === 'white';
+    setWhiteMode(shouldUseWhite);
+    document.documentElement.dataset.theme = shouldUseWhite ? 'light' : 'dark';
+  }, []);
+
+  const toggleWhiteMode = () => {
+    setWhiteMode((current) => {
+      const next = !current;
+      document.documentElement.dataset.theme = next ? 'light' : 'dark';
+      window.localStorage.setItem('km-theme', next ? 'white' : 'dark');
+      return next;
+    });
   };
 
   return (
@@ -109,6 +126,18 @@ export default function Header({
 
         {/* ▸ HEADER RIGHT - MUSIC CONTROLS */}
         <div className="header-right">
+          <motion.button
+            whileHover={{ y: -2 }}
+            onClick={toggleWhiteMode}
+            className="theme-mode-btn"
+            aria-label={`Switch to ${whiteMode ? 'dark' : 'white'} mode`}
+            aria-pressed={whiteMode}
+            type="button"
+          >
+            <span>{whiteMode ? 'Dark' : 'White'} Mode</span>
+            <span className="theme-mode-dot" aria-hidden="true" />
+          </motion.button>
+
           <div
             className="music-control-group"
             onMouseEnter={() => setShowVolume(true)}
