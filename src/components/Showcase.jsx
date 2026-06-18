@@ -49,8 +49,8 @@ export default function Showcase() {
           yPercent: 0,
           opacity: 1,
           rotateX: 0,
-          stagger: 0.1,
-          duration: 1,
+          stagger: 0.05,
+          duration: 0.5,
           ease: 'power4.out',
           scrollTrigger: {
             trigger: sectionRef.current,
@@ -65,8 +65,8 @@ export default function Showcase() {
         {
           y: 0,
           opacity: 1,
-          stagger: 0.11,
-          duration: 0.9,
+          stagger: 0.05,
+          duration: 0.45,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: '[data-pillar-grid]',

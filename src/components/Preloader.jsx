@@ -134,7 +134,7 @@ export default function Preloader() {
   return (
     <div className="preloader" ref={preloaderRef}>
       <div className="preloader-icon">
-        <img src="/logo.png" alt="ANVIL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        <img src="/nobglogo.png" alt="ANVIL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
 
       <div className="preloader-img-block" ref={imgBlockRef}>

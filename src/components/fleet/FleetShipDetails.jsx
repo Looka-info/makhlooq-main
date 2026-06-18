@@ -3,132 +3,110 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
-function SpecBar({ label, value, pct, color, delay }) {
-  return (
-    <div className="mb-4">
-      <div className="flex justify-between items-center mb-1.5">
-        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{label}</span>
-        <span className="text-[10px] font-mono font-bold" style={{ color }}>{value}</span>
-      </div>
-      <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-        <motion.div
-          className="h-full rounded-full"
-          style={{ background: `linear-gradient(90deg, ${color}, ${color}60)` }}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 1.2, delay: delay, ease: 'easeOut' }}
-        />
-      </div>
+export default function FleetShipDetails({ ship, stackedCeos = [] }) {
+  if (!ship) return (
+    <div className="w-full h-full rounded-[1.75rem] border border-white/[0.07] bg-white/[0.03] backdrop-blur-2xl flex items-center justify-center">
+      <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/20">Select a ship to see details</div>
     </div>
   );
-}
 
-export default function FleetShipDetails({ ship }) {
-  if (!ship) return null;
+  const stats = [
+    { label: 'Length', val: ship.length || 'N/A' },
+    { label: 'Crew',   val: ship.crew   || 'N/A' },
+    { label: 'Cargo',  val: ship.cargo  || 'N/A' },
+    { label: 'Speed',  val: ship.topSpeed || 'N/A' },
+  ];
+
+  const owner = ship.ceoName || ship.sourceFleet || 'KMHQ Garage';
 
   return (
-    <motion.aside
-      initial={{ x: 100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.8, delay: 0.3 }}
-      className="fleet-details rounded-[2.5rem] border border-lime-300/10 bg-white/[0.03] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.38)] backdrop-blur-xl"
-    >
-      {/* Scan line divider */}
-      <div className="fleet-scanline mb-5" />
+    <AnimatePresence mode="wait">
+      <motion.aside
+        key={ship.id}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        className="relative w-full h-full rounded-[1.75rem] border border-white/[0.07] bg-white/[0.03] backdrop-blur-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.04),inset_0_1px_0_rgba(255,255,255,0.07)] overflow-hidden flex gap-0"
+      >
+        {/* Subtle top-edge glow */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-lime-400/30 to-transparent" />
 
-      {/* Ship Identity */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={ship.id + '-header'}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="mb-2 text-xs font-mono font-black uppercase tracking-[0.26em] text-lime-300/45">
+        {/* LEFT: Identity */}
+        <div className="flex flex-col justify-center px-5 py-4 flex-1 min-w-0 border-r border-white/[0.06]">
+          <div className="text-[9px] font-mono font-black uppercase tracking-[0.35em] text-lime-400/50 mb-0.5">
             {ship.manufacturer}
           </div>
-          <h1 className="mb-2 text-4xl font-black uppercase leading-[0.92] tracking-[-0.08em] text-white">{ship.name}</h1>
-          <div className="mb-5 text-sm font-mono font-black uppercase tracking-[0.24em] text-lime-100/35">{ship.role}</div>
-          <p className="mb-6 text-base leading-relaxed text-white/52">{ship.description}</p>
-        </motion.div>
-      </AnimatePresence>
+          <h2 className="text-xl font-black uppercase tracking-[-0.04em] text-white leading-none truncate mb-2">
+            {ship.name}
+          </h2>
+          <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 mb-3">
+            {ship.role || ship.class}
+          </div>
 
-      {/* Quick Stats */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={ship.id + '-stats'}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="grid grid-cols-2 gap-2 mb-6"
-        >
-          {[
-            { label: 'Length', val: ship.length },
-            { label: 'Crew', val: ship.crew },
-            { label: 'Cargo', val: ship.cargo },
-            { label: 'Top Speed', val: ship.topSpeed },
-          ].map((s) => (
-            <div key={s.label} className="rounded-2xl border border-lime-300/10 bg-black/35 p-4">
-              <div className="mb-1 text-[10px] font-mono font-black uppercase tracking-[0.24em] text-lime-300/35">{s.label}</div>
-              <div className="text-base font-black text-white">{s.val}</div>
+          {/* Owner badge(s) */}
+          {stackedCeos && stackedCeos.length > 1 ? (
+            <div className="space-y-1.5">
+              <div className="text-[8px] font-mono font-black uppercase tracking-[0.3em] text-lime-400/40">Fleet CEOs</div>
+              <div className="flex flex-wrap gap-1.5 max-h-[44px] overflow-y-auto pr-2 custom-scrollbar">
+                {stackedCeos.map((ceo, i) => (
+                  <div key={i} className="inline-flex items-center gap-1 rounded-full border border-lime-400/25 bg-lime-400/10 px-2 py-0.5" title={`CEO: ${ceo}`}>
+                    <span className="text-[7px] font-mono font-black uppercase tracking-widest text-lime-400/60">CEO</span>
+                    <span className="w-px h-2.5 bg-lime-400/20" />
+                    <svg className="w-2 h-2 text-lime-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-[8px] font-mono font-black uppercase tracking-widest text-lime-300 truncate max-w-[80px]">
+                      {ceo}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-0 self-start rounded-full border border-lime-400/25 bg-lime-400/10 overflow-hidden">
+              {/* CEO label pill */}
+              <span className="px-2 py-1 text-[8px] font-mono font-black uppercase tracking-[0.2em] text-black bg-lime-400/80 leading-none">
+                CEO
+              </span>
+              {/* Name */}
+              <div className="flex items-center gap-1.5 px-3 py-1">
+                <svg className="w-2.5 h-2.5 text-lime-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+                <span className="text-[9px] font-mono font-black uppercase tracking-widest text-lime-300 truncate max-w-[130px]">
+                  {owner}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Description — only if space */}
+          <p className="mt-2.5 text-[11px] leading-relaxed text-white/35 line-clamp-2 pr-2 hidden xl:block">
+            {ship.description}
+          </p>
+        </div>
+
+        {/* RIGHT: Stats grid */}
+        <div className="grid grid-cols-2 shrink-0 w-[220px]">
+          {stats.map((s, i) => (
+            <div
+              key={s.label}
+              className={`flex flex-col justify-center px-4 py-3
+                ${i % 2 === 0 ? 'border-r border-white/[0.06]' : ''}
+                ${i < 2 ? 'border-b border-white/[0.06]' : ''}
+              `}
+            >
+              <div className="text-[8px] font-mono font-black uppercase tracking-[0.28em] text-lime-400/50 mb-1">
+                {s.label}
+              </div>
+              <div className="text-sm font-black text-white truncate leading-none">
+                {s.val}
+              </div>
             </div>
           ))}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Spec Bars */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={ship.id + '-bars'}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mb-6"
-        >
-          <div className="mb-3 text-xs font-mono font-black uppercase tracking-[0.26em] text-lime-300/35">Combat Profile</div>
-          {Object.values(ship.specs).map((spec, i) => (
-            <SpecBar
-              key={spec.label}
-              label={spec.label}
-              value={spec.value}
-              pct={spec.pct}
-              color={ship.accentColor}
-              delay={0.4 + i * 0.1}
-            />
-          ))}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Weapons */}
-      <div className="mb-6">
-        <div className="mb-2 text-xs font-mono font-black uppercase tracking-[0.26em] text-lime-300/35">Armament</div>
-        <div className="rounded-2xl border border-lime-300/10 bg-black/35 px-4 py-3 font-mono text-sm text-white/75">
-          {ship.weapons}
         </div>
-      </div>
-
-      {/* Features */}
-      <div className="mb-6">
-        <div className="mb-2 text-xs font-mono font-black uppercase tracking-[0.26em] text-lime-300/35">Systems</div>
-        <div className="flex flex-wrap gap-1.5">
-          {ship.features.map((f) => (
-            <span
-              key={f}
-              className="px-2.5 py-1 rounded-md text-[10px] font-mono border"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                borderColor: 'rgba(255,255,255,0.08)',
-                color: '#e5e7eb',
-              }}
-            >
-              {f}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="fleet-scanline mt-6" />
-    </motion.aside>
+      </motion.aside>
+    </AnimatePresence>
   );
 }

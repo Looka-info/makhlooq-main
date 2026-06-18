@@ -3,9 +3,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import {
-  ArrowLeft, Plus, Search, Trash2, Edit3, Save, X,
+  ArrowLeft, Plus, Search, Trash2, Edit3, Save, X, Shield, Users,
   RefreshCw, ExternalLink, ToggleLeft, ToggleRight, Loader2, CheckCircle2, AlertCircle,
-  LogOut,
+  LogOut, UserPlus, UserMinus,
 } from 'lucide-react';
 import { AuthScreen, LoginScreen, DeniedScreen } from '../../../src/components/fleet/admin/FleetAdminAuth';
 
@@ -30,35 +30,46 @@ function StatusBadge({ enabled }) {
 }
 
 /* ───────── Single fleet row ───────── */
-function FleetRow({ cfg, onEdit, onDelete, onToggle, toggling }) {
+function FleetRow({ cfg, onEdit, onDelete, onToggle, toggling, onManageMembers }) {
   return (
     <tr className="group hover:bg-white/[0.02] transition-colors">
-      <td className="px-5 py-4">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-white font-bold text-sm">{cfg.display_name || cfg.slug}</span>
+      <td className="px-5 py-5">
+        <div className="flex flex-col gap-1">
+          <span className="text-white font-bold text-sm tracking-wide">{cfg.display_name || cfg.slug}</span>
           <a
             href={`https://fleetyards.net/fleets/${cfg.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-gray-600 text-[10px] font-mono hover:text-emerald-400 transition-colors w-fit"
+            className="flex items-center gap-1.5 text-gray-500 text-[10px] font-mono hover:text-emerald-400 transition-colors w-fit"
           >
             {cfg.slug}
-            <ExternalLink size={9} />
+            <ExternalLink size={10} />
           </a>
         </div>
       </td>
-      <td className="px-5 py-4">
+      <td className="px-5 py-5">
         <StatusBadge enabled={cfg.enabled} />
       </td>
-      <td className="px-5 py-4">
-        <span className="text-gray-600 text-xs font-mono">{cfg.sort_order ?? 0}</span>
-      </td>
-      <td className="px-5 py-4">
-        <span className="text-gray-700 text-[10px] font-mono">
-          {cfg.created_at ? new Date(cfg.created_at).toLocaleDateString() : '—'}
+      <td className="px-5 py-5">
+        <span className={`text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md ${cfg.fleet_type === 'rare' ? 'bg-lime-400/10 text-lime-400 border border-lime-400/20 shadow-[0_0_10px_rgba(163,230,53,0.1)]' : 'bg-white/5 text-gray-400 border border-white/10'}`}>
+          {cfg.fleet_type || 'small'}
         </span>
       </td>
-      <td className="px-5 py-4">
+      <td className="px-5 py-5">
+        <span className="text-gray-300 text-xs font-medium truncate max-w-[120px] block">{cfg.ceo_name || '—'}</span>
+      </td>
+      <td className="px-5 py-5 text-center">
+        <span className="inline-flex items-center justify-center min-w-[28px] h-[28px] rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-xs shadow-[0_0_10px_rgba(16,185,129,0.1)]">×{cfg.quantity || 1}</span>
+      </td>
+      <td className="px-5 py-5">
+        <span className="text-gray-500 text-xs font-mono bg-white/5 px-2 py-1 rounded-md">{cfg.sort_order ?? 0}</span>
+      </td>
+      <td className="px-5 py-5">
+        <span className="text-gray-600 text-[10px] font-mono uppercase tracking-wider">
+          {cfg.created_at ? new Date(cfg.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+        </span>
+      </td>
+      <td className="px-5 py-5">
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onToggle(cfg)}
@@ -70,6 +81,13 @@ function FleetRow({ cfg, onEdit, onDelete, onToggle, toggling }) {
               ? <Loader2 size={14} className="animate-spin" />
               : cfg.enabled ? <ToggleRight size={14} /> : <ToggleLeft size={14} />
             }
+          </button>
+          <button
+            onClick={() => onManageMembers(cfg)}
+            title="Manage Members"
+            className="p-2 rounded-lg border border-blue-500/20 text-blue-400 hover:bg-blue-500/10 transition-all"
+          >
+            <Users size={14} />
           </button>
           <button
             onClick={() => onEdit(cfg)}
@@ -94,7 +112,7 @@ function FleetRow({ cfg, onEdit, onDelete, onToggle, toggling }) {
 /* ───────── Edit row ───────── */
 function EditRow({ data, onChange, onSave, onCancel, saving }) {
   return (
-    <tr className="bg-emerald-500/[0.03] border-l-2 border-l-emerald-500">
+    <tr className="bg-emerald-500/[0.03] border-y border-emerald-500/20 shadow-[inset_4px_0_0_rgba(16,185,129,1)] relative z-10">
       <td className="px-5 py-3">
         <div className="space-y-1.5">
           <input
@@ -123,11 +141,38 @@ function EditRow({ data, onChange, onSave, onCancel, saving }) {
         </label>
       </td>
       <td className="px-5 py-3">
+        <select
+          value={data.fleet_type || 'small'}
+          onChange={e => onChange('fleet_type', e.target.value)}
+          className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-2 py-1.5 text-white text-xs outline-none focus:border-emerald-500/50 transition-colors"
+        >
+          <option value="small">Small</option>
+          <option value="rare">Rare</option>
+        </select>
+      </td>
+      <td className="px-5 py-3">
+        <input
+          value={data.ceo_name || ''}
+          onChange={e => onChange('ceo_name', e.target.value)}
+          placeholder="CEO Name"
+          className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs outline-none focus:border-emerald-500/50 transition-colors"
+        />
+      </td>
+      <td className="px-5 py-3">
+        <input
+          type="number"
+          value={data.quantity || 1}
+          min="1"
+          onChange={e => onChange('quantity', parseInt(e.target.value, 10) || 1)}
+          className="w-16 rounded-lg border border-emerald-500/20 bg-white/5 px-2 py-1.5 text-white text-xs font-mono outline-none focus:border-emerald-500/50 transition-colors text-center"
+        />
+      </td>
+      <td className="px-5 py-3">
         <input
           type="number"
           value={data.sort_order ?? 0}
           onChange={e => onChange('sort_order', parseInt(e.target.value, 10))}
-          className="w-20 rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs font-mono outline-none focus:border-emerald-500/50 transition-colors"
+          className="w-16 rounded-lg border border-emerald-500/20 bg-white/5 px-2 py-1.5 text-white text-xs font-mono outline-none focus:border-emerald-500/50 transition-colors"
         />
       </td>
       <td className="px-5 py-3" />
@@ -156,6 +201,9 @@ function EditRow({ data, onChange, onSave, onCancel, saving }) {
 function AddFleetModal({ onClose, onAdd }) {
   const [slug, setSlug] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [fleetType, setFleetType] = useState('small');
+  const [ceoName, setCeoName] = useState('');
+  const [quantity, setQuantity] = useState(1);
   const [sortOrder, setSortOrder] = useState(0);
   const [validating, setValidating] = useState(false);
   const [validation, setValidation] = useState(null); // { found, fleet } | null
@@ -184,7 +232,15 @@ function AddFleetModal({ onClose, onAdd }) {
     if (!slug.trim()) { setError('Slug is required.'); return; }
     setSaving(true);
     setError('');
-    const err = await onAdd({ slug: slug.trim(), display_name: displayName.trim() || slug.trim(), sort_order: sortOrder, enabled: true });
+    const err = await onAdd({ 
+      slug: slug.trim(), 
+      display_name: displayName.trim() || slug.trim(), 
+      sort_order: sortOrder, 
+      enabled: true,
+      fleet_type: fleetType,
+      ceo_name: ceoName.trim(),
+      quantity: quantity
+    });
     setSaving(false);
     if (err) { setError(err); } else { onClose(); }
   };
@@ -196,44 +252,50 @@ function AddFleetModal({ onClose, onAdd }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#020408]/80 backdrop-blur-md" onClick={onClose} />
       <motion.div
-        className="relative z-10 w-full max-w-lg rounded-3xl border border-white/10 bg-[#040c08] p-8 shadow-2xl"
+        className="relative z-10 w-full max-w-lg rounded-[2rem] border border-white/[0.07] bg-[#050B08] shadow-[0_0_50px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)] max-h-[90vh] overflow-y-auto"
         initial={{ scale: 0.92, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.92, y: 20 }}
       >
+        <div className="p-8">
         <button onClick={onClose} className="absolute top-5 right-5 p-2 rounded-lg border border-white/10 text-gray-500 hover:text-white hover:bg-white/5 transition-all">
           <X size={16} />
         </button>
 
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.2em]">Fleet Registry</span>
+<div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3 text-white">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Plus size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-tight leading-none">Add Fleet Asset</h2>
+              <div className="text-[10px] font-mono text-emerald-500/50 uppercase tracking-widest mt-1">Registry Configuration</div>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-white">Add FleetYards Slug</h2>
-          <p className="text-gray-500 text-sm mt-1">Enter a FleetYards fleet slug or ship model slug, then validate it before adding.</p>
+          <button onClick={onClose} className="p-2 text-gray-500 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors">
+            <X size={18} />
+          </button>
         </div>
 
-        <div className="space-y-4">
-          {/* Slug + validate */}
+        <div className="space-y-6">
+          {/* Main lookup */}
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">FleetYards Fleet or Model Slug *</label>
+            <label className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-2">FleetYards Slug / Identifier</label>
             <div className="flex gap-2">
               <input
                 value={slug}
-                onChange={e => { setSlug(e.target.value); setValidation(null); }}
-                onKeyDown={e => e.key === 'Enter' && handleValidate()}
-                placeholder="e.g. 100i, arrow, or khalai-makhlooq"
-                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white text-sm font-mono outline-none focus:border-emerald-500/40 transition-colors"
+                onChange={e => { setSlug(e.target.value); setValidation(null); setError(''); }}
+                placeholder="e.g. origin-jumpworks-890-jump"
+                className="flex-1 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-white text-sm font-mono outline-none focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-all"
               />
               <button
                 onClick={handleValidate}
                 disabled={validating || !slug.trim()}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all disabled:opacity-50"
+                className="px-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-emerald-500/30 text-white font-bold transition-all disabled:opacity-50 disabled:hover:bg-white/5 flex items-center gap-2 text-sm"
               >
-                {validating ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                {validating ? <Loader2 size={16} className="animate-spin text-emerald-500" /> : <Search size={16} className="text-emerald-500" />}
                 Validate
               </button>
             </div>
@@ -257,26 +319,69 @@ function AddFleetModal({ onClose, onAdd }) {
             )}
           </div>
 
-          {/* Display name */}
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Display Name</label>
+            <label className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-2">Display Name</label>
             <input
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
-              placeholder="Display name (auto-filled after validate)"
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white text-sm outline-none focus:border-emerald-500/40 transition-colors"
+              placeholder="Custom Display Name (optional)"
+              className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-white text-sm outline-none focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-all"
             />
           </div>
 
-          {/* Sort order */}
+          {/* CEO Name - full width so it's always visible */}
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Sort Order</label>
+            <label className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-2">CEO Name</label>
             <input
-              type="number"
-              value={sortOrder}
-              onChange={e => setSortOrder(parseInt(e.target.value, 10))}
-              className="w-32 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white text-sm font-mono outline-none focus:border-emerald-500/40 transition-colors"
+              value={ceoName}
+              onChange={e => setCeoName(e.target.value)}
+              placeholder="e.g. John Doe"
+              className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-white text-sm outline-none focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-all"
             />
+          </div>
+
+          {/* Fleet Type */}
+          <div>
+            <label className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-2">Fleet Type</label>
+            <div className="flex bg-white/[0.02] rounded-xl border border-white/10 overflow-hidden p-1">
+              <button
+                type="button"
+                onClick={() => setFleetType('small')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${fleetType === 'small' ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Small
+              </button>
+              <button
+                type="button"
+                onClick={() => setFleetType('rare')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${fleetType === 'rare' ? 'bg-lime-500/20 text-lime-400 shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Rare
+              </button>
+            </div>
+          </div>
+
+          {/* Quantity and Sort Order */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-2">Quantity</label>
+              <input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={e => setQuantity(parseInt(e.target.value, 10) || 1)}
+                className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-white text-sm font-mono outline-none focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-all text-center"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-2">Sort Order</label>
+              <input
+                type="number"
+                value={sortOrder}
+                onChange={e => setSortOrder(parseInt(e.target.value, 10))}
+                className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-white text-sm font-mono outline-none focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-all text-center"
+              />
+            </div>
           </div>
 
           {error && (
@@ -289,10 +394,10 @@ function AddFleetModal({ onClose, onAdd }) {
             <button
               onClick={handleSubmit}
               disabled={saving || !slug.trim()}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] disabled:opacity-50"
+              className="w-full py-4 mt-2 rounded-xl bg-emerald-500 text-black font-black uppercase tracking-widest text-sm hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-              {saving ? 'Adding…' : 'Add Fleet'}
+              {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+              {saving ? 'Registering...' : 'Register Asset to Fleet'}
             </button>
             <button
               onClick={onClose}
@@ -300,6 +405,149 @@ function AddFleetModal({ onClose, onAdd }) {
             >
               Cancel
             </button>
+          </div>
+        </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ───────── Manage Members Modal ───────── */
+function ManageMembersModal({ fleet, onClose }) {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState('');
+  const [role, setRole] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const fetchMembers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/fleet-members?fleetId=${fleet.id}`);
+      const data = await res.json();
+      setMembers(Array.isArray(data) ? data : []);
+    } catch { setMembers([]); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchMembers(); }, [fleet.id]);
+
+  const handleAdd = async () => {
+    if (!name.trim()) { setError('Name is required.'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/fleet-members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fleet_config_id: fleet.id, name: name.trim(), role: role.trim() || 'Member' }),
+      });
+      if (!res.ok) { const d = await res.json(); setError(d.error || 'Failed to add.'); return; }
+      setName(''); setRole('');
+      await fetchMembers();
+    } catch { setError('Network error.'); }
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    await fetch(`/api/fleet-members/${id}`, { method: 'DELETE' });
+    await fetchMembers();
+  };
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    >
+      <div className="absolute inset-0 bg-[#020408]/80 backdrop-blur-md" onClick={onClose} />
+      <motion.div
+        className="relative z-10 w-full max-w-md rounded-[2rem] border border-white/[0.07] bg-[#050B08] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col max-h-[80vh]"
+        initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 20 }}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3 p-6 border-b border-white/[0.06] shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <Users size={20} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-black uppercase tracking-tight text-white leading-none">Fleet Members</h2>
+            <div className="text-[10px] font-mono text-blue-400/50 uppercase tracking-widest mt-1 truncate">
+              {fleet.display_name || fleet.slug}
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg border border-white/10 text-gray-500 hover:text-white hover:bg-white/5 transition-all">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Members list */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+          {loading ? (
+            <div className="flex items-center justify-center py-8 text-gray-500">
+              <Loader2 size={20} className="animate-spin text-blue-400/50 mr-2" />
+              <span className="text-xs font-mono uppercase tracking-widest">Loading...</span>
+            </div>
+          ) : members.length === 0 ? (
+            <div className="text-center py-8 text-gray-600 text-xs font-mono uppercase tracking-widest">
+              No members yet. Add one below.
+            </div>
+          ) : (
+            members.map(m => (
+              <div key={m.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] group">
+                <div className="w-7 h-7 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 text-[10px] font-black uppercase">
+                  {m.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-white truncate">{m.name}</div>
+                  <div className="text-[10px] font-mono text-blue-400/60 uppercase tracking-widest">{m.role || 'Member'}</div>
+                </div>
+                <button
+                  onClick={() => handleDelete(m.id)}
+                  className="p-1.5 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                  title="Remove member"
+                >
+                  <UserMinus size={13} />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Add member form */}
+        <div className="p-4 border-t border-white/[0.06] shrink-0 space-y-3">
+          {error && (
+            <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+              <AlertCircle size={12} /> {error}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <input
+              value={name}
+              onChange={e => { setName(e.target.value); setError(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleAdd()}
+              placeholder="Member name"
+              className="flex-1 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5 text-white text-sm outline-none focus:border-blue-500/50 focus:bg-blue-500/5 transition-all"
+            />
+            <input
+              value={role}
+              onChange={e => setRole(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAdd()}
+              placeholder="Role (e.g. Pilot)"
+              className="w-28 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5 text-white text-sm outline-none focus:border-blue-500/50 focus:bg-blue-500/5 transition-all"
+            />
+            <button
+              onClick={handleAdd}
+              disabled={saving || !name.trim()}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-bold text-sm transition-all disabled:opacity-50 shrink-0"
+            >
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
+              Add
+            </button>
+          </div>
+          <div className="text-[10px] font-mono text-gray-600 text-center">
+            {members.length} member{members.length !== 1 ? 's' : ''} in this fleet
           </div>
         </div>
       </motion.div>
@@ -315,12 +563,13 @@ export default function FleetAdminPage() {
   const [authed, setAuthed] = useState(false);
   const [accessDenied, setAccessDenied] = useState(false);
   const [adminUser, setAdminUser] = useState(null);
-  const [filter, setFilter] = useState('');
-  const [showAdd, setShowAdd] = useState(false);
+  const [searchQ, setSearchQ] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({});
   const [editSaving, setEditSaving] = useState(false);
   const [toggling, setToggling] = useState(null);
+  const [error, setError] = useState('');
 
   const fetchConfigs = useCallback(async () => {
     setLoading(true);
@@ -368,11 +617,7 @@ export default function FleetAdminPage() {
     };
   }, [fetchConfigs]);
 
-  const loginWithDiscord = () => {
-    window.location.href = '/api/auth/discord/login?returnTo=/fleet/admin';
-  };
-
-  const logout = async () => {
+  const handleLogout = async () => {
     await fetch('/api/auth/discord/logout', { method: 'POST' });
     setAuthed(false);
     setAccessDenied(false);
@@ -425,132 +670,148 @@ export default function FleetAdminPage() {
     setEditSaving(false);
   };
 
-  const filtered = filter
+  const filtered = searchQ
     ? configs.filter(c =>
-        [c.slug, c.display_name].join(' ').toLowerCase().includes(filter.toLowerCase())
+        [c.slug, c.display_name].join(' ').toLowerCase().includes(searchQ.toLowerCase())
       )
     : configs;
 
   const enabledCount = configs.filter(c => c.enabled).length;
 
   if (authing) return <AuthScreen />;
-  if (accessDenied) return <DeniedScreen onLogout={logout} />;
-  if (!authed) return <LoginScreen onLogin={loginWithDiscord} />;
+  if (accessDenied) return <DeniedScreen onLogout={handleLogout} />;
+  if (!authed) return <LoginScreen onLogin={() => window.location.href = '/api/auth/discord/login?returnTo=/fleet/admin'} />;
 
   return (
-    <div className="min-h-screen bg-[#040806] text-white selection:bg-emerald-500/30">
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(74,109,86,0.08),transparent_60%)]" />
+    <div className="min-h-[100dvh] bg-[#020402] text-white p-4 md:p-8 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(16,185,129,0.1),transparent)]" />
+        <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] [background-size:64px_64px]" />
+      </div>
 
-      <div className="relative z-10 w-full px-3 sm:px-5 2xl:px-8 pt-8 pb-24">
-
-        {/* Top Nav */}
-        <div className="flex items-center justify-between mb-12">
-          <Link href="/fleet" className="inline-flex items-center gap-2 text-gray-500 hover:text-emerald-400 transition-colors text-xs uppercase tracking-widest font-bold group">
-            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Fleet
-          </Link>
-          <div className="flex items-center gap-3">
-            <button onClick={fetchConfigs} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/5 bg-white/5 text-gray-400 text-xs font-bold hover:text-emerald-400 hover:border-emerald-500/20 transition-all">
-              <RefreshCw size={14} /> Refresh
-            </button>
-            <button
-              onClick={logout}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/10 transition-all"
-            >
-              <LogOut size={14} /> Sign Out
-            </button>
-          </div>
-        </div>
-
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
+      <div className="max-w-7xl mx-auto relative z-10 flex flex-col h-[calc(100dvh-4rem)]">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 shrink-0">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.2em]">Fleet Command</span>
+            <div className="flex items-center gap-3 text-[10px] font-mono font-black uppercase tracking-[0.35em] text-emerald-500 mb-2">
+              <Shield size={14} className="animate-pulse" /> KMHQ Secure
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">Fleet Registry</h1>
-            <p className="text-gray-500 text-sm">
-              Manage which FleetYards fleets or ship models are displayed on the fleet page.
-              Data is fetched live from <span className="text-emerald-400/70 font-mono">api.fleetyards.net</span>.
-              {adminUser?.name ? <span className="block mt-1 text-gray-600">Signed in as {adminUser.name}</span> : null}
+            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-white flex items-center gap-4">
+              Fleet <span className="text-emerald-500">Registry</span>
+            </h1>
+            <p className="text-gray-400 text-sm mt-3 max-w-xl leading-relaxed">
+              Manage the master list of approved ship configurations. Ships added here are deployed instantly to the public Fleet Command interface.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="relative group">
-              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-emerald-400 transition-colors" />
-              <input
-                value={filter}
-                onChange={e => setFilter(e.target.value)}
-                placeholder="Search fleets…"
-                className="pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-emerald-500/40 w-44 transition-all focus:w-60"
-              />
-            </div>
             <button
-              onClick={() => setShowAdd(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]"
+              onClick={() => fetchConfigs()}
+              disabled={loading}
+              className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/[0.03] border border-white/10 text-white hover:bg-white/10 hover:border-emerald-500/30 transition-all disabled:opacity-50 group"
             >
-              <Plus size={16} /> Add Slug
+              <RefreshCw size={18} className={loading ? 'animate-spin' : 'group-hover:text-emerald-400 transition-colors'} />
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-6 h-12 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-widest text-sm transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]"
+            >
+              <Plus size={18} /> New Asset
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all"
+              title="Sign Out"
+            >
+              <LogOut size={18} />
             </button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-          {[
-            { label: 'Total Fleets', value: configs.length },
-            { label: 'Active', value: enabledCount },
-            { label: 'Disabled', value: configs.length - enabledCount },
-          ].map(s => (
-            <div key={s.label} className="rounded-2xl border border-white/5 bg-[#040c08]/60 p-5 backdrop-blur-xl">
-              <div className="text-3xl font-bold font-mono text-white mb-1">{s.value}</div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">{s.label}</div>
+        {/* Filters and Stats Row */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6 shrink-0 justify-between">
+          <div className="relative flex-1 max-w-sm">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              value={searchQ}
+              onChange={e => setSearchQ(e.target.value)}
+              placeholder="Search registry..."
+              className="w-full rounded-full border border-white/10 bg-white/[0.02] pl-11 pr-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all backdrop-blur-md"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col px-5 py-2 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-md">
+              <span className="text-[9px] font-mono font-bold text-gray-500 uppercase tracking-widest">Total Assets</span>
+              <span className="text-white font-black text-lg leading-none">{configs.length}</span>
             </div>
-          ))}
+            <div className="flex flex-col px-5 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md">
+              <span className="text-[9px] font-mono font-bold text-emerald-500/70 uppercase tracking-widest">Active</span>
+              <span className="text-emerald-400 font-black text-lg leading-none">{enabledCount}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Table */}
-        <div className="rounded-3xl border border-white/5 bg-[#040c08]/40 shadow-2xl overflow-hidden backdrop-blur-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b border-white/5">
-                  {['Fleet', 'Status', 'Order', 'Added', 'Actions'].map(h => (
-                    <th key={h} className="px-5 py-4 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {loading ? (
-                  <tr><td colSpan={5} className="px-5 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest animate-pulse">Loading Fleet Registry…</td></tr>
-                ) : filtered.length === 0 ? (
-                  <tr><td colSpan={5} className="px-5 py-20 text-center text-gray-500 font-mono text-xs uppercase tracking-widest">
-                    {configs.length === 0 ? 'No fleets configured. Add one to get started.' : 'No results match your filter.'}
-                  </td></tr>
-                ) : filtered.map(cfg =>
-                  editId === cfg.id
-                    ? <EditRow key={cfg.id} data={editData} onChange={handleEditChange} onSave={handleEditSave} onCancel={cancelEdit} saving={editSaving} />
-                    : <FleetRow key={cfg.id} cfg={cfg} onEdit={startEdit} onDelete={handleDelete} onToggle={handleToggle} toggling={toggling} />
-                )}
-              </tbody>
-            </table>
+        {/* Registry Table Container */}
+        <div className="flex-1 relative rounded-[2rem] border border-white/[0.07] bg-[#050B08]/80 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden flex flex-col">
+          {error && (
+            <div className="m-4 shrink-0 flex items-center gap-2 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
+              <AlertCircle size={16} /> {error}
+            </div>
+          )}
+
+          <div className="flex-1 overflow-auto custom-scrollbar">
+            {loading ? (
+              <div className="p-16 flex flex-col items-center justify-center text-gray-500 gap-4">
+                <Loader2 size={32} className="animate-spin text-emerald-500/50" />
+                <span className="font-mono text-[10px] uppercase tracking-widest">Accessing Registry Data...</span>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="p-16 text-center text-gray-500">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                  <Search size={24} className="text-gray-600" />
+                </div>
+                <p className="font-mono text-xs uppercase tracking-widest">No matching registry entries found.</p>
+              </div>
+            ) : (
+              <table className="w-full text-sm text-left border-collapse">
+                <thead className="sticky top-0 bg-[#050B08]/90 backdrop-blur-md z-20 shadow-[0_1px_0_rgba(255,255,255,0.05)]">
+                  <tr>
+                    {['Asset ID / Fleet', 'Status', 'Class', 'CEO Name', 'Qty', 'Sort', 'Registered', 'Actions'].map(h => (
+                      <th key={h} className="px-5 py-4 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.04]">
+                  {filtered.map(cfg =>
+                    editId === cfg.id
+                      ? <EditRow key={cfg.id} data={editData} onChange={handleEditChange} onSave={handleEditSave} onCancel={cancelEdit} saving={editSaving} />
+                      : <FleetRow key={cfg.id} cfg={cfg} onEdit={startEdit} onDelete={handleDelete} onToggle={handleToggle} toggling={toggling} />
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
         {/* Info box */}
-        <div className="mt-8 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-5 text-sm text-gray-400 space-y-1.5">
-          <div className="text-emerald-400 font-bold text-xs uppercase tracking-widest mb-2">How it works</div>
-          <p>• Each entry can be a FleetYards public fleet slug or a model slug like <code className="text-emerald-400 font-mono text-xs">100i</code>.</p>
-          <p>• <strong className="text-white">Validate</strong> a slug before adding to confirm it exists on FleetYards.</p>
-          <p>• <strong className="text-white">Disable</strong> a slug to hide it temporarily without deleting the config.</p>
-          <p>• Supabase table: <code className="text-emerald-400 font-mono text-xs">fleet_configs</code></p>
+        <div className="shrink-0 mt-6 rounded-[1.5rem] border border-emerald-500/10 bg-emerald-500/[0.02] p-5 text-sm text-gray-400 space-y-1.5 flex flex-col md:flex-row gap-6 items-center justify-between">
+          <div>
+            <div className="text-emerald-500/70 font-mono font-bold text-[10px] uppercase tracking-[0.2em] mb-1">System Architecture</div>
+            <p className="text-xs">
+              <strong className="text-white font-medium">Validation Required</strong>: All entries cross-referenced via FleetYards secure API.<br/>
+              Target Database: <code className="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-1 py-0.5 rounded ml-1">fleet_configs</code>
+            </p>
+          </div>
+          <div className="text-right text-xs">
+            Admin access managed via <strong className="text-white">Discord Auth</strong>.
+          </div>
         </div>
       </div>
 
       {/* Add Modal */}
       <AnimatePresence>
-        {showAdd && <AddFleetModal onClose={() => setShowAdd(false)} onAdd={handleAdd} />}
+        {showAddModal && <AddFleetModal onClose={() => setShowAddModal(false)} onAdd={handleAdd} />}
       </AnimatePresence>
     </div>
   );

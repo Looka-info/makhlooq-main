@@ -93,9 +93,9 @@ export default function Hero({ isMuted, volume }) {
   const [coords, setCoords] = useState({ x: '0000', y: '0000' });
   const [heroHovered, setHeroHovered] = useState(false);
 
-  const decodedHeading1 = useDecodedText(heroHovered ? 'Fleet Is Ready' : 'Join Khalai Makhlooq', heroHovered ? 0 : 1000, heroHovered ? 650 : 1200);
-  const decodedHeading2 = useDecodedText(heroHovered ? 'Scene Is Live' : 'Rule the Stars', heroHovered ? 90 : 1400, heroHovered ? 650 : 1200);
-  const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : 'Elite Star Citizen Org, laid-back scene', heroHovered ? 0 : 800, heroHovered ? 500 : 800);
+  const decodedHeading1 = useDecodedText(heroHovered ? 'Fleet Is Ready' : 'Join Khalai Makhlooq', heroHovered ? 0 : 500, heroHovered ? 325 : 600);
+  const decodedHeading2 = useDecodedText(heroHovered ? 'Scene Is Live' : 'Rule the Stars', heroHovered ? 45 : 700, heroHovered ? 325 : 600);
+  const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : 'Elite Star Citizen Org, laid-back scene', heroHovered ? 0 : 400, heroHovered ? 250 : 400);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -184,7 +184,7 @@ export default function Hero({ isMuted, volume }) {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8, duration: 0.6 }}
+              transition={{ delay: 0.4, duration: 0.3 }}
               className="hero-label"
             >
               <span className="hero-label-text">{decodedLabel}</span>
@@ -196,7 +196,7 @@ export default function Hero({ isMuted, volume }) {
               <motion.h1
                 initial={{ y: '100%' }}
                 animate={{ y: 0, letterSpacing: heroHovered ? '-0.055em' : '-0.03em' }}
-                transition={{ delay: 1, duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
+                transition={{ delay: 0.5, duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
                 className="hero-heading text-glow"
               >
                 {decodedHeading1}
@@ -207,19 +207,19 @@ export default function Hero({ isMuted, volume }) {
               <motion.h1
                 initial={{ y: '100%' }}
                 animate={{ y: 0, scale: heroHovered ? 1.025 : 1 }}
-                transition={{ delay: 1.2, duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
+                transition={{ delay: 0.6, duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
                 className="hero-heading accent text-glow"
                 whileHover={{ scale: 1.05, skewX: -5 }}
               >
                 <img
-                  src="/logo.png"
+                  src="/nobglogo.png"
                   alt="Khalai Makhlooq"
                   style={{
                     display: 'inline-block',
-                    width: '0.8em',
-                    height: '0.8em',
+                    width: '1.5em',
+                    height: '1.5em',
                     verticalAlign: 'middle',
-                    marginRight: '0.2em',
+                    marginRight: '0.3em',
                     filter: 'drop-shadow(0 0 10px rgba(74, 109, 86, 0.4))'
                   }}
                 />
@@ -232,7 +232,7 @@ export default function Hero({ isMuted, volume }) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, color: heroHovered ? '#bef264' : undefined }}
-                transition={{ delay: 1.5, duration: 1 }}
+                transition={{ delay: 0.75, duration: 0.5 }}
                 className="hero-subheading"
               >
                 {heroHovered ? 'Comms crystal clear' : 'Stanton scene'}
@@ -240,7 +240,7 @@ export default function Hero({ isMuted, volume }) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, color: heroHovered ? '#a3e635' : undefined }}
-                transition={{ delay: 1.7, duration: 1 }}
+                transition={{ delay: 0.85, duration: 0.5 }}
                 className="hero-subheading"
               >
                 {heroHovered ? 'Formation locked tight' : 'Fleet good vibes'}
@@ -248,7 +248,7 @@ export default function Hero({ isMuted, volume }) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, color: heroHovered ? '#84cc16' : undefined }}
-                transition={{ delay: 1.9, duration: 1 }}
+                transition={{ delay: 0.95, duration: 0.5 }}
                 className="hero-subheading"
               >
                 {heroHovered ? 'Pressure and style, both' : 'Deep space chill'}
@@ -260,7 +260,7 @@ export default function Hero({ isMuted, volume }) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.5, duration: 1 }}
+              transition={{ delay: 0.75, duration: 0.5 }}
               className="scroll-indicator"
             >
               <span>++</span>

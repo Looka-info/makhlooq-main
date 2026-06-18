@@ -88,9 +88,9 @@ export const metadata = {
 
   // ▸ MANIFEST & ICONS
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: '/nobglogo.png',
+    shortcut: '/nobglogo.png',
+    apple: '/nobglogo.png',
   },
 
   // ▸ VERIFICATION (For Google Search Console, etc.)
@@ -132,7 +132,7 @@ export default function RootLayout({ children }) {
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
         {/* ▸ FAVICON */}
-        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="icon" type="image/png" href="/nobglogo.png" />
 
         {/* ▸ STRUCTURED DATA (JSON-LD) */}
         <script

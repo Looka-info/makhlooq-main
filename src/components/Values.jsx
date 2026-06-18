@@ -142,7 +142,7 @@ export default function Values() {
   const nextBgIndex = Math.min(bgIndex + 1, BACKGROUNDS.length - 1);
 
   return (
-    <div ref={wrapperRef} id="values" style={{ position: 'relative', height: '600vh' }}>
+    <div ref={wrapperRef} id="values" style={{ position: 'relative', height: '350vh' }}>
       <div style={{
         position: 'sticky',
         top: 0,

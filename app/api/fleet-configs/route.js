@@ -53,8 +53,7 @@ export async function POST(request) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const body = await request.json();
-    const { slug, display_name, enabled = true, sort_order = 0 } = body;
+    const { slug, display_name, sort_order, enabled, fleet_type, ceo_name, quantity } = await request.json();
 
     if (!slug) {
       return NextResponse.json({ error: 'slug is required' }, { status: 400 });
@@ -62,7 +61,15 @@ export async function POST(request) {
 
     const { data, error } = await supabase
       .from('fleet_configs')
-      .insert({ slug, display_name: display_name || slug, enabled, sort_order })
+      .insert([{ 
+        slug, 
+        display_name, 
+        sort_order: sort_order || 0, 
+        enabled: enabled ?? true,
+        fleet_type: fleet_type || 'small',
+        ceo_name: ceo_name || null,
+        quantity: quantity || 1
+      }])
       .select()
       .single();
 

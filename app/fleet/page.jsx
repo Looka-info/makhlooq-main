@@ -7,7 +7,6 @@ import { CalendarDays, Loader2 } from 'lucide-react';
 import Header from '../../src/components/Header';
 import FleetScene from '../../src/components/fleet/FleetScene';
 import FleetShipDetails from '../../src/components/fleet/FleetShipDetails';
-import FleetShipSelector from '../../src/components/fleet/FleetShipSelector';
 
 const getShipType = (model = {}) => {
   const c = (model.classification || model.classificationLabel || '').toLowerCase();
@@ -133,6 +132,44 @@ const getShipPrice = (ship) => {
 };
 
 const getShipValue = (ship) => getShipPrice(ship.model || ship);
+
+const getStackKey = (ship = {}, index = 0) => (
+  ship.slug ||
+  ship.modelSlug ||
+  ship.id ||
+  `${ship.name || 'ship'}-${index}`
+);
+
+function StackGhosts({ count = 1, compact = false }) {
+  const layers = Math.min(Math.max(Number(count) || 0, 0), compact ? 3 : 4);
+  if (layers <= 1) return null;
+
+  return (
+    <>
+      {Array.from({ length: layers - 1 }).map((_, index) => {
+        const offset = index + 1;
+        return (
+          <span
+            key={offset}
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-0 rounded-xl border border-lime-300/15 bg-black/70 transition-all duration-300 ${
+              compact
+                ? 'translate-x-1 translate-y-1 group-hover:translate-x-2 group-hover:translate-y-2'
+                : 'translate-x-1.5 translate-y-1.5 group-hover:translate-x-3 group-hover:translate-y-2'
+            }`}
+            style={{
+              zIndex: -offset,
+              opacity: 0.7 - index * 0.16,
+              transform: compact
+                ? `translate(${offset * 3}px, ${offset * 3}px) rotate(${offset * 1.4}deg)`
+                : `translate(${offset * 5}px, ${offset * 4}px) rotate(${offset * 1.8}deg)`,
+            }}
+          />
+        );
+      })}
+    </>
+  );
+}
 
 function MiniBlocks({ count = 0, color = '#9AD84A', max = 40 }) {
   const blocks = Array.from({ length: Math.max(0, Math.min(max, Number(count) || 0)) });
@@ -470,7 +507,7 @@ export default function FleetPage() {
 
             if (fleetRes.ok) {
               const items = Array.isArray(fleetData?.items) ? fleetData.items : [];
-              return items.map((item) => ({ ...item, __fleetSlug: cfg.slug, __fleetName: cfg.display_name || cfg.slug, __sourceType: 'fleet' }));
+              return items.map((item) => ({ ...item, __fleetSlug: cfg.slug, __fleetName: cfg.display_name || cfg.slug, __fleetType: cfg.fleet_type, __ceoName: cfg.ceo_name, __fleetQuantity: cfg.quantity || 1, __sourceType: 'fleet' }));
             }
 
             const modelRes = await fetch(`/api/fleetyards/models?slugs=${encodeURIComponent(cfg.slug)}&fresh=1`, { cache: 'no-store' });
@@ -478,7 +515,7 @@ export default function FleetPage() {
             const model = Array.isArray(modelData?.items) ? modelData.items.find(item => item && !item.error) : null;
 
             if (modelRes.ok && model) {
-              return [{ ...model, __fleetSlug: '', __fleetName: cfg.display_name || model.name || cfg.slug, __sourceType: 'model' }];
+              return [{ ...model, __fleetSlug: '', __fleetName: cfg.display_name || model.name || cfg.slug, __fleetType: cfg.fleet_type, __ceoName: cfg.ceo_name, __fleetQuantity: cfg.quantity || 1, __sourceType: 'model' }];
             }
 
             console.warn(`FleetYards slug "${cfg.slug}" failed as fleet and model`, {
@@ -496,6 +533,9 @@ export default function FleetPage() {
             ...ship,
             sourceFleet: item.__fleetName || '',
             fleetSlug: item.__fleetSlug || '',
+            fleetType: item.__fleetType || 'small',
+            ceoName: item.__ceoName || '',
+            fleetQuantity: item.__fleetQuantity || 1,
           };
         });
 
@@ -590,13 +630,7 @@ export default function FleetPage() {
     };
   }, [selectedShip]);
 
-  const shipCount = ships.length;
-  const totalShips = shipCount;
   const totalMembers = new Set(ships.map(ship => ship.fleetSlug).filter(Boolean)).size;
-  const totalMaxCrew = ships.reduce((sum, ship) => {
-    const crewMax = Number(String(ship.crew || '').split('-').pop()?.replace(/[^0-9]/g, ''));
-    return sum + (Number.isFinite(crewMax) ? crewMax : 0);
-  }, 0);
   const totalValue = ships.reduce((sum, ship) => sum + getShipValue(ship), 0);
   const classificationSegments = [
     { label: 'Combat', value: ships.filter(ship => /fighter|interceptor|gunship|combat|capital corvette/i.test(`${ship.class} ${ship.role}`)).length, color: '#a3e635' },
@@ -606,157 +640,278 @@ export default function FleetPage() {
   ].filter(item => item.value > 0);
   const activeFleetName = 'Khalai Makhlooq Fleet';
 
+  // Group identical ships by slug to stack them and compute totals
+  const slugGroups = {};
+  let computedTotalShips = 0;
+  let computedTotalMaxCrew = 0;
+
+  ships.forEach((ship, idx) => {
+    if (!slugGroups[ship.slug]) {
+      slugGroups[ship.slug] = { ...ship, count: 0, originalIndex: idx, stackedCeos: [] };
+    }
+    const qty = ship.fleetQuantity || 1;
+    slugGroups[ship.slug].count += qty;
+    
+    computedTotalShips += qty;
+    const crewMax = Number(String(ship.crew || '').split('-').pop()?.replace(/[^0-9]/g, ''));
+    computedTotalMaxCrew += (Number.isFinite(crewMax) ? crewMax : 0) * qty;
+    
+    // Deduplicate CEOs if multiple config sources use the same CEO or if we just want unique names
+    const ceo = ship.ceoName || ship.sourceFleet || 'KMHQ Garage';
+    if (!slugGroups[ship.slug].stackedCeos.includes(ceo)) {
+      slugGroups[ship.slug].stackedCeos.push(ceo);
+    }
+  });
+
+  const stackedShips = Object.values(slugGroups);
+  const totalShips = computedTotalShips;
+  const totalMaxCrew = computedTotalMaxCrew;
+
+  const rareFleets = stackedShips.filter(s => s.fleetType === 'rare');
+  const smallFleets = stackedShips.filter(s => s.fleetType === 'small');
+
+  const rareTags = ['F1', 'F2', 'F3', 'F4'];
+  const sfTags = ['SF1', 'SF2', 'SF3', 'SF4', 'SF5', 'SF6', 'SF7', 'SF8'];
+
   return (
-    <div className="fleet-page">
+    <div className="fleet-page h-[100dvh] w-full overflow-hidden flex flex-col bg-[#020402] relative text-white">
+      {/* Background */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(101,163,13,0.18),transparent)]" />
+        <div className="absolute inset-0 opacity-[0.07] [background-image:linear-gradient(rgba(163,230,53,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(163,230,53,0.10)_1px,transparent_1px)] [background-size:48px_48px]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-black/80 to-transparent" />
+      </div>
+
+      {/* Header is position:fixed in CSS — it overlays automatically, no need to render in flow */}
       <Header />
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(163,230,53,0.16),transparent_30rem),radial-gradient(circle_at_82%_4%,rgba(34,197,94,0.10),transparent_26rem),linear-gradient(180deg,rgba(255,255,255,0.025),transparent_22%,rgba(0,0,0,0.75))]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.13] [background-image:linear-gradient(rgba(163,230,53,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(163,230,53,0.08)_1px,transparent_1px)] [background-size:76px_76px]" />
+      {/* Main layout — fills entire screen, pt accounts for the fixed header (~64px) */}
+      <div className="relative z-10 w-full h-full max-w-[1920px] mx-auto px-4 pb-4 pt-[72px] overflow-hidden">
 
-      <div className="relative z-10 w-full px-4 pb-12 pt-24 sm:px-6 2xl:px-8">
-        <motion.section
-          initial={{ opacity: 0, y: 26 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, ease: 'easeOut' }}
-          className="grid min-h-[calc(100vh-7rem)] gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(520px,1.05fr)] lg:items-stretch"
-        >
-          <div className="flex flex-col justify-between rounded-[2.75rem] border border-lime-300/10 bg-black/30 p-6 shadow-[0_30px_120px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-9">
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full border border-lime-300/20 bg-lime-300/10 px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.26em] text-lime-200">
-                  {loadingShips ? 'Hangar Heating Up' : 'Hangar Open'}
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.26em] text-white/45">
-                  {activeFleetName}
-                </span>
-              </div>
-
-              <div className="mt-9 leading-[0.78] tracking-[-0.12em]">
-                <div className="text-[21vw] font-black uppercase text-transparent [-webkit-text-stroke:1px_rgba(217,249,157,0.30)] md:text-[10rem] xl:text-[12rem]">Fleet</div>
-                <div className="text-[21vw] font-black uppercase text-white md:text-[10rem] xl:text-[12rem]">Command</div>
-              </div>
-
-              <p className="mt-7 max-w-3xl text-xl leading-relaxed text-white/52 md:text-2xl">
-                The KMHQ space garage. Big ships, clean cards, chill flex. Select whichever ride you like, and the page will set the scene.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-3 sm:grid-cols-3">
-              {[
-                { label: 'Ships Ready', value: formatNumber(totalShips) },
-                { label: 'Total Flex', value: formatCurrency(totalValue) },
-                { label: 'Crew Seats', value: formatNumber(totalMaxCrew) },
-              ].map((item) => (
-                <motion.div
-                  key={item.label}
-                  className="rounded-[1.5rem] border border-lime-300/10 bg-white/[0.035] p-5"
-                  whileHover={{ y: -4, borderColor: 'rgba(190,242,100,0.32)' }}
-                >
-                  <div className="font-mono text-xs font-black uppercase tracking-[0.24em] text-lime-300/45">{item.label}</div>
-                  <div className="mt-3 text-3xl font-black tracking-[-0.07em] text-white md:text-4xl">{item.value}</div>
-                </motion.div>
-              ))}
+        {loadingShips && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md rounded-[2.5rem]">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-10 h-10 border-2 border-lime-400/30 border-t-lime-400 rounded-full animate-spin" />
+              <div className="text-xs font-mono font-black uppercase tracking-[0.3em] text-lime-400/70">Accessing Fleet Manifest...</div>
             </div>
           </div>
+        )}
 
-          <motion.div
-            className="fleet-active-card relative min-h-[620px] overflow-hidden rounded-[2.75rem] border border-lime-300/10 bg-[#050805] shadow-[0_34px_140px_rgba(0,0,0,0.5)]"
-            whileHover={{ scale: 0.998 }}
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(163,230,53,0.18),transparent_38%),linear-gradient(180deg,transparent,rgba(0,0,0,0.85))]" />
-            {activeShip?.thumbnail ? (
-              <img
-                src={activeShip.thumbnail}
-                alt={activeShip.name}
-                className="absolute inset-0 h-full w-full object-cover opacity-[0.62] saturate-[0.9] transition-transform duration-700 hover:scale-105"
-              />
-            ) : null}
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.82),rgba(0,0,0,0.24)_55%,rgba(0,0,0,0.78))]" />
-            <div className="relative z-10 flex h-full flex-col justify-between p-6 md:p-8">
-              <div className="flex items-start justify-between gap-5">
-                <div>
-                  <div className="font-mono text-xs font-black uppercase tracking-[0.34em] text-lime-300/60">Active Asset</div>
-                  <h1 className="mt-4 max-w-3xl text-5xl font-black uppercase leading-[0.9] tracking-[-0.08em] text-white md:text-7xl">
-                    {activeShip?.name || 'Fleet Incoming'}
-                  </h1>
-                  <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/56">
-                    {activeShip?.manufacturer || 'KMHQ'} / {activeShip?.role || 'Hangar Pick'}
-                  </p>
+        {/* Layout with 40% fleets column and 60% 3D column */}
+        <div className="h-full w-full grid grid-cols-1 lg:grid-cols-[4fr_6fr] gap-3">
+
+          {/* ═══════════════════════ LEFT COLUMN ═══════════════════════ */}
+          <div className="flex flex-col gap-3 h-full overflow-hidden">
+
+            {/* ── Panel A: Fleet Command ── */}
+            <div className="relative flex flex-col rounded-[1.75rem] border border-white/[0.07] bg-white/[0.03] backdrop-blur-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.04),inset_0_1px_0_rgba(255,255,255,0.07)] shrink-0 overflow-hidden">
+              {/* Gradient accent */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_100%_50%_at_50%_0%,rgba(132,204,22,0.12),transparent)]" />
+
+              <div className="relative p-5">
+                {/* Title */}
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-[9px] font-mono font-black uppercase tracking-[0.4em] text-lime-400/50 mb-1">KMHQ · Rare Fleets</div>
+                    <h1 className="text-3xl xl:text-4xl font-black uppercase tracking-tight text-white leading-none">
+                      Fleet <span className="text-lime-400">Command</span>
+                    </h1>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-full border border-lime-400/20 bg-lime-400/10 px-3 py-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse" />
+                    <span className="text-[9px] font-mono font-black uppercase tracking-widest text-lime-300">Live</span>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-lime-300/20 bg-lime-300/10 px-4 py-3 text-right font-mono text-xs font-black uppercase tracking-[0.22em] text-lime-200 backdrop-blur">
-                  {activeShip?.holoUrl ? '3D Scene' : 'Photo Scene'}
+
+                {/* Rare Fleets 2x2 Grid */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  {rareFleets.map((ship, i) => (
+                    <button
+                      key={ship.id}
+                      onClick={() => setSelectedIndex(ship.originalIndex)}
+                      className={`group relative aspect-[16/10] rounded-xl transition-all duration-300
+                        ${activeShip?.slug === ship.slug
+                          ? 'border-2 border-lime-400 shadow-[0_0_20px_rgba(163,230,53,0.3)] z-10'
+                          : 'border border-white/10 hover:border-lime-400/40 z-0'
+                        }`}
+                    >
+                      {/* Stacking effect if multiple ships */}
+                      {ship.count > 1 && (
+                        <>
+                          <div className="absolute inset-0 bg-white/[0.05] border border-white/10 rounded-xl translate-x-1.5 translate-y-1.5 -z-10" />
+                          <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-xl translate-x-3 translate-y-3 -z-20" />
+                        </>
+                      )}
+
+                      {/* Main Card */}
+                      <div className="absolute inset-0 rounded-xl overflow-hidden bg-black">
+                        {/* BG */}
+                        {ship.thumbnail
+                          ? <img src={ship.thumbnail} alt={ship.name} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity grayscale group-hover:grayscale-0" />
+                          : <div className="absolute inset-0 flex items-center justify-center border border-dashed border-white/10 text-white/20"><div className="w-12 h-12 border border-white/10 rounded-full" /></div>
+                        }
+
+                        {/* Top Badge & Count */}
+                        <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+                          <div className="bg-lime-400 text-black px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">{rareTags[i] || 'F-EXT'}</div>
+                          {ship.count > 1 && (
+                            <div className="bg-black/60 backdrop-blur border border-white/10 text-white px-2 py-0.5 rounded text-[10px] font-mono font-bold">×{ship.count}</div>
+                          )}
+                        </div>
+
+                        {/* Bottom Info */}
+                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent z-10 text-left">
+                          <div className="text-[10px] font-mono text-lime-400/50 uppercase truncate leading-none mb-0.5">{ship.manufacturer}</div>
+                          <div className="font-bold text-white uppercase tracking-tight text-sm truncate leading-none mb-1">{ship.name}</div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="text-[7px] font-mono font-black uppercase tracking-widest text-lime-400/60 bg-lime-400/10 border border-lime-400/20 rounded px-1 py-px leading-none">CEO</span>
+                            <span className="text-[8px] font-mono text-white/40 uppercase truncate">{ship.ceoName || ship.sourceFleet || 'KMHQ'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                  {rareFleets.length === 0 && !loadingShips && (
+                    <div className="col-span-2 aspect-[16/5] flex items-center justify-center rounded-xl border border-dashed border-white/10 text-white/25 text-[10px] font-mono uppercase tracking-widest">
+                      Admin has not added rare fleets
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-4">
+              {/* Stats bar */}
+              <div className="grid grid-cols-3 border-t border-white/[0.07]">
                 {[
-                  { label: 'Class', value: activeShip?.class || 'Unknown' },
-                  { label: 'Crew', value: activeShip?.crew || 'N/A' },
-                  { label: 'Cargo', value: activeShip?.cargo || 'N/A' },
-                  { label: 'Price', value: activeShip ? formatCurrency(getShipValue(activeShip)) : '$0.00' },
-                ].map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-white/10 bg-black/45 p-4 backdrop-blur">
-                    <div className="font-mono text-[10px] font-black uppercase tracking-[0.25em] text-lime-300/45">{item.label}</div>
-                    <div className="mt-2 truncate text-lg font-black tracking-[-0.04em] text-white">{item.value}</div>
+                  { tag: 'S', label: 'Ships Ready', val: formatNumber(totalShips) },
+                  { tag: 'T', label: 'Total Flex', val: formatCurrency(totalValue) },
+                  { tag: 'C', label: 'Crew Seats', val: formatNumber(totalMaxCrew) },
+                ].map((s, i) => (
+                  <div key={s.tag} className={`flex flex-col items-center justify-center py-3 px-2 ${i > 0 ? 'border-l border-white/[0.07]' : ''}`}>
+                    <div className="text-[8px] font-mono font-black text-lime-400/60 uppercase tracking-[0.3em] mb-0.5">{s.label}</div>
+                    <div className="text-lg font-black text-white leading-none">{s.val}</div>
                   </div>
                 ))}
               </div>
             </div>
-          </motion.div>
-        </motion.section>
 
-        {loadingShips ? (
-          <div className="mt-6 rounded-2xl border border-lime-300/10 bg-lime-300/[0.035] p-4 text-sm font-semibold text-lime-100/60">
-            <Loader2 size={14} className="mr-2 inline animate-spin text-lime-200/70" />
-            Opening hangar, just a sec...
-          </div>
-        ) : null}
-
-        {apiError && !loadingShips && (
-          <div className="mt-6 rounded-2xl border border-red-400/15 bg-red-500/[0.035] p-4">
-            <p className="text-sm font-semibold text-white/55">
-              Hangar got a bit moody. Try reloading, the scene should come right back.
-            </p>
-          </div>
-        )}
-
-        <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_430px]">
-          <main data-no-site-fx className="fleet-viewport relative min-h-[760px] overflow-hidden rounded-[2.5rem] border border-lime-300/10 bg-[#030503] shadow-[0_30px_120px_rgba(0,0,0,0.42)]">
-            <div className="pointer-events-none absolute inset-0 z-10 rounded-[2.5rem] border border-white/5" />
-            <div className="pointer-events-none absolute left-6 top-6 z-20">
-              <div className="font-mono text-xs font-black uppercase tracking-[0.32em] text-lime-300/55">Ship Stage</div>
-              <div className="mt-2 text-3xl font-black uppercase tracking-[-0.06em] text-white md:text-4xl">{activeShip?.name || 'Pick a Ride'}</div>
-            </div>
-            {loadingSelectedShip ? (
-              <div className="absolute right-6 top-6 z-20 rounded-full border border-lime-300/15 bg-black/60 px-4 py-2 text-xs font-mono uppercase tracking-[0.2em] text-lime-100/55 backdrop-blur">
-                New ride incoming...
+            {/* ── Panel B: Small Fleets ── */}
+            <div className="relative flex flex-col rounded-[1.75rem] border border-white/[0.07] bg-white/[0.03] backdrop-blur-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.04),inset_0_1px_0_rgba(255,255,255,0.07)] flex-1 overflow-hidden">
+              <div className="p-4 shrink-0">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="text-[9px] font-mono font-black uppercase tracking-[0.4em] text-lime-400/50 mb-0.5">Admin Managed</div>
+                    <div className="text-base font-black uppercase text-white">Small Fleets</div>
+                  </div>
+                  <div className="text-[9px] font-mono text-white/30 uppercase tracking-widest">{smallFleets.length} vessels</div>
+                </div>
+                {/* Search */}
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  <input
+                    type="text"
+                    placeholder="Search fleets..."
+                    className="w-full bg-black/30 border border-white/[0.08] rounded-xl pl-8 pr-4 py-2.5 text-[11px] font-mono text-white placeholder-white/25 outline-none focus:border-lime-400/40 transition-colors"
+                  />
+                </div>
               </div>
-            ) : null}
-            <FleetScene selectedShip={activeShip} />
-          </main>
 
-          <FleetShipDetails ship={activeShip} />
-        </section>
+              {/* Ships grid — scrollable */}
+              <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
+                <div className="grid grid-cols-2 gap-2">
+                  {smallFleets.map((ship, i) => (
+                    <button
+                      key={ship.id}
+                      onClick={() => {
+                        const idx = ships.findIndex(s => s.id === ship.id);
+                        if (idx !== -1) setSelectedIndex(idx);
+                      }}
+                      className={`group relative aspect-[4/3] rounded-xl overflow-hidden transition-all duration-300
+                        ${activeShip?.id === ship.id
+                          ? 'border-2 border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.25)]'
+                          : 'border border-white/[0.08] hover:border-lime-400/30'
+                        }`}
+                    >
+                      {ship.thumbnail
+                        ? <img src={ship.thumbnail} alt={ship.name} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-65 group-hover:scale-105 transition-all duration-500" />
+                        : <div className="absolute inset-0 bg-gradient-to-br from-lime-900/10 to-black/50" />
+                      }
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-        <section className="mt-6">
-          <FleetShipSelector
-            ships={ships}
-            selectedIndex={selectedIndex}
-            onSelect={setSelectedIndex}
-            loading={loadingShips}
-            apiError={apiError}
-            totalValue={totalValue}
-            totalCrew={totalMaxCrew}
-          />
-        </section>
+                      <div className="absolute top-1.5 left-1.5 bg-white/10 text-white/70 font-black text-[8px] uppercase tracking-wide px-1.5 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
+                        {sfTags[i] || `SF${i+1}`}
+                      </div>
 
-        <FleetCommandBriefing
-          ships={ships}
-          selectedShip={activeShip}
-          totalValue={totalValue}
-          totalMaxCrew={totalMaxCrew}
-        />
+                      <div className="absolute bottom-0 left-0 right-0 p-2">
+                        <div className="text-[8px] font-mono text-lime-300/60 uppercase truncate">{ship.manufacturer}</div>
+                        <div className="text-[11px] font-black uppercase text-white leading-tight truncate">{ship.name}</div>
+                      </div>
+                    </button>
+                  ))}
+                  {smallFleets.length === 0 && !loadingShips && (
+                    <div className="col-span-2 flex items-center justify-center rounded-xl border border-dashed border-white/10 aspect-[4/1] text-white/25 text-[10px] font-mono uppercase tracking-widest">
+                      Admin has not added small fleets
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ═══════════════════════ RIGHT COLUMN ═══════════════════════ */}
+          <div className="flex flex-col gap-3 h-full overflow-hidden">
+
+            {/* ── 3D Stage: Square viewer ── */}
+            <div className="flex-1 relative rounded-[1.75rem] border border-white/[0.07] bg-[#010201] overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04)] min-h-0">
+              {/* Ambient glow */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_80%,rgba(101,163,13,0.10),transparent)]" />
+
+              {/* Loading badge */}
+              {loadingSelectedShip && (
+                <div className="absolute right-4 top-4 z-20 flex items-center gap-2 rounded-full border border-lime-300/15 bg-black/70 px-3 py-1.5 backdrop-blur">
+                  <div className="w-2.5 h-2.5 border border-lime-400/60 border-t-lime-400 rounded-full animate-spin" />
+                  <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-lime-100/55">Loading...</span>
+                </div>
+              )}
+
+              {/* HUD top-left */}
+              <div className="absolute top-5 left-5 z-20">
+                <div className="text-[9px] font-mono font-black uppercase tracking-[0.36em] text-lime-400/50">Ship Stage</div>
+                <div className="mt-0.5 text-2xl font-black uppercase tracking-[-0.05em] text-white/90 leading-none">
+                  {activeShip?.name || <span className="text-white/20">Select a Ship</span>}
+                </div>
+                {activeShip && (
+                  <div className="mt-1 text-[9px] font-mono text-lime-300/50 uppercase tracking-wider">{activeShip.manufacturer} · {activeShip.class}</div>
+                )}
+              </div>
+
+              {/* 3D scene */}
+              <div className="absolute inset-0">
+                <FleetScene selectedShip={activeShip} />
+              </div>
+
+              {/* Nav hint */}
+              <div className="absolute bottom-4 right-5 z-20 text-[9px] font-mono text-white/20 uppercase tracking-widest hidden lg:block">
+                ← → to cycle ships
+              </div>
+            </div>
+
+            {/* ── Ship Details Panel ── */}
+            <div className="shrink-0 h-[190px]">
+              <FleetShipDetails ship={activeShip} stackedCeos={activeShip ? slugGroups[activeShip.slug]?.stackedCeos : null} />
+            </div>
+
+          </div>
+
+        </div>
       </div>
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(163, 230, 53, 0.15); border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(163, 230, 53, 0.35); }
+      `}</style>
     </div>
   );
 }
