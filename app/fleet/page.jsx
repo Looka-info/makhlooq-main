@@ -342,22 +342,22 @@ function FleetCommandBriefing({ ships, selectedShip, totalValue, totalMaxCrew })
     {
       label: 'Hangar',
       metric: ships.length,
-      title: 'Ships ki full mehfil',
-      body: 'Yahan KMHQ ka sara heavy metal style se lined up hai. Jo ship pasand aaye, us par click karo aur scene change.',
+      title: 'Full Fleet Lineup',
+      body: 'All KMHQ heavy metal is lined up here with style. Click on any ship you like to switch the scene.',
     },
     {
       label: 'Vibe',
       metric: selectedShip?.holoUrl ? '3D Ready' : 'Chill View',
       title: 'Showroom mood',
-      body: 'Kabhi full 3D flex, kabhi clean cinematic card. Dono way ship ka scene tight rehta hai.',
+      body: 'Sometimes a full 3D flex, sometimes a clean cinematic card. Either way, the ship scene stays tight.',
     },
     {
       label: 'Pick',
       metric: selectedShip?.name || 'Standby',
-      title: 'Apni ride choose karo',
+      title: 'Choose your ride',
       body: selectedShip?.name
-        ? `${selectedShip.name} ab spotlight mein hai. Dusri ride dabao, stage uske naam.`
-        : 'Ek ship select karo aur hangar ka focus instantly us par aa jayega.',
+        ? `${selectedShip.name} is now in the spotlight. Click another ride to give it the stage.`
+        : 'Select a ship and the hangar focus will instantly shift to it.',
     },
   ];
 
@@ -372,7 +372,7 @@ function FleetCommandBriefing({ ships, selectedShip, totalValue, totalMaxCrew })
             <span className="block text-white [-webkit-text-stroke:0]">Toys</span>
           </h2>
           <p className="mt-7 max-w-xl text-xl leading-relaxed text-white/52">
-            Thora flex, thora command, thora cinematic showroom. KMHQ fleet ka scene simple hai: pick a ship, enjoy the view.
+            A little flex, a little command, a little cinematic showroom. The KMHQ fleet scene is simple: pick a ship, enjoy the view.
           </p>
           <div className="mt-7 grid grid-cols-2 gap-3">
             <div className="rounded-3xl border border-lime-300/10 bg-black/35 p-5">
@@ -624,7 +624,7 @@ export default function FleetPage() {
             <div>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="rounded-full border border-lime-300/20 bg-lime-300/10 px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.26em] text-lime-200">
-                  {loadingShips ? 'Hangar Garam' : 'Hangar Open'}
+                  {loadingShips ? 'Hangar Heating Up' : 'Hangar Open'}
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.26em] text-white/45">
                   {activeFleetName}
@@ -637,7 +637,7 @@ export default function FleetPage() {
               </div>
 
               <p className="mt-7 max-w-3xl text-xl leading-relaxed text-white/52 md:text-2xl">
-                KMHQ ka space garage. Big ships, clean cards, chill flex. Jo ride pasand aaye usko select karo, baqi page apna scene bana lega.
+                The KMHQ space garage. Big ships, clean cards, chill flex. Select whichever ride you like, and the page will set the scene.
               </p>
             </div>
 
@@ -677,7 +677,7 @@ export default function FleetPage() {
                 <div>
                   <div className="font-mono text-xs font-black uppercase tracking-[0.34em] text-lime-300/60">Active Asset</div>
                   <h1 className="mt-4 max-w-3xl text-5xl font-black uppercase leading-[0.9] tracking-[-0.08em] text-white md:text-7xl">
-                    {activeShip?.name || 'Fleet Aa Rahi Hai'}
+                    {activeShip?.name || 'Fleet Incoming'}
                   </h1>
                   <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/56">
                     {activeShip?.manufacturer || 'KMHQ'} / {activeShip?.role || 'Hangar Pick'}
@@ -708,14 +708,14 @@ export default function FleetPage() {
         {loadingShips ? (
           <div className="mt-6 rounded-2xl border border-lime-300/10 bg-lime-300/[0.035] p-4 text-sm font-semibold text-lime-100/60">
             <Loader2 size={14} className="mr-2 inline animate-spin text-lime-200/70" />
-            Hangar khul raha hai, bas ek sec...
+            Opening hangar, just a sec...
           </div>
         ) : null}
 
         {apiError && !loadingShips && (
           <div className="mt-6 rounded-2xl border border-red-400/15 bg-red-500/[0.035] p-4">
             <p className="text-sm font-semibold text-white/55">
-              Hangar thora moody ho gaya. Reload try karo, scene wapas aa jana chahiye.
+              Hangar got a bit moody. Try reloading, the scene should come right back.
             </p>
           </div>
         )}
@@ -725,11 +725,11 @@ export default function FleetPage() {
             <div className="pointer-events-none absolute inset-0 z-10 rounded-[2.5rem] border border-white/5" />
             <div className="pointer-events-none absolute left-6 top-6 z-20">
               <div className="font-mono text-xs font-black uppercase tracking-[0.32em] text-lime-300/55">Ship Stage</div>
-              <div className="mt-2 text-3xl font-black uppercase tracking-[-0.06em] text-white md:text-4xl">{activeShip?.name || 'Koi Ride Pick Karo'}</div>
+              <div className="mt-2 text-3xl font-black uppercase tracking-[-0.06em] text-white md:text-4xl">{activeShip?.name || 'Pick a Ride'}</div>
             </div>
             {loadingSelectedShip ? (
               <div className="absolute right-6 top-6 z-20 rounded-full border border-lime-300/15 bg-black/60 px-4 py-2 text-xs font-mono uppercase tracking-[0.2em] text-lime-100/55 backdrop-blur">
-                New ride aa rahi hai...
+                New ride incoming...
               </div>
             ) : null}
             <FleetScene selectedShip={activeShip} />

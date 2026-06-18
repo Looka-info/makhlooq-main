@@ -136,11 +136,6 @@ export default function Home() {
           <FAQ />
         </Suspense>
       </motion.main>
-
-      {/* ▸ FOOTER - Lazy loaded at bottom */}
-      <Suspense fallback={<footer className="min-h-40 bg-black" />}>
-        <Footer key="footer" />
-      </Suspense>
     </AnimatePresence>
   );
 }

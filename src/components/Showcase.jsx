@@ -11,22 +11,22 @@ const PILLARS = [
   {
     code: '01',
     name: 'Strike Mode',
-    detail: 'Target dikha, squad nikla, scene done. Clean pressure with no extra drama.',
+    detail: 'Target spotted, squad deployed, scene done. Clean pressure with no extra drama.',
   },
   {
     code: '02',
     name: 'Cargo Chill',
-    detail: 'Boxes bhi move hotay hain, vibes bhi. Supply line strong, fleet ka stomach full.',
+    detail: 'Boxes move and so do the vibes. Supply line strong, fleet well-stocked.',
   },
   {
     code: '03',
-    name: 'Recovery Jugaad',
-    detail: 'Ship toot jaye? Koi tension nahi. Salvage, extract, rebuild, phir se runway par.',
+    name: 'Recovery Ops',
+    detail: 'Ship down? No stress. Salvage, extract, rebuild, then back on the runway.',
   },
   {
     code: '04',
     name: 'Deep Orbit',
-    detail: 'Map khatam, KMHQ shuru. Scout karo, mark karo, aur phir chai ke saath plan banao.',
+    detail: 'Map ends where KMHQ begins. Scout, mark, and plan the next move.',
   },
 ];
 
@@ -109,27 +109,27 @@ export default function Showcase() {
       className="relative overflow-hidden bg-[#030603] py-28 text-white md:py-40"
     >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute right-[-8%] top-[10%] h-[32rem] w-[32rem] rounded-full bg-emerald-400/10 blur-[140px]" />
-        <div className="absolute left-[-12%] bottom-[-10%] h-[28rem] w-[28rem] rounded-full bg-lime-400/8 blur-[150px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(132,204,22,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(132,204,22,0.035)_1px,transparent_1px)] bg-[size:88px_88px] opacity-40 [mask-image:radial-gradient(circle_at_center,black,transparent_74%)]" />
+        <div className="absolute right-[-8%] top-[10%] h-[32rem] w-[32rem] rounded-full bg-lime-400/5 blur-[140px]" />
+        <div className="absolute left-[-12%] bottom-[-10%] h-[28rem] w-[28rem] rounded-full bg-lime-500/5 blur-[150px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(163,230,53,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(163,230,53,0.03)_1px,transparent_1px)] bg-[size:88px_88px] opacity-40 [mask-image:radial-gradient(circle_at_center,black,transparent_74%)]" />
       </div>
 
       <div className="relative z-10 w-full px-3 sm:px-5 2xl:px-8">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:items-end">
           <div>
             <div className="mb-5 flex items-center gap-3">
-              <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.8)]" />
+              <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.6)] animate-pulse" />
               <span className="font-mono text-base font-bold uppercase tracking-[0.35em] text-lime-300/80">
-                Operations Ka Scene
+                Operations Breakdown
               </span>
             </div>
 
             <div data-showcase-stack className="max-w-6xl font-black uppercase leading-[0.78] tracking-[-0.09em] text-white will-change-transform">
-              {['Hum', 'Idle', 'Nahi'].map((word) => (
-                <div key={word} className="overflow-hidden pb-2">
+              {['We', 'Never', 'Idle'].map((word) => (
+                <div key={word} className="overflow-hidden pb-4">
                   <div
                     data-showcase-word
-                    className="text-[23vw] text-transparent [-webkit-text-stroke:1.3px_rgba(190,242,100,0.55)] md:text-[15vw] lg:text-[10.5vw]"
+                    className="cursor-default text-[23vw] text-transparent [-webkit-text-stroke:1.3px_rgba(190,242,100,0.55)] md:text-[15vw] lg:text-[10.5vw] transition-all duration-500 hover:text-lime-300 hover:[-webkit-text-stroke:2px_transparent] hover:-skew-x-6 hover:scale-[1.02] hover:drop-shadow-[0_0_30px_rgba(163,230,53,0.5)]"
                   >
                     {word}
                   </div>
@@ -144,35 +144,41 @@ export default function Showcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="rounded-[2rem] border border-lime-300/15 bg-white/[0.03] p-6 backdrop-blur-xl"
+            className="rounded-[2.5rem] border border-lime-300/15 bg-[#08120a] p-8 backdrop-blur-2xl ring-1 ring-white/5"
           >
             <div className="grid gap-4 sm:grid-cols-2">
               {METRICS.map((metric) => (
-                <div key={metric.label} className="rounded-2xl border border-white/8 bg-black/25 p-5">
-                  <div className="font-mono text-sm uppercase tracking-[0.3em] text-lime-300/55">
-                    {metric.label}
+                <div key={metric.label} className="group relative overflow-hidden rounded-2xl border border-lime-300/10 bg-black/40 p-6 backdrop-blur-md transition-all duration-300 hover:border-lime-300/30 hover:bg-lime-300/[0.04]">
+                  <div className="absolute -inset-x-4 -top-4 h-12 bg-gradient-to-b from-lime-300/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative z-10 flex items-center justify-between">
+                    <span className="font-mono text-sm uppercase tracking-[0.3em] text-lime-300/60 transition-transform duration-300 group-hover:translate-x-2 group-hover:text-lime-300">
+                      {metric.label}
+                    </span>
+                    <span className="font-mono text-lg text-lime-300/0 transition-all duration-300 group-hover:text-lime-300/50 group-hover:-translate-x-2">
+                      &rarr;
+                    </span>
                   </div>
-                  <div className="mt-4 text-5xl font-semibold tracking-[-0.06em] text-white md:text-6xl">
+                  <div className="relative z-10 mt-4 text-5xl font-semibold tracking-[-0.06em] text-white md:text-6xl transition-transform duration-300 group-hover:translate-x-2">
                     {metric.value}
                   </div>
                 </div>
               ))}
             </div>
             <p className="mt-7 max-w-2xl text-2xl leading-10 text-white/48">
-              Har division ka simple rule: jaldi move karo, pehle dekho, aur battlefield ko
-              itna clean choro ke log poochain cleanup crew kaun tha.
+              Every division has a simple rule: move fast, see first, and leave the
+              battlefield so clean people ask who the cleanup crew was.
             </p>
           </motion.div>
         </div>
 
-        <div className="mt-16 border-t border-lime-300/10 pt-12">
+        <div className="mt-16 border-t border-lime-300/15 pt-12">
           <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <h2 className="text-5xl font-bold tracking-[-0.07em] md:text-7xl">
-              Pressure mein bhi style.
+              Style under pressure.
             </h2>
             <p className="max-w-2xl text-xl leading-9 text-white/48">
-              Fleet ka layout simple hai: clear roles, wide space, aur koi random button mashing nahi.
-              Bas coordinated masti.
+              Fleet layout is simple: clear roles, wide space, and zero random button mashing.
+              Just coordinated action.
             </p>
           </div>
 
@@ -181,13 +187,16 @@ export default function Showcase() {
               <div
                 key={pillar.code}
                 data-pillar-card
-                className="group rounded-[1.75rem] border border-lime-300/12 bg-[#071006] p-7 transition-transform duration-300 hover:-translate-y-2 hover:border-lime-300/30 hover:bg-[#0b1708]"
+                className="group relative overflow-hidden rounded-[2rem] border border-lime-300/10 bg-gradient-to-b from-[#08120a] to-black p-8 transition-all duration-500 hover:-translate-y-2 hover:border-lime-300/30"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <span className="font-mono text-sm uppercase tracking-[0.3em] text-lime-300/55">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(163,230,53,0.08),transparent_50%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="relative z-10 flex items-start justify-between gap-4">
+                  <span className="font-mono text-sm uppercase tracking-[0.3em] text-lime-300/60 transition-colors group-hover:text-lime-300">
                     {pillar.code}
                   </span>
-                  <span className="h-2 w-2 rounded-full bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.7)]" />
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full border border-lime-300/20 bg-lime-300/5 transition-transform duration-500 group-hover:rotate-45 group-hover:border-lime-300/50 group-hover:bg-lime-300/20">
+                    <span className="h-1.5 w-1.5 rounded-full bg-lime-400 opacity-60" />
+                  </div>
                 </div>
                 <h3 className="mt-16 text-3xl font-semibold tracking-[-0.05em] md:text-4xl">
                   {pillar.name}

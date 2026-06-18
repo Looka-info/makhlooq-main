@@ -29,7 +29,8 @@ export default function AdminPage() {
 
   const loadMembers = async () => {
     setLoading(true);
-    const res = await window.fetch('/api/team-members', { cache: 'no-store' });
+    // Admin fetches ALL members including unapproved (via ?all=1)
+    const res = await window.fetch('/api/team-members?all=1', { cache: 'no-store' });
     const data = await res.json().catch(() => []);
     setMembers(Array.isArray(data) ? data : []);
     setLoading(false);
@@ -100,6 +101,17 @@ export default function AdminPage() {
     await loadMembers();
   };
 
+  const approveMember = async (id) => {
+    await window.fetch(`/api/team-members/approve?id=${id}`, { method: 'PUT' });
+    await loadMembers();
+  };
+
+  const rejectMember = async (id) => {
+    if (!confirm('Reject and remove this applicant from the system?')) return;
+    await window.fetch(`/api/team-members/approve?id=${id}`, { method: 'DELETE' });
+    await loadMembers();
+  };
+
   const syncDiscord = async () => {
     setSyncing(true);
     try {
@@ -117,9 +129,11 @@ export default function AdminPage() {
     setSyncing(false);
   };
 
+  const pendingMembers = members.filter(m => !m.is_approved);
+  const approvedMembers = members.filter(m => m.is_approved);
   const filtered = filter
-    ? members.filter(m => [m.name, m.role, m.category].join(' ').toLowerCase().includes(filter.toLowerCase()))
-    : members;
+    ? approvedMembers.filter(m => [m.name, m.role, m.category].join(' ').toLowerCase().includes(filter.toLowerCase()))
+    : approvedMembers;
 
   if (authing) {
     return (
@@ -202,13 +216,13 @@ export default function AdminPage() {
         <div className="flex flex-col gap-8 mb-12">
           <div className="flex items-center justify-between">
             <Link href="/team" className="inline-flex items-center gap-2 text-gray-500 hover:text-emerald-400 transition-colors text-sm font-medium group">
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Team pe wapas
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Team
             </Link>
             <button
               onClick={logout}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/10 transition-all"
             >
-              <LogOut size={14} /> Logout Scene
+              <LogOut size={14} /> Sign Out
             </button>
           </div>
 
@@ -218,7 +232,7 @@ export default function AdminPage() {
                 <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-black uppercase tracking-widest">Administrator</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">Crew Management</h1>
-              <p className="text-gray-500 text-sm">Crew ka roster, roles, colors, aur admin wali masti yahan set hoti hai</p>
+              <p className="text-gray-500 text-sm">Crew roster, roles, colors, and admin settings — all managed here</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -237,13 +251,13 @@ export default function AdminPage() {
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all disabled:opacity-50"
               >
                 <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
-                {syncing ? 'Sync ho raha...' : 'Discord Sync'}
+                {syncing ? 'Syncing...' : 'Discord Sync'}
               </button>
               <button
                 onClick={() => setShowAdd(true)}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
               >
-                <Plus size={16} /> Banda Add Karo
+                <Plus size={16} /> Add Member
               </button>
             </div>
           </div>
@@ -252,17 +266,69 @@ export default function AdminPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[
-            { label: 'Total Crew', value: members.length },
-            { label: 'Online Crew', value: members.filter(m => m.status === 'online').length },
-            { label: 'Admin Power', value: members.filter(m => m.is_admin).length },
-            { label: 'Display Count', value: filtered.length },
+            { label: 'Total Crew', value: approvedMembers.length },
+            { label: 'Online Crew', value: approvedMembers.filter(m => m.status === 'online').length },
+            { label: 'Admin Power', value: approvedMembers.filter(m => m.is_admin).length },
+            { label: 'Pending Review', value: pendingMembers.length, highlight: pendingMembers.length > 0 },
           ].map(s => (
-            <div key={s.label} className="rounded-2xl border border-emerald-500/10 bg-[#040c08]/50 px-6 py-5 backdrop-blur-sm">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-2">{s.label}</div>
-              <div className="text-3xl font-bold text-white font-mono">{s.value}</div>
+            <div key={s.label} className={`rounded-2xl border px-6 py-5 backdrop-blur-sm ${
+              s.highlight ? 'border-amber-400/30 bg-amber-500/5' : 'border-emerald-500/10 bg-[#040c08]/50'
+            }`}>
+              <div className={`text-[10px] uppercase tracking-[0.2em] font-bold mb-2 ${s.highlight ? 'text-amber-400/70' : 'text-gray-500'}`}>{s.label}</div>
+              <div className={`text-3xl font-bold font-mono ${s.highlight && s.value > 0 ? 'text-amber-400' : 'text-white'}`}>{s.value}</div>
             </div>
           ))}
         </div>
+
+        {/* Pending Crew Section */}
+        {pendingMembers.length > 0 && (
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-black text-[10px] font-black">{pendingMembers.length}</div>
+              <h2 className="text-lg font-bold text-white tracking-tight">Pending Crew Requests</h2>
+              <span className="text-xs font-mono uppercase tracking-widest text-amber-400/70">Awaiting your approval</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {pendingMembers.map(m => (
+                <motion.div
+                  key={m.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex items-center gap-4 rounded-2xl border border-amber-400/15 bg-amber-500/5 p-4 backdrop-blur-sm"
+                >
+                  <div
+                    className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl border-2 border-amber-400/30"
+                  >
+                    {m.avatar_url
+                      ? <img src={m.avatar_url} alt={m.name} className="h-full w-full object-cover" />
+                      : <div className="flex h-full w-full items-center justify-center bg-amber-500/20 text-amber-400 font-bold text-lg">{m.name?.[0]}</div>
+                    }
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-bold text-white">{m.name}</div>
+                    <div className="text-[10px] font-mono text-amber-400/60 uppercase tracking-wider">{m.discord_tag}</div>
+                    <div className="mt-1 text-[10px] text-gray-500">Joined {new Date(m.joined_at).toLocaleDateString()}</div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => approveMember(m.id)}
+                      className="rounded-lg bg-emerald-500 px-3 py-1.5 text-[11px] font-black text-black uppercase tracking-wider hover:bg-emerald-400 transition-all"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => rejectMember(m.id)}
+                      className="rounded-lg border border-red-500/20 px-3 py-1.5 text-[11px] font-black text-red-400 uppercase tracking-wider hover:bg-red-500/10 transition-all"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Table Container */}
         <div className="rounded-3xl border border-white/5 bg-[#040c08]/40 shadow-2xl overflow-hidden backdrop-blur-xl">
@@ -277,9 +343,9 @@ export default function AdminPage() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {loading ? (
-                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest animate-pulse">Crew list aa rahi hai...</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest animate-pulse">Loading crew list...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-500 font-mono text-xs uppercase tracking-widest">Koi matching banda nahi mila</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-500 font-mono text-xs uppercase tracking-widest">No matching members found</td></tr>
                 ) : filtered.map(m => {
                   const isEditing = editId === m.id;
                   const d = isEditing ? editData : m;

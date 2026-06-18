@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import GridOverlay from './GridOverlay';
 
@@ -12,26 +12,6 @@ const navLinks = [
 ];
 
 export default function Footer() {
-  const [timeStr, setTimeStr] = useState('');
-
-  useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-      const day = days[now.getDay()];
-      const hours = String(now.getHours()).padStart(2, '0');
-      const mins = String(now.getMinutes()).padStart(2, '0');
-      const secs = String(now.getSeconds()).padStart(2, '0');
-      const tz = -(now.getTimezoneOffset() / 60);
-      const sign = tz >= 0 ? '+' : '';
-      setTimeStr(`${day} ${hours}:${mins}:${secs} (GMT${sign}${tz})`);
-    };
-
-    updateClock();
-    const timer = setInterval(updateClock, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <footer className="footer relative overflow-hidden border-t border-lime-300/10 bg-[#020402] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(163,230,53,0.12),transparent_28%),radial-gradient(circle_at_84%_0%,rgba(255,255,255,0.06),transparent_22%),linear-gradient(180deg,transparent,rgba(0,0,0,0.75))]" />
@@ -57,7 +37,7 @@ export default function Footer() {
             </div>
 
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/50 sm:text-xl">
-              Chill rakho, scene strong hai. Humara hangar, humari vibe, aur thori si straight-up cosmic attitude.
+              A Star Citizen organization built around sharp coordination, capable crews, and a cinematic fleet presence.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -109,12 +89,12 @@ export default function Footer() {
                 info@khalai.makhlooq
               </a>
               <a
-                href="https://discord.gg/K7SfxPSwXk"
+                href="https://discord.gg/kmhq"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-lg font-black tracking-[-0.03em] text-white transition-colors hover:border-lime-300/25 hover:bg-lime-300/[0.04]"
               >
-                discord.gg/K7SfxPSwXk
+                discord.gg/kmhq
               </a>
             </div>
 
@@ -136,22 +116,13 @@ export default function Footer() {
 
           <div className="flex flex-wrap items-center gap-4">
             <a
-              href="#"
-              className="font-mono text-xs font-black uppercase tracking-[0.24em] text-white/40 transition-colors hover:text-lime-200"
-            >
-              RSI
-            </a>
-            <a
-              href="https://discord.gg/K7SfxPSwXk"
+              href="https://discord.gg/kmhq"
               target="_blank"
               rel="noopener noreferrer"
               className="font-mono text-xs font-black uppercase tracking-[0.24em] text-white/40 transition-colors hover:text-lime-200"
             >
               Discord
             </a>
-            <div className="rounded-full border border-lime-300/10 bg-black/35 px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.22em] text-lime-200">
-              {timeStr}
-            </div>
           </div>
         </div>
       </div>

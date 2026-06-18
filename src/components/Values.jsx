@@ -40,38 +40,38 @@ const NARRATIVES = [
   {
     id: 'intro',
     subtitle: '◈ STANTON SYSTEM — GRID REF 4.7 — KM-FLEET ACTIVE ◈',
-    title: ['Org', 'Fleet'],
-    desc: 'Ships ready, crew ready, vibes ready. Stanton mein entry bhi style se hoti hai.'
+    title: ['KMHQ', 'Space Garage'],
+    desc: 'Big ships, loud engines, and a crew built for confident operations. In Stanton, KMHQ does not just arrive; it establishes presence.'
   },
   {
     id: 'hammerhead',
     subtitle: '◈ FLEET DEFENSE — SQUADRON A ◈',
     title: ['The Shield'],
-    desc: 'Hammerhead convoy ke aas paas aise ghoomta hai jaise bouncer at VIP gate. Entry sirf invite par.'
+    desc: 'The Hammerhead anchors convoy defense with layered firepower, screening hostile movement before it reaches the formation.'
   },
   {
     id: 'carrack',
     subtitle: '◈ DEEP SPACE — EXPLORATION DIVISION ◈',
     title: ['The Unknown'],
-    desc: 'Carrack bolta hai: road khatam? Perfect, ab maza aayega. Unknown ko bhi location pin kar dete hain.'
+    desc: 'The Carrack pushes beyond mapped routes, turning unknown space into marked corridors and actionable intelligence.'
   },
   {
     id: 'merchantman',
     subtitle: '◈ ECONOMIC DOMINANCE — LOGISTICS CORPS ◈',
     title: ['The Artery'],
-    desc: 'Merchantman cargo le kar chalta hai aur market ko halka sa eyebrow raise karwa deta hai.'
+    desc: 'The Merchantman keeps the fleet economy moving, carrying cargo, resources, and influence through contested space.'
   },
   {
     id: 'inferno',
     subtitle: '◈ STRIKE WING — HUNTER KILLERS ◈',
     title: ['The Fangs'],
-    desc: 'Ares ka rule simple hai: one pilot, one big gun, aur dusri side ki confidence low battery.'
+    desc: 'The Ares brings focused anti-capital pressure: one pilot, one heavy weapon, and no wasted intent.'
   },
   {
     id: 'unity',
     subtitle: '◈ KHALAI MAKHLOOQ — UNIFIED COMMAND ◈',
     title: ['Together', 'We Fly'],
-    desc: 'Crew ek, fleet ek, scene full. MicroTech se Hurston tak, KMHQ ka naam quietly loud hai.'
+    desc: 'One crew, one fleet, one command signal. From MicroTech to Hurston, KMHQ moves with quiet authority.'
   }
 ];
 
@@ -349,29 +349,31 @@ export default function Values() {
                 }}
               >
                 <div style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '0.58rem',
-                  letterSpacing: '0.2em', textTransform: 'uppercase',
-                  color: 'rgba(74,109,86,0.8)', marginBottom: '16px',
+                  fontFamily: 'var(--font-mono)', fontSize: 'clamp(0.82rem, 1.05vw, 1.05rem)',
+                  letterSpacing: '0.24em', textTransform: 'uppercase',
+                  color: 'rgba(163,230,53,0.82)', marginBottom: '22px',
+                  fontWeight: 800,
                 }}>
                   {narrative.subtitle}
                 </div>
                 <h2 style={{
                   fontFamily: 'var(--font-heading)', fontWeight: 700,
-                  fontSize: 'clamp(2.5rem, 6vw, 5rem)', lineHeight: 1,
-                  letterSpacing: '-0.03em', textTransform: 'uppercase',
+                  fontSize: 'clamp(4.2rem, 10.5vw, 10.5rem)', lineHeight: 0.84,
+                  letterSpacing: '-0.075em', textTransform: 'uppercase',
                   color: '#fff',
                   textShadow: i === NARRATIVES.length - 1 
                     ? '0 0 80px rgba(74,109,86,0.6), 0 0 30px rgba(74,109,86,0.3)'
                     : '0 0 60px rgba(100,100,120,0.4), 0 0 20px rgba(74,109,86,0.2)',
-                  marginBottom: '16px',
+                  marginBottom: '28px',
                 }}>
                   {narrative.title[0]}{narrative.title[1] && (
                     <><br /><span style={{ color: i === NARRATIVES.length - 1 ? 'var(--accent)' : 'rgba(200,200,210,0.9)' }}>{narrative.title[1]}</span></>
                   )}
                 </h2>
                 <p style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '0.8rem',
-                  color: 'rgba(200,180,180,0.75)', maxWidth: '480px', lineHeight: 1.8,
+                  fontFamily: 'var(--font-mono)', fontSize: 'clamp(1.05rem, 1.35vw, 1.45rem)',
+                  color: 'rgba(238,242,249,0.78)', maxWidth: '780px', lineHeight: 1.55,
+                  fontWeight: 600,
                 }}>
                   {narrative.desc}
                 </p>

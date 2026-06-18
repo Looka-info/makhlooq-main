@@ -7,7 +7,7 @@ export default function Loading() {
         <div className="mb-6 flex justify-center">
           <div className="w-12 h-12 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
         </div>
-        <p className="text-emerald-400 font-mono">Team ka scene load ho raha hai...</p>
+        <p className="text-emerald-400 font-mono">Loading team data...</p>
       </div>
     </div>
   );

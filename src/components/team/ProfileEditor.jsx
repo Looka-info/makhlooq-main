@@ -33,7 +33,7 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
           {member.is_admin && (
             <div className="flex items-center gap-1.5 mt-3 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 w-fit">
               <Shield size={10} className="text-emerald-400" />
-              <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Admin Wali Power</span>
+              <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Admin Power</span>
             </div>
           )}
         </div>
@@ -42,12 +42,12 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
       {/* Avatar upload */}
       <div className="rounded-3xl border border-white/5 bg-[#040c08]/40 p-8 backdrop-blur-sm">
         <h3 className="text-sm font-bold text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
-          <Upload size={16} className="text-emerald-500" /> Avatar Ka Scene
+          <Upload size={16} className="text-emerald-500" /> Avatar Upload
         </h3>
         <label className="flex items-center gap-4 cursor-pointer group">
           <div className="flex-1 rounded-2xl border-2 border-dashed border-white/10 bg-white/5 p-8 text-center group-hover:border-emerald-500/40 group-hover:bg-emerald-500/5 transition-all">
             <p className="text-gray-500 text-sm font-medium group-hover:text-emerald-400">
-              {uploading ? 'Avatar upload ho raha hai...' : 'Apni best photo lagao (PNG/JPG)'}
+              {uploading ? 'Uploading avatar...' : 'Upload your best photo (PNG/JPG)'}
             </p>
           </div>
           <input type="file" accept="image/*" className="hidden" onChange={onUploadAvatar} disabled={uploading} />
@@ -102,12 +102,12 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
             </select>
           </div>
           <div className="space-y-4">
-            <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Bio Ka Scene</label>
+            <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Biography</label>
             <textarea
               value={form.bio}
               onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
               className="w-full h-32 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white text-sm outline-none focus:border-emerald-500/40 transition-colors resize-none"
-              placeholder="Apni kahani likho, thori style ke saath..."
+              placeholder="Write your story, with some style..."
             />
           </div>
         </div>

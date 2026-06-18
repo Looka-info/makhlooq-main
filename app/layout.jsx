@@ -48,7 +48,7 @@ export const metadata = {
   // ▸ OG TAGS (Social Media & Crawlers)
   openGraph: {
     title: 'KHALAI MAKHLOOQ — Join the Elite',
-    description: 'Star Citizen crew [KMHQ]. Hangar open hai.',
+    description: 'Star Citizen crew [KMHQ]. Hangar is open.',
     url: 'https://makhlooq.com',
     type: 'website',
     siteName: 'Khalai Makhlooq',
@@ -138,11 +138,6 @@ export default function RootLayout({ children }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: "try{document.documentElement.dataset.theme=localStorage.getItem('km-theme')==='white'?'light':'dark'}catch(e){document.documentElement.dataset.theme='dark'}",
-          }}
         />
       </head>
       <body>

@@ -11,17 +11,17 @@ const PRINCIPLES = [
   {
     kicker: '01 / Scene',
     title: 'One signal. Full squad.',
-    copy: 'Comms clean, moves sharp, aur orbit mein fazool ghoomna band. Jab KMHQ moves, sab ko pata chal jata hai.',
+    copy: 'Comms clean, moves sharp, and no aimless orbiting. When KMHQ moves, everyone knows.',
   },
   {
     kicker: '02 / Entry',
-    title: 'Pehle pohanchte hain, phir poochte hain.',
-    copy: 'Positioning strong, scouting smart, aur pressure itna smooth ke dusri side ko loading screen yaad aa jaye.',
+    title: 'We arrive first, then we assess.',
+    copy: 'Positioning strong, scouting smart, and pressure so smooth the other side starts seeing loading screens.',
   },
   {
     kicker: '03 / Backup',
-    title: 'Fleet ka jugaad nahi, system hai.',
-    copy: 'Logistics, recovery, escort, intel: sab ek hi machine ka part. Koi akela nahi chalta, convoy mein vibe hoti hai.',
+    title: 'Not a fleet patch — a system.',
+    copy: 'Logistics, recovery, escort, intel: all part of one machine. No one flies alone; the convoy carries the vibe.',
   },
 ];
 
@@ -111,12 +111,12 @@ export default function About() {
             <div className="mb-5 flex items-center gap-3">
               <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.8)]" />
               <span className="font-mono text-base font-bold uppercase tracking-[0.35em] text-lime-300/80">
-                Fleet Ka Scene
+                Fleet Operations Scene
               </span>
             </div>
             <p className="max-w-4xl text-2xl leading-10 text-white/48 md:text-3xl md:leading-[1.25]">
-              Khalai Makhlooq koi boring history lecture nahi. Ye crew, ships,
-              signal aur pressure ka combo hai. Space bhi dekhe aur bole: acha bhai, samajh gaya.
+              Khalai Makhlooq is no boring history lecture. It is crew, ships,
+              signal, and pressure combined. Even space took notice.
             </p>
           </div>
 
@@ -128,10 +128,10 @@ export default function About() {
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)] lg:items-end">
           <div data-manifesto-stack className="font-black uppercase leading-[0.78] tracking-[-0.09em] text-white will-change-transform">
             {['Move', 'Like A', 'Full Squad'].map((line) => (
-              <div key={line} className="overflow-hidden pb-2">
+              <div key={line} className="overflow-hidden pb-4">
                 <div
                   data-manifesto-line
-                  className="text-[23vw] text-transparent [-webkit-text-stroke:1.3px_rgba(190,242,100,0.5)] md:text-[15vw] lg:text-[10.5vw]"
+                  className="cursor-default text-[23vw] text-transparent [-webkit-text-stroke:1.3px_rgba(190,242,100,0.5)] md:text-[15vw] lg:text-[10.5vw] transition-all duration-500 hover:text-lime-300 hover:[-webkit-text-stroke:2px_transparent] hover:-skew-x-6 hover:scale-[1.02] hover:drop-shadow-[0_0_30px_rgba(163,230,53,0.5)]"
                 >
                   {line}
                 </div>
@@ -148,9 +148,9 @@ export default function About() {
             className="relative overflow-hidden rounded-[2rem] border border-lime-300/15 bg-black/35 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl"
           >
             <img
-              src="/backgrounds/SC-4.0_20250225_100437_Carrack-Over-Bloom_f.png"
+              src="/backgrounds/SC-3.19_20230524_130313_Fleet-selfie_ILW2953_f.png"
               alt="Khalai Makhlooq fleet command"
-              className="absolute inset-0 h-full w-full object-cover opacity-30 grayscale"
+              className="absolute inset-0 h-full w-full object-cover opacity-75"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#040704] via-[#040704]/65 to-transparent" />
@@ -159,7 +159,7 @@ export default function About() {
                 Hangar posture
               </div>
               <h3 className="max-w-2xl text-5xl font-semibold leading-[0.95] tracking-[-0.06em] text-white md:text-7xl">
-                Calm dimagh. Dangerous aim.
+                Calm mind. Dangerous aim.
               </h3>
             </div>
           </motion.div>

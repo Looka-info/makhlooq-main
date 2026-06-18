@@ -61,7 +61,7 @@ export default function AboutDeckBridge() {
           transition={{ duration: 1, delay: 0.8 }}
           className="max-w-xl mx-auto text-gray-500 font-mono text-xs md:text-sm tracking-widest uppercase border-t border-white/10 pt-8"
         >
-          Stanton se Pyro tak, route thora spicy hai. <br />
+          From Stanton to Pyro, the route gets spicy. <br />
           <span className="text-emerald-500/50">Crew tight, vibe light.</span>
         </motion.p>
       </div>

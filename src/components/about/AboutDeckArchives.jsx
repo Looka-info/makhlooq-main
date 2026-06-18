@@ -4,9 +4,9 @@ import React from 'react';
 import { motion } from 'motion/react';
 
 const TIMELINE = [
-  { year: "2950", title: "Genesis", desc: "Squad ka first proper entry. Scene officially on." },
-  { year: "2952", title: "Routes Set", desc: "Stanton routes par KMHQ ka GPS confident ho gaya." },
-  { year: "2954", title: "Pyro Trip", desc: "Outpost set, chai imaginary, danger very real." }
+  { year: "2950", title: "Genesis", desc: "Squad's first proper entry. Scene officially live." },
+  { year: "2952", title: "Routes Set", desc: "KMHQ locked in its GPS confidence on Stanton routes." },
+  { year: "2954", title: "Pyro Trip", desc: "Outpost set, tea imaginary, danger very real." }
 ];
 
 export default function AboutDeckArchives() {
@@ -62,7 +62,7 @@ export default function AboutDeckArchives() {
             className="mt-24 text-center"
           >
             <button className="px-12 py-4 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 font-mono text-[10px] tracking-[0.5em] hover:bg-emerald-500/10 transition-all uppercase hover:scale-105 active:scale-95">
-              Full Kahani Dekho
+              View Full History
             </button>
           </motion.div>
         </div>

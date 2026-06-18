@@ -84,6 +84,41 @@ async function isAdmin(discordId) {
   return !!data?.is_admin;
 }
 
+/**
+ * Auto-upsert the Discord user into team_members if they don't exist yet.
+ * New users start with is_approved = false so they're hidden from public roster.
+ * Existing members are left untouched (no overwrite of their data).
+ */
+async function autoRegisterMember(user, isEnvAdmin = false) {
+  try {
+    const { data: existing } = await supabase
+      .from('team_members')
+      .select('id')
+      .eq('discord_uid', user.id)
+      .maybeSingle();
+
+    if (!existing) {
+      const avatarUrl = user.avatar
+        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+        : null;
+
+      await supabase.from('team_members').insert({
+        discord_uid: user.id,
+        discord_tag: user.username,
+        name: user.global_name || user.username,
+        avatar_url: avatarUrl,
+        role: isEnvAdmin ? 'Commander' : 'Member',
+        is_admin: isEnvAdmin,
+        is_approved: isEnvAdmin, // Env admins are auto-approved; others wait for review
+        joined_at: new Date().toISOString(),
+      });
+    }
+  } catch (err) {
+    // Non-fatal — log but don't block login
+    console.warn('autoRegisterMember failed:', err);
+  }
+}
+
 export async function GET(request) {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
@@ -103,18 +138,21 @@ export async function GET(request) {
     const envAdmin = isEnvAdminDiscordId(user.id);
     const adminRequired = requiresAdmin(returnTo);
 
-    const [member, admin] = await Promise.all([
+    const [isMember, admin] = await Promise.all([
       envAdmin ? Promise.resolve(true) : isGuildMember(user.id),
       envAdmin ? Promise.resolve(true) : isAdmin(user.id),
     ]);
 
-    if (!member || (adminRequired && !admin)) {
+    if (!isMember || (adminRequired && !admin)) {
       const response = redirectTo(request, returnTo, { denied: '1' });
       clearAdminSessionCookie(response);
       response.cookies.delete('kmhq_discord_oauth_state');
       response.cookies.delete('kmhq_discord_oauth_return_to');
       return response;
     }
+
+    // Auto-register member in DB (no-op if already exists)
+    await autoRegisterMember(user, envAdmin);
 
     const response = redirectTo(request, returnTo);
     setAdminSessionCookie(user, response);

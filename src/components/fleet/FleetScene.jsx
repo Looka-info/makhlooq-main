@@ -153,7 +153,7 @@ export default function FleetScene({ selectedShip }) {
         <div>
           <div className="text-sm font-semibold uppercase tracking-[0.28em] text-white/35">3D Scene Not Ready</div>
           <p className="mt-4 max-w-md text-sm leading-6 text-white/50">
-            Is ship ka 3D model abhi hangar mein nahi hai. Picture mode bhi kaafi clean lag raha hai.
+            This ship's 3D model is not currently in the hangar. The picture mode still looks pretty clean though.
           </p>
         </div>
       </div>
@@ -180,7 +180,7 @@ export default function FleetScene({ selectedShip }) {
               />
             </div>
             <div className="font-mono text-[10px] font-black uppercase tracking-[0.36em] text-lime-200/70">
-              Hangar load ho raha hai
+              Loading hangar
             </div>
           </div>
         </div>
@@ -188,14 +188,14 @@ export default function FleetScene({ selectedShip }) {
 
       {modelFailed ? (
         <div className="pointer-events-none absolute inset-x-6 top-24 z-20 rounded-2xl border border-lime-300/10 bg-black/55 p-4 text-sm leading-6 text-white/55 backdrop-blur md:left-8 md:right-auto md:max-w-sm">
-          3D file load nahi hui. No tension, ship ka photo mode abhi bhi clean chal raha hai.
+          3D file failed to load. No tension, the ship's photo mode is still running clean.
         </div>
       ) : null}
 
       <Canvas
-        camera={{ position: [3.6, 2.2, 4.2], fov: 32 }}
+        camera={{ position: [5.5, 3.5, 6.5], fov: 32 }}
         dpr={[1, 1.35]}
-        frameloop="demand"
+        frameloop="always"
         performance={{ min: 0.5 }}
         gl={{
           antialias: false,
@@ -240,6 +240,8 @@ export default function FleetScene({ selectedShip }) {
           target={[0, 0.35, 0]}
           enableDamping
           dampingFactor={0.05}
+          autoRotate
+          autoRotateSpeed={1.5}
           minDistance={1.8}
           maxDistance={14}
           maxPolarAngle={Math.PI / 2 + 0.35}

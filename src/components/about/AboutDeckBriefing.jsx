@@ -59,8 +59,8 @@ export default function AboutDeckBriefing() {
               transition={{ duration: 1, delay: 0.4 }}
               className="text-gray-400 text-lg leading-relaxed font-light border-l-2 border-emerald-500/20 pl-6"
             >
-              Stanton aur Pyro dono ka route yaad hai. <br />
-              Pro wings deploy hotay hain, lekin attitude halka funny rehta hai.
+              We know the routes through Stanton and Pyro both. <br />
+              Pro wings deploy on demand, but the attitude stays light.
             </motion.p>
           </div>
 

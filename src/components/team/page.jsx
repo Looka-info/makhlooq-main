@@ -389,7 +389,7 @@ const ProfileModal = ({ member, onClose }) => {
           <div className="border-t pt-4" style={{ borderColor: `${accent}15` }}>
             <div className="font-mono text-[8px] tracking-[0.2em] text-[#2a5c35] uppercase mb-2">SUBJECT_BIO //</div>
             <p className="font-mono text-[11px] leading-relaxed" style={{ color: `${accent}90` }}>
-              {member.bio || 'NO BIO DATA FOUND IN SECURE DATABASE.'}
+              {member.bio || 'NO BIO DATA FOUND'}
             </p>
           </div>
         </div>
@@ -412,25 +412,25 @@ const JoinCommunityCTA = () => (
     >
       <div className="relative z-10 flex flex-col items-center gap-6">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase">
-          Recruitment Open Hai
+          Recruitment Open
         </div>
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white max-w-2xl">
-          Join karo <span className="text-white/40 font-light italic">Khalai Makhlooq</span> ka space crew
+          Join <span className="text-white/40 font-light italic">Khalai Makhlooq</span>'s space crew
         </h2>
         <p className="text-white/40 text-sm max-w-lg font-medium leading-relaxed">
-          Crew join karo, ships dekho, aur thori si organized masti mein rank bhi grow karo.
+          Join the crew, see the ships, and grow your rank through organized action.
         </p>
         <div className="flex flex-wrap justify-center gap-4 mt-4">
           <a
             href="https://discord.gg/K7SfxPSwXk" target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-2 px-8 py-4 bg-white text-black font-bold text-sm tracking-widest uppercase rounded-2xl hover:bg-white/90 transition-all active:scale-95 shadow-xl shadow-white/5"
           >
-            Discord Join Karo <ChevronRight size={16} />
+            Join on Discord <ChevronRight size={16} />
           </a>
           <button
             className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-sm tracking-widest uppercase rounded-2xl hover:bg-white/10 transition-all active:scale-95"
           >
-            Thora Aur Dekho
+            Learn More
           </button>
         </div>
       </div>
@@ -447,21 +447,21 @@ const TeamCommandBriefing = ({ members, onlineCount, isAdmin }) => {
       label: 'Roster',
       metric: members.length,
       title: 'Crew lineup ready',
-      body: `${members.length} profiles yahan ready hain. Search karo, filter lagao, apna banda dhoondo.`,
+      body: `${members.length} profiles ready here. Search, filter, and find your crew.`,
     },
     {
       label: 'Access',
       metric: isAdmin ? 'Unlocked' : 'Locked',
-      title: 'Discord wali entry',
+      title: 'Discord-gated entry',
       body: isAdmin
-        ? 'Tumhari ID pe green light hai. Admin tools ready, bas sambhal ke buttons dabana.'
-        : 'Admin tools thore VIP hain. Discord match ho jaye to profile ka scene unlock.',
+        ? 'Your ID has the green light. Admin tools ready — handle with care.'
+        : 'Admin tools are VIP. Match your Discord to unlock the profile scene.',
     },
     {
       label: 'Squad',
       metric: commandCount,
       title: 'Command squad',
-      body: `${CATEGORIES.length} divisions ka setup hai, aur command profiles poori crew ko line mein rakhtay hain.`,
+      body: `${CATEGORIES.length} divisions set up, and command profiles keep the whole crew in line.`,
     },
   ];
 
@@ -476,7 +476,7 @@ const TeamCommandBriefing = ({ members, onlineCount, isAdmin }) => {
             <span className="block text-white [-webkit-text-stroke:0]">Scene</span>
           </h2>
           <p className="mt-7 max-w-xl text-xl leading-relaxed text-white/52">
-            Team page ka vibe simple hai: banda dhoondo, role dekho, aur crew ki energy feel karo.
+            Simple vibe on the team page: find someone, check their role, feel the crew energy.
           </p>
         </div>
 
@@ -556,7 +556,7 @@ const AddMemberModal = ({ onClose, onAdded }) => {
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-mono text-[10px] tracking-[0.3em] text-emerald-500 uppercase font-bold">Naya Banda Add Karo</span>
+            <span className="font-mono text-[10px] tracking-[0.3em] text-emerald-500 uppercase font-bold">Add New Member</span>
           </div>
           <button onClick={onClose} className="text-white/20 hover:text-white transition-colors p-1"><X size={18} /></button>
         </div>
@@ -594,9 +594,9 @@ const AddMemberModal = ({ onClose, onAdded }) => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">BIO KA SCENE</label>
+            <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">BIO</label>
             <textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-              placeholder="Is bande ki kahani likho..."
+              placeholder="Write a brief story for this member..."
               className={inputCls + ' resize-none h-24'} style={inputStyle} />
           </div>
 
@@ -615,7 +615,7 @@ const AddMemberModal = ({ onClose, onAdded }) => {
             <input type="checkbox" checked={form.is_admin}
               onChange={e => setForm(p => ({ ...p, is_admin: e.target.checked }))}
               className="w-4 h-4 rounded border-white/10 bg-black accent-emerald-500" />
-            <span className="font-mono text-[10px] tracking-widest text-emerald-500/60 uppercase font-bold group-hover:text-emerald-400 transition-colors">Admin Wali Power Do</span>
+            <span className="font-mono text-[10px] tracking-widest text-emerald-500/60 uppercase font-bold group-hover:text-emerald-400 transition-colors">Grant Admin Access</span>
           </label>
 
           {error && (
@@ -674,7 +674,7 @@ const EditProfileModal = ({ member, onClose, onUpdated }) => {
         <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
           <div className="flex items-center gap-3">
             <Terminal size={18} className="text-emerald-500" />
-            <span className="font-mono text-xs tracking-[0.3em] text-emerald-500 uppercase font-bold">Profile Ka Scene Edit</span>
+            <span className="font-mono text-xs tracking-[0.3em] text-emerald-500 uppercase font-bold">Edit Profile</span>
           </div>
           <button onClick={onClose} className="text-white/20 hover:text-white transition-colors p-1"><X size={20} /></button>
         </div>
@@ -723,12 +723,15 @@ export default function FleetDirectoryPage() {
   const [session, setSession]             = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
+  const [currentUserMember, setCurrentUserMember] = useState(null);
+
   const fetchMembers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('team_members').select('*').order('role', { ascending:true });
-      if (error) throw error;
-      setMembers(data || []);
+      // Public API — returns only approved members
+      const res = await fetch('/api/team-members', { cache: 'no-store' });
+      const data = await res.json().catch(() => []);
+      setMembers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch members:', err);
     } finally {
@@ -742,10 +745,16 @@ export default function FleetDirectoryPage() {
     fetch('/api/auth/discord/session', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
-        if (data?.authenticated) setSession(data.user);
-        else setSession(null);
+        if (data?.authenticated) {
+          setSession(data.user);
+          // The session endpoint also returns the member profile (even if unapproved)
+          if (data.member) setCurrentUserMember(data.member);
+        } else {
+          setSession(null);
+          setCurrentUserMember(null);
+        }
       })
-      .catch(() => setSession(null));
+      .catch(() => { setSession(null); setCurrentUserMember(null); });
 
     const sub = supabase.channel('team_members_changes')
       .on('postgres_changes', { event:'*', schema:'public', table:'team_members' }, fetchMembers)
@@ -764,11 +773,6 @@ export default function FleetDirectoryPage() {
     await fetch('/api/auth/discord/logout', { method: 'POST' });
     setSession(null);
   };
-
-  const currentUserMember = useMemo(() => {
-    if (!session?.discordId) return null;
-    return members.find(m => m.discord_uid === session.discordId);
-  }, [session, members]);
 
   const isAdmin = currentUserMember?.is_admin || session?.source === 'env' || false;
 
@@ -809,7 +813,7 @@ export default function FleetDirectoryPage() {
               <div className="text-[18vw] font-black uppercase text-white md:text-[9rem] lg:text-[11rem]">Scene</div>
             </div>
             <p className="mt-5 max-w-2xl text-xl leading-relaxed text-white/50 md:text-2xl">
-              Roster wall, but boring wali nahi. Pilots, officers, aur crew sab yahan clean cards mein full style ke saath.
+              The roster wall, but not the boring kind. Pilots, officers, and crew — all here in clean cards with full style.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm font-black uppercase tracking-[0.22em] text-lime-100/40">
               <span>{members.length} personnel</span>
@@ -831,7 +835,7 @@ export default function FleetDirectoryPage() {
               </div>
             </div>
             <p className="mt-5 max-w-md text-base leading-relaxed text-white/48">
-              Discord se entry hoti hai, phir profile ka scene set. Admin ho to extra buttons miltay hain, warna chill mode.
+              Entry is through Discord, then you set up your profile. Admins get extra tools; otherwise, chill mode.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {session ? (
@@ -839,24 +843,24 @@ export default function FleetDirectoryPage() {
                   {currentUserMember && (
                     <button onClick={() => setShowEditModal(true)}
                       className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-white/10 active:scale-95">
-                      <User size={16} /> Meri Profile
+                      <User size={16} /> My Profile
                     </button>
                   )}
                   {isAdmin && (
                     <button onClick={() => setShowAddModal(true)}
                       className="flex items-center gap-2 rounded-2xl bg-lime-300 px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-black transition-all hover:bg-lime-200 active:scale-95">
-                      <Plus size={16} /> Banda Add Karo
+                      <Plus size={16} /> Add Member
                     </button>
                   )}
                   <button onClick={logout}
                     className="flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-red-300 transition-all hover:bg-red-500/20 active:scale-95">
-                    <LogOut size={16} /> Nikalna Hai
+                    <LogOut size={16} /> Sign Out
                   </button>
                 </>
               ) : (
                 <button onClick={loginWithDiscord}
                   className="flex items-center gap-3 rounded-2xl bg-[#5865F2] px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-[#4752C4] active:scale-95">
-                  <LogIn size={18} /> Discord Se Aao
+                  <LogIn size={18} /> Sign In with Discord
                 </button>
               )}
             </div>
@@ -875,8 +879,33 @@ export default function FleetDirectoryPage() {
           />
         </div>
 
-        {/* Grid Area */}
-        <div className="mt-12">
+        {/* Pending Self-Banner: show only to the logged-in user who hasn't been approved yet */}
+        {session && currentUserMember && !currentUserMember.is_approved && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 flex items-center gap-5 rounded-[1.75rem] border border-amber-400/20 bg-amber-500/5 p-5 backdrop-blur-xl"
+          >
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-mono text-xs font-black uppercase tracking-[0.28em] text-amber-400">Pending Crew Approval</div>
+              <p className="mt-1 text-sm text-white/55">
+                You&apos;re in the system, {currentUserMember.name}. An admin will approve your slot shortly — then you&apos;ll appear on the public roster.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="flex-shrink-0 rounded-xl border border-amber-400/20 px-4 py-2 text-xs font-black uppercase tracking-wider text-amber-400 transition-all hover:bg-amber-400/10"
+            >
+              Edit Profile
+            </button>
+          </motion.div>
+        )}
+
+        {/* Member Grid */}
+        <div className="mt-2">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32 gap-6">
               <div className="relative w-16 h-16">
@@ -885,7 +914,7 @@ export default function FleetDirectoryPage() {
                 <Activity size={20} className="absolute inset-0 m-auto text-emerald-500" />
               </div>
               <span className="text-xs font-bold tracking-[0.4em] text-white/20 uppercase animate-pulse">
-                Crew list aa rahi hai...
+                Loading crew list...
               </span>
             </div>
           ) : filteredMembers.length === 0 ? (
@@ -894,8 +923,8 @@ export default function FleetDirectoryPage() {
                 <WifiOff size={40} className="text-white/20" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-bold text-white/60 uppercase tracking-widest">Koi Banda Nahi Mila</p>
-                <p className="text-xs text-white/20 uppercase tracking-[0.2em] mt-1">Search thori easy karo, shayad mil jaye</p>
+                <p className="text-sm font-bold text-white/60 uppercase tracking-widest">No Pilots Found</p>
+                <p className="text-xs text-white/20 uppercase tracking-[0.2em] mt-1">Try a broader search</p>
               </div>
             </div>
           ) : (
@@ -922,12 +951,12 @@ export default function FleetDirectoryPage() {
           </div>
         )}
 
-        <TeamCommandBriefing members={members} onlineCount={onlineCount} isAdmin={isAdmin} />
-
         {/* Recruitment CTA */}
-        <div className="mt-24">
+        <div className="mt-12 mb-24">
           <JoinCommunityCTA />
         </div>
+
+        <TeamCommandBriefing members={members} onlineCount={onlineCount} isAdmin={isAdmin} />
       </div>
 
       {/* Modals */}

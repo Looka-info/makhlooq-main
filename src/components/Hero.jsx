@@ -93,9 +93,9 @@ export default function Hero({ isMuted, volume }) {
   const [coords, setCoords] = useState({ x: '0000', y: '0000' });
   const [heroHovered, setHeroHovered] = useState(false);
 
-  const decodedHeading1 = useDecodedText(heroHovered ? 'Fleet Ready Hai' : 'Join Khalai Makhlooq', heroHovered ? 0 : 1000, heroHovered ? 650 : 1200);
-  const decodedHeading2 = useDecodedText(heroHovered ? 'Scene On Hai' : 'Rule the Stars', heroHovered ? 90 : 1400, heroHovered ? 650 : 1200);
-  const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Masti Mode' : 'Elite Star Citizen Org, chill scene', heroHovered ? 0 : 800, heroHovered ? 500 : 800);
+  const decodedHeading1 = useDecodedText(heroHovered ? 'Fleet Is Ready' : 'Join Khalai Makhlooq', heroHovered ? 0 : 1000, heroHovered ? 650 : 1200);
+  const decodedHeading2 = useDecodedText(heroHovered ? 'Scene Is Live' : 'Rule the Stars', heroHovered ? 90 : 1400, heroHovered ? 650 : 1200);
+  const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : 'Elite Star Citizen Org, laid-back scene', heroHovered ? 0 : 800, heroHovered ? 500 : 800);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -235,7 +235,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 1.5, duration: 1 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Comms bilkul clear' : 'Stanton ka scene'}
+                {heroHovered ? 'Comms crystal clear' : 'Stanton scene'}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -243,7 +243,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 1.7, duration: 1 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Formation tight hai' : 'Fleet ki masti'}
+                {heroHovered ? 'Formation locked tight' : 'Fleet good vibes'}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -251,7 +251,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 1.9, duration: 1 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Pressure bhi, style bhi' : 'Deep space chill'}
+                {heroHovered ? 'Pressure and style, both' : 'Deep space chill'}
               </motion.div>
             </div>
           </div>

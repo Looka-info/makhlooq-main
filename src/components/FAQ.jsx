@@ -9,24 +9,24 @@ gsap.registerPlugin(ScrollTrigger);
 
 const faqs = [
   {
-    q: 'KMHQ join kaise karun?',
-    a: 'Discord par aa jao, handle verify karwao, phir roster mein entry. Simple scene. Tumhara playstyle dekhenge aur jis wing mein fit ho, wahan set kar denge.',
+    q: 'How do I join KMHQ?',
+    a: 'Come to Discord, get your handle verified, then you get listed on the roster. Simple process. We will see your playstyle and slot you into the wing that fits best.',
   },
   {
-    q: 'New pilot hun, help milegi?',
-    a: 'Bilkul. Escorts, crewed ships, fleet support, sab mil sakta hai. Tumhe menu mein akela chorne ka koi shauq nahi.',
+    q: 'I am a new pilot — will I get help?',
+    a: 'Absolutely. Escorts, crewed ships, fleet support — all available. We have no interest in leaving anyone stranded in the menu.',
   },
   {
-    q: 'KMHQ mein hota kya hai?',
-    a: 'Combat patrol, convoy security, recon, cargo, salvage, deep-space staging. Kabhi serious op, kabhi full hangar masti. Lekin coordination tight.',
+    q: 'What actually happens in KMHQ?',
+    a: 'Combat patrol, convoy security, recon, cargo, salvage, deep-space staging. Sometimes a serious op, sometimes full hangar fun. But coordination is always tight.',
   },
   {
-    q: 'Casual hai ya serious?',
-    a: 'Dono ka perfect mix. Chill vibe rakhtay hain, lekin op start ho to comms tight aur fleet ek unit ban jati hai.',
+    q: 'Is it casual or serious?',
+    a: 'The perfect mix of both. We keep a chill vibe, but once an op starts, comms tighten and the fleet becomes one unit.',
   },
   {
-    q: 'KMHQ ka special masala kya hai?',
-    a: 'Noise kam, coordination zyada. Sab ko same plan samajh aaye to choti fleet bhi cinematic lagti hai.',
+    q: 'What makes KMHQ special?',
+    a: 'Less noise, more coordination. When everyone understands the same plan, even a small fleet looks cinematic.',
   },
 ];
 
@@ -40,8 +40,8 @@ function FAQItem({ faq, index, isOpen, onClick }) {
       transition={{ duration: 0.65, delay: index * 0.06, ease: 'easeOut' }}
       className={`group relative overflow-hidden rounded-[1.75rem] border transition-all duration-300 ${
         isOpen
-          ? 'border-lime-300/35 bg-lime-300/[0.075] shadow-[0_0_50px_rgba(132,204,22,0.08)]'
-          : 'border-lime-300/12 bg-white/[0.025] hover:border-lime-300/28 hover:bg-lime-300/[0.045]'
+          ? 'border-lime-300/35 bg-lime-300/[0.075]'
+          : 'border-lime-300/12 bg-white/[0.025] hover:border-lime-300/28 hover:bg-lime-300/[0.045] hover:translate-x-2'
       }`}
     >
       <button
@@ -49,7 +49,7 @@ function FAQItem({ faq, index, isOpen, onClick }) {
         onClick={onClick}
         className="relative z-10 grid w-full gap-5 p-6 text-left md:grid-cols-[120px_minmax(0,1fr)_56px] md:items-center md:p-8"
       >
-        <div className="font-mono text-base font-bold uppercase tracking-[0.34em] text-lime-300/55">
+        <div className="font-mono text-base font-bold uppercase tracking-[0.34em] text-lime-300/55 group-hover:text-lime-300 transition-colors">
           Q-{String(index + 1).padStart(2, '0')}
         </div>
         <div className="text-3xl font-semibold leading-none tracking-[-0.055em] text-white md:text-5xl">
@@ -58,7 +58,7 @@ function FAQItem({ faq, index, isOpen, onClick }) {
         <div className={`ml-auto flex h-12 w-12 items-center justify-center rounded-full border font-mono text-2xl transition-all duration-300 ${
           isOpen
             ? 'rotate-45 border-lime-300/50 bg-lime-300 text-[#061006]'
-            : 'border-lime-300/20 text-lime-300/75 group-hover:border-lime-300/45'
+            : 'border-lime-300/20 text-lime-300/75 group-hover:border-lime-300/50 group-hover:bg-lime-300/10 group-hover:rotate-90'
         }`}>
           +
         </div>
@@ -75,7 +75,7 @@ function FAQItem({ faq, index, isOpen, onClick }) {
           >
             <div className="border-t border-lime-300/10 px-6 pb-8 pt-6 md:ml-[120px] md:px-8">
               <div className="mb-3 font-mono text-sm font-bold uppercase tracking-[0.28em] text-lime-300/55">
-                Seedha jawab
+                Direct Answer
               </div>
               <p className="max-w-4xl text-xl leading-9 text-white/55 md:text-2xl md:leading-10">
                 {faq.a}
@@ -86,6 +86,7 @@ function FAQItem({ faq, index, isOpen, onClick }) {
       </AnimatePresence>
 
       <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-lime-300/70 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(163,230,53,0.05),transparent_50%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none" />
     </motion.div>
   );
 }
@@ -153,15 +154,15 @@ export default function FAQ() {
             <div className="mb-5 flex items-center gap-3">
               <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.8)]" />
               <span className="font-mono text-base font-bold uppercase tracking-[0.35em] text-lime-300/80">
-                Quick Sawal Jawab
+                Quick Q&A
               </span>
             </div>
             <div data-faq-title-stack className="font-black uppercase leading-[0.78] tracking-[-0.09em] will-change-transform">
-              {['Seedhay', 'Jawab'].map((line) => (
-                <div key={line} className="overflow-hidden pb-2">
+              {['Straight', 'Answers'].map((line) => (
+                <div key={line} className="overflow-hidden pb-4">
                   <div
                     data-faq-title
-                    className="text-[22vw] text-transparent [-webkit-text-stroke:1.3px_rgba(190,242,100,0.55)] md:text-[14vw] lg:text-[10vw]"
+                    className="cursor-default text-[22vw] text-transparent [-webkit-text-stroke:1.3px_rgba(190,242,100,0.55)] md:text-[14vw] lg:text-[10vw] transition-all duration-500 hover:text-lime-300 hover:[-webkit-text-stroke:2px_transparent] hover:-skew-x-6 hover:scale-[1.02] hover:drop-shadow-[0_0_30px_rgba(163,230,53,0.5)]"
                   >
                     {line}
                   </div>
@@ -172,8 +173,8 @@ export default function FAQ() {
 
           <div className="rounded-[2rem] border border-lime-300/15 bg-white/[0.035] p-6 backdrop-blur-xl">
             <p className="text-2xl leading-10 text-white/50">
-              Confusion ko airlock se bahar phenk do. Sawal kholo, jawab lo,
-              aur phir hangar mein wapas masti.
+              Toss your confusion out the airlock. Ask the question, get the answer,
+              then head back to the hangar for more fun.
             </p>
             <div className="mt-8 flex items-center gap-4 rounded-2xl border border-lime-300/15 bg-black/35 px-5 py-4">
               <span className="font-mono text-lg text-lime-300/70">&gt;_</span>
@@ -183,11 +184,11 @@ export default function FAQ() {
                   setSearchTerm(event.target.value);
                   setOpenIndex(0);
                 }}
-                placeholder="Sawal search karo..."
+                placeholder="Search a question..."
                 className="min-w-0 flex-1 bg-transparent text-xl text-white outline-none placeholder:text-white/25"
               />
               <span className="font-mono text-sm uppercase tracking-[0.22em] text-lime-300/45">
-                {filteredFaqs.length} jawab
+                {filteredFaqs.length} answers
               </span>
             </div>
           </div>
@@ -207,7 +208,7 @@ export default function FAQ() {
 
         {filteredFaqs.length === 0 && (
           <div className="rounded-[1.75rem] border border-lime-300/12 bg-white/[0.025] p-10 text-center font-mono text-lg uppercase tracking-[0.24em] text-white/35">
-            Koi matching jawab nahi mila, spelling thori seedhi karo
+            No matching answers found — try checking the spelling
           </div>
         )}
       </div>

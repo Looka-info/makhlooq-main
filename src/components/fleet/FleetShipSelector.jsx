@@ -31,7 +31,7 @@ export default function FleetShipSelector({
       <div className="mb-4 flex flex-col gap-3 px-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="font-mono text-sm font-black tracking-[0.34em] text-lime-300/55 uppercase">Fleet Showcase</h2>
-          <p className="mt-1 max-w-2xl text-base text-white/40">Apni ride choose karo. Click karo, spotlight us ship par.</p>
+          <p className="mt-1 max-w-2xl text-base text-white/40">Choose your ride. Click it, and the spotlight shifts to that ship.</p>
         </div>
         <div className="flex flex-wrap gap-3 text-xs font-mono uppercase tracking-[0.22em] text-white/40">
           <span className="rounded-full border border-lime-300/10 bg-black/35 px-3 py-2">Ships: {ships.length}</span>
@@ -43,7 +43,7 @@ export default function FleetShipSelector({
       <div className="fleet-showcase-grid">
         {ships.length === 0 && (
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-6 text-white/45">
-            Hangar abhi khaali hai. Ships add karo phir yahan full flex hoga.
+            The hangar is currently empty. Add ships to get the full flex going.
           </div>
         )}
         {ships.map((ship, index) => {
