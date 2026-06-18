@@ -291,7 +291,7 @@ export default function Values() {
         <div style={{
           position: 'absolute', inset: 0, zIndex: 6,
           background: 'white',
-          opacity: 1,
+          opacity: 0,
           pointerEvents: 'none',
           mixBlendMode: 'overlay',
           animation: 'white-flicker 4.2s ease-in-out infinite',
@@ -299,7 +299,7 @@ export default function Values() {
         <div style={{
           position: 'absolute', inset: 0, zIndex: 6,
           background: 'white',
-          opacity: 1,
+          opacity: 0,
           pointerEvents: 'none',
           mixBlendMode: 'overlay',
           animation: 'white-flicker-alt 5.8s ease-in-out infinite',
@@ -308,7 +308,7 @@ export default function Values() {
         <div style={{
           position: 'absolute', inset: 0, zIndex: 6,
           background: 'white',
-          opacity: 1,
+          opacity: 0,
           pointerEvents: 'none',
           mixBlendMode: 'overlay',
           animation: 'white-flicker-rare 7.3s ease-in-out infinite',
