@@ -93,8 +93,8 @@ export default function Hero({ isMuted, volume }) {
   const [coords, setCoords] = useState({ x: '0000', y: '0000' });
   const [heroHovered, setHeroHovered] = useState(false);
 
-  const decodedHeading1 = useDecodedText(heroHovered ? 'Fleet Is Ready' : 'Join Khalai Makhlooq', heroHovered ? 0 : 500, heroHovered ? 325 : 600);
-  const decodedHeading2 = useDecodedText(heroHovered ? 'Scene Is Live' : 'Rule the Stars', heroHovered ? 45 : 700, heroHovered ? 325 : 600);
+  const decodedHeading1 = useDecodedText('Join Khalai Makhlooq', 500, 600);
+  const decodedHeading2 = useDecodedText('Rule the Stars', 700, 600);
   const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : 'Elite Star Citizen Org, laid-back scene', heroHovered ? 0 : 400, heroHovered ? 250 : 400);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ export default function Hero({ isMuted, volume }) {
   }, []);
 
   return (
-    <section id="hero" className="hero-section" onMouseEnter={() => setHeroHovered(true)} onMouseLeave={() => setHeroHovered(false)}>
+    <section id="hero" className="hero-section" ref={trackingRef} onMouseEnter={() => setHeroHovered(true)} onMouseLeave={() => setHeroHovered(false)}>
       <div className="hero-bg">
         <motion.video
           ref={videoRef}
@@ -166,7 +166,7 @@ export default function Hero({ isMuted, volume }) {
       </div>
 
 
-      <div className="tracking-area" ref={trackingRef}>
+      <div className="tracking-area">
         <div className="custom-cursor" ref={cursorRef}>
           <div className="line-vertical"></div>
           <div className="line-horizontal"></div>
@@ -193,38 +193,52 @@ export default function Hero({ isMuted, volume }) {
 
 
             <div className="hero-heading-wrapper">
-              <motion.h1
-                initial={{ y: '100%' }}
-                animate={{ y: 0, letterSpacing: heroHovered ? '-0.055em' : '-0.03em' }}
-                transition={{ delay: 0.5, duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-                className="hero-heading text-glow"
+              <a
+                href="https://discord.gg/kmhq"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block relative z-20"
               >
-                {decodedHeading1}
-              </motion.h1>
+                <motion.h1
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0, letterSpacing: heroHovered ? '-0.055em' : '-0.03em' }}
+                  transition={{ delay: 0.5, duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
+                  className="hero-heading text-glow"
+                >
+                  {decodedHeading1}
+                </motion.h1>
+              </a>
             </div>
 
             <div className="hero-heading-wrapper">
-              <motion.h1
-                initial={{ y: '100%' }}
-                animate={{ y: 0, scale: heroHovered ? 1.025 : 1 }}
-                transition={{ delay: 0.6, duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-                className="hero-heading accent text-glow"
-                whileHover={{ scale: 1.05, skewX: -5 }}
+              <a
+                href="https://discord.gg/kmhq"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block relative z-20"
               >
-                <img
-                  src="/nobglogo.png"
-                  alt="Khalai Makhlooq"
-                  style={{
-                    display: 'inline-block',
-                    width: '1.5em',
-                    height: '1.5em',
-                    verticalAlign: 'middle',
-                    marginRight: '0.3em',
-                    filter: 'drop-shadow(0 0 10px rgba(74, 109, 86, 0.4))'
-                  }}
-                />
-                {decodedHeading2}
-              </motion.h1>
+                <motion.h1
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0, scale: heroHovered ? 1.025 : 1 }}
+                  transition={{ delay: 0.6, duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
+                  className="hero-heading accent text-glow"
+                  whileHover={{ scale: 1.05, skewX: -5 }}
+                >
+                  <img
+                    src="/nobglogo.png"
+                    alt="Khalai Makhlooq"
+                    style={{
+                      display: 'inline-block',
+                      width: '1.5em',
+                      height: '1.5em',
+                      verticalAlign: 'middle',
+                      marginRight: '0.3em',
+                      filter: 'drop-shadow(0 0 10px rgba(74, 109, 86, 0.4))'
+                    }}
+                  />
+                  {decodedHeading2}
+                </motion.h1>
+              </a>
             </div>
 
 
