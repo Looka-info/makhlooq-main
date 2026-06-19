@@ -9,12 +9,17 @@ const TIMELINE = [
   { year: '2954', title: 'Pyro Trip', desc: 'Outpost set, tea imaginary, danger very real.' },
 ];
 
-export default function AboutDeckArchives() {
+export default function AboutDeckArchives({ settings }) {
+  const backgroundImage = settings?.archives_background_url || '/backgrounds/SC-3.22_20240110_133821_mT-flower-hill-sunset_f.png';
+  const introYear = settings?.archives_intro_year || '2950';
+  const introTitle = settings?.archives_intro_title || 'Genesis';
+  const introDesc = settings?.archives_intro_desc || "Squad's first proper entry. Scene officially live.";
+
   return (
     <section className="relative overflow-hidden bg-[#040806] border-t border-white/10">
       <div className="absolute inset-0 opacity-30">
         <img
-          src="/backgrounds/SC-3.22_20240110_133821_mT-flower-hill-sunset_f.png"
+          src={backgroundImage}
           alt="Historical Archives"
           className="w-full h-full object-cover"
         />
@@ -23,13 +28,10 @@ export default function AboutDeckArchives() {
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-24 sm:px-8 lg:px-12">
         <div className="mb-16 text-center">
-          <div className="font-mono text-[10px] uppercase tracking-[0.55em] text-emerald-500/60 mb-4">
-            ◈ Deck 04: Historical Archives ◈
-          </div>
           <div className="text-sm text-gray-400 leading-relaxed max-w-2xl mx-auto">
-            2950
-            <div className="mt-4 mb-8 text-3xl font-bold uppercase tracking-[0.18em] text-white">Genesis</div>
-            <p className="text-gray-400">Squad's first proper entry. Scene officially live.</p>
+            {introYear}
+            <div className="mt-4 mb-8 text-3xl font-bold uppercase tracking-[0.18em] text-white">{introTitle}</div>
+            <p className="text-gray-400">{introDesc}</p>
           </div>
         </div>
 
@@ -50,11 +52,6 @@ export default function AboutDeckArchives() {
           ))}
         </div>
 
-        <div className="mt-16 text-center">
-          <button className="inline-flex items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/5 px-12 py-4 text-sm font-black uppercase tracking-[0.35em] text-emerald-400 transition-all hover:bg-emerald-500/10 active:scale-[0.98]">
-            View Full History
-          </button>
-        </div>
       </div>
     </section>
   );

@@ -70,6 +70,32 @@ export default function AboutNews() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">{item.title}</h3>
                 <p className="text-gray-400 whitespace-pre-wrap leading-relaxed">{item.body}</p>
+                {item.media_url ? (
+                  <div className="mt-6 rounded-3xl border border-white/10 bg-black/25 p-4">
+                    {item.media_type === 'image' ? (
+                      <img
+                        src={item.media_url}
+                        alt={item.title}
+                        className="w-full rounded-3xl object-cover"
+                      />
+                    ) : item.media_type === 'video' ? (
+                      <video
+                        controls
+                        src={item.media_url}
+                        className="w-full rounded-3xl bg-black"
+                      />
+                    ) : (
+                      <a
+                        href={item.media_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-300 underline hover:text-white"
+                      >
+                        {item.media_url}
+                      </a>
+                    )}
+                  </div>
+                ) : null}
               </motion.article>
             ))
           )}

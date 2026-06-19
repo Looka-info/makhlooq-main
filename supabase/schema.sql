@@ -36,10 +36,7 @@ create policy "Public read" on public.team_members
 drop policy if exists "Self update" on public.team_members;
 create policy "Self update" on public.team_members
   for update using (
-    discord_uid = coalesce(
-      current_setting('request.jwt.claims', true)::json->'user_metadata'->>'provider_id',
-      current_setting('request.jwt.claims', true)::json->'user_metadata'->>'sub'
-    )
+    discord_uid = current_setting('request.jwt.claims', true)::json->>'sub'
   );
 
 -- Function to check admin status bypassing RLS to avoid infinite recursion
@@ -59,10 +56,7 @@ drop policy if exists "Admin full access" on public.team_members;
 create policy "Admin full access" on public.team_members
   for all using (
     public.is_admin(
-      coalesce(
-        current_setting('request.jwt.claims', true)::json->'user_metadata'->>'provider_id',
-        current_setting('request.jwt.claims', true)::json->'user_metadata'->>'sub'
-      )
+      current_setting('request.jwt.claims', true)::json->>'sub'
     )
   );
 

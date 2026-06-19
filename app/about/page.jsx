@@ -1,14 +1,28 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../../src/components/Header';
 import AboutDeckBridge from '../../src/components/about/AboutDeckBridge';
-import AboutDeckBriefing from '../../src/components/about/AboutDeckBriefing';
-import AboutDeckHangar from '../../src/components/about/AboutDeckHangar';
 import AboutDeckArchives from '../../src/components/about/AboutDeckArchives';
 import AboutNews from '../../src/components/about/AboutNews';
 
 export default function AboutPage() {
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/about-settings');
+        const data = await res.json();
+        setSettings(data);
+      } catch {
+        setSettings(null);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
   return (
     <div className="bg-black text-white min-h-screen selection:bg-emerald-500/30 relative">
       <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
@@ -17,10 +31,8 @@ export default function AboutPage() {
       <Header />
 
       <main className="relative z-10">
-        <AboutDeckBridge />
-        <AboutDeckBriefing />
-        <AboutDeckHangar />
-        <AboutDeckArchives />
+        <AboutDeckBridge settings={settings} />
+        <AboutDeckArchives settings={settings} />
         <AboutNews />
       </main>
     </div>

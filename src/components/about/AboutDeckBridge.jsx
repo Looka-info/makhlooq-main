@@ -3,9 +3,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
 
-export default function AboutDeckBridge() {
-  const sentence = "KHALAI MAKHLOOQ";
+export default function AboutDeckBridge({ settings }) {
+  const sentence = settings?.bridge_heading || "KHALAI MAKHLOOQ";
   const words = sentence.split(" ");
+  const subtitle = settings?.bridge_subtitle || 'From Stanton to Pyro, the route gets spicy. Crew tight, vibe light.';
+  const backgroundImage = settings?.bridge_background_url || '/backgrounds/SC-3.22_20240301_203233_Zephyr-sun_f.png';
 
   return (
     <section className="deck-section w-screen h-screen flex-shrink-0 relative overflow-hidden bg-black">
@@ -17,7 +19,7 @@ export default function AboutDeckBridge() {
         className="absolute inset-0"
       >
         <img 
-          src="/backgrounds/SC-3.22_20240301_203233_Zephyr-sun_f.png"
+          src={backgroundImage}
           alt="Fleet Command"
           className="w-full h-full object-cover"
         />
@@ -61,8 +63,7 @@ export default function AboutDeckBridge() {
           transition={{ duration: 1, delay: 0.8 }}
           className="max-w-xl mx-auto text-gray-500 font-mono text-xs md:text-sm tracking-widest uppercase border-t border-white/10 pt-8"
         >
-          From Stanton to Pyro, the route gets spicy. <br />
-          <span className="text-emerald-500/50">Crew tight, vibe light.</span>
+          {subtitle}
         </motion.p>
       </div>
 
