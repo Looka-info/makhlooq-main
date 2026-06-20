@@ -59,6 +59,9 @@
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+* { cursor: none !important; }
+a, a *, button, button *, [role="button"], [role="button"] *, select { cursor: pointer !important; }
+input, textarea { cursor: text !important; }
 html { scrollbar-width: none; -webkit-font-smoothing: antialiased; }
 html::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
 html.lenis { height: auto; }

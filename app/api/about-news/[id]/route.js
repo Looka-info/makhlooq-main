@@ -1,29 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { requireFleetAdmin } from '../../../lib/adminAuth';
+import { requireFleetAdmin } from '../../../../lib/adminAuth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-export async function GET() {
-  const { data, error } = await supabase
-    .from('about_news')
-    .select('*')
-    .order('published_at', { ascending: false });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data || []);
-}
-
-export async function POST(request) {
+export async function PUT(request, { params }) {
   const auth = await requireFleetAdmin();
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  const { id } = params;
+  if (!id) {
+    return NextResponse.json({ error: 'News ID is required.' }, { status: 400 });
   }
 
   const contentType = request.headers.get('content-type') || '';
@@ -32,6 +24,7 @@ export async function POST(request) {
   let mediaUrl;
   let mediaType;
   let mediaFile;
+  let keepMedia = true;
   let publishedAt;
 
   if (contentType.includes('multipart/form-data')) {
@@ -41,6 +34,7 @@ export async function POST(request) {
     mediaUrl = String(formData.get('media_url') || '').trim() || null;
     mediaType = String(formData.get('media_type') || '').trim() || null;
     mediaFile = formData.get('media_file');
+    keepMedia = formData.get('keep_media') !== 'false';
     publishedAt = formData.get('published_at');
   } else {
     const body = await request.json();
@@ -48,6 +42,7 @@ export async function POST(request) {
     newsBody = String(body.body || '');
     mediaUrl = String(body.media_url || '').trim() || null;
     mediaType = String(body.media_type || '').trim() || null;
+    keepMedia = body.keep_media !== false;
     publishedAt = body.published_at;
   }
 
@@ -91,15 +86,27 @@ export async function POST(request) {
     }
   }
 
+  const updateData = {
+    title: title.trim(),
+    body: newsBody.trim(),
+  };
+
+  if (!keepMedia && !mediaFile && !mediaUrl) {
+    updateData.media_url = null;
+    updateData.media_type = null;
+  } else if (storedMediaUrl) {
+    updateData.media_url = storedMediaUrl;
+    updateData.media_type = normalizedMediaType;
+  }
+
+  if (publishedAt) {
+    updateData.published_at = new Date(publishedAt).toISOString();
+  }
+
   const { data, error } = await supabase
     .from('about_news')
-    .insert({
-      title: title.trim(),
-      body: newsBody.trim(),
-      media_url: storedMediaUrl ? storedMediaUrl.trim() : null,
-      media_type: normalizedMediaType,
-      published_at: publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString(),
-    })
+    .update(updateData)
+    .eq('id', id)
     .select()
     .single();
 
@@ -107,5 +114,28 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return NextResponse.json(data, { status: 200 });
+}
+
+export async function DELETE(request, { params }) {
+  const auth = await requireFleetAdmin();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  const { id } = params;
+  if (!id) {
+    return NextResponse.json({ error: 'News ID is required.' }, { status: 400 });
+  }
+
+  const { error } = await supabase
+    .from('about_news')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true }, { status: 200 });
 }

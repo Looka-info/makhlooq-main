@@ -71,14 +71,14 @@ export async function POST(request) {
     const bytes = Buffer.from(await bridgeBackgroundFile.arrayBuffer());
 
     const { error: uploadError } = await supabase.storage
-      .from('avatars')
+      .from('media')
       .upload(path, bytes, { contentType: bridgeBackgroundFile.type || 'image/png', upsert: true });
 
     if (uploadError) {
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
-    const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(path);
+    const { data: publicData } = supabase.storage.from('media').getPublicUrl(path);
     storedBridgeBackgroundUrl = publicData?.publicUrl || null;
   }
 
@@ -90,14 +90,14 @@ export async function POST(request) {
     const bytes = Buffer.from(await archivesBackgroundFile.arrayBuffer());
 
     const { error: uploadError } = await supabase.storage
-      .from('avatars')
+      .from('media')
       .upload(path, bytes, { contentType: archivesBackgroundFile.type || 'image/png', upsert: true });
 
     if (uploadError) {
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
-    const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(path);
+    const { data: publicData } = supabase.storage.from('media').getPublicUrl(path);
     storedArchivesBackgroundUrl = publicData?.publicUrl || null;
   }
 

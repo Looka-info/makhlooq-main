@@ -1,5 +1,7 @@
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import './globals.css';
+import CursorSpotlight from '@/components/CursorSpotlight';
+import ShawlTrail from '@/components/ShawlTrail';
 
 // ▸ FONT OPTIMIZATION (Performance: Prevents layout shift)
 // display: 'swap' shows fallback font immediately, then swaps to custom font (avoids FOUT)
@@ -141,6 +143,8 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <CursorSpotlight />
+        <ShawlTrail />
         {children}
       </body>
     </html>
