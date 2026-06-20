@@ -34,10 +34,10 @@ export default function AboutNews() {
     <section className="relative overflow-hidden bg-[#040806] text-white border-t border-white/5">
       <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 lg:px-12">
         <div className="mb-12 text-center">
-          <div className="font-mono text-[10px] uppercase tracking-[0.45em] text-emerald-500/50 mb-4">
+          <div className="font-mono text-[10px] uppercase tracking-[0.45em] text-lime-400/50 mb-4">
             ◈ Latest Dispatches ◈
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight uppercase">
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase">
             News from the bridge
           </h2>
         </div>
@@ -61,7 +61,7 @@ export default function AboutNews() {
                 transition={{ duration: 0.6 }}
                 className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-10 shadow-[0_24px_90px_rgba(0,0,0,0.25)]"
               >
-                <div className="font-mono text-xs uppercase tracking-[0.35em] text-emerald-500/60 mb-3">
+                <div className="font-mono text-xs font-black uppercase tracking-[0.35em] text-lime-400/60 mb-3">
                   {new Date(item.published_at).toLocaleDateString(undefined, {
                     month: 'short',
                     day: 'numeric',
@@ -89,7 +89,7 @@ export default function AboutNews() {
                         href={item.media_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-emerald-300 underline hover:text-white"
+                        className="text-lime-300 underline hover:text-white"
                       >
                         {item.media_url}
                       </a>
