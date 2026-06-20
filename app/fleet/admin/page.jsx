@@ -8,6 +8,7 @@ import {
   LogOut, UserPlus, UserMinus,
 } from 'lucide-react';
 import { AuthScreen, LoginScreen, DeniedScreen } from '../../../src/components/fleet/admin/FleetAdminAuth';
+import AboutVisualEditor from '../../../src/components/admin/AboutVisualEditor';
 
 /* ───────── Helper: validate a slug via FleetYards ───────── */
 async function validateFleetyardsSlug(slug) {
@@ -570,6 +571,7 @@ export default function FleetAdminPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [toggling, setToggling] = useState(null);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('registry');
 
   const fetchConfigs = useCallback(async () => {
     setLoading(true);
@@ -698,10 +700,17 @@ export default function FleetAdminPage() {
               <Shield size={14} className="animate-pulse" /> KMHQ Secure
             </div>
             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-white flex items-center gap-4">
-              Fleet <span className="text-emerald-500">Registry</span>
+              {activeTab === 'registry' ? (
+                <>Fleet <span className="text-emerald-500">Registry</span></>
+              ) : (
+                <>About <span className="text-emerald-500">Editor</span></>
+              )}
             </h1>
             <p className="text-gray-400 text-sm mt-3 max-w-xl leading-relaxed">
-              Manage the master list of approved ship configurations. Ships added here are deployed instantly to the public Fleet Command interface.
+              {activeTab === 'registry' 
+                ? 'Manage the master list of approved ship configurations. Ships added here are deployed instantly to the public Fleet Command interface.'
+                : 'Edit the About page using the live canvas editor. Changes will go live instantly.'
+              }
             </p>
           </div>
 
@@ -729,6 +738,26 @@ export default function FleetAdminPage() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 border-b border-white/[0.07] pb-4 shrink-0">
+          <button 
+            onClick={() => setActiveTab('registry')}
+            className={`px-5 py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${activeTab === 'registry' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'text-gray-500 hover:text-white hover:bg-white/5 border border-transparent'}`}
+          >
+            Fleet Registry
+          </button>
+          <button 
+            onClick={() => setActiveTab('about')}
+            className={`px-5 py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${activeTab === 'about' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'text-gray-500 hover:text-white hover:bg-white/5 border border-transparent'}`}
+          >
+            About Editor
+          </button>
+        </div>
+
+        {activeTab === 'about' ? (
+          <AboutVisualEditor />
+        ) : (
+          <>
         {/* Filters and Stats Row */}
         <div className="flex flex-col md:flex-row gap-4 mb-6 shrink-0 justify-between">
           <div className="relative flex-1 max-w-sm">
@@ -807,6 +836,8 @@ export default function FleetAdminPage() {
             Admin access managed via <strong className="text-white">Discord Auth</strong>.
           </div>
         </div>
+          </>
+        )}
       </div>
 
       {/* Add Modal */}

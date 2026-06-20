@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { CalendarDays, Loader2 } from 'lucide-react';
+import { CalendarDays, Loader2, X } from 'lucide-react';
 
 import Header from '../../src/components/Header';
 import FleetScene from '../../src/components/fleet/FleetScene';
@@ -152,11 +152,10 @@ function StackGhosts({ count = 1, compact = false }) {
           <span
             key={offset}
             aria-hidden="true"
-            className={`pointer-events-none absolute inset-0 rounded-xl border border-lime-300/15 bg-black/70 transition-all duration-300 ${
-              compact
+            className={`pointer-events-none absolute inset-0 rounded-xl border border-lime-300/15 bg-black/70 transition-all duration-300 ${compact
                 ? 'translate-x-1 translate-y-1 group-hover:translate-x-2 group-hover:translate-y-2'
                 : 'translate-x-1.5 translate-y-1.5 group-hover:translate-x-3 group-hover:translate-y-2'
-            }`}
+              }`}
             style={{
               zIndex: -offset,
               opacity: 0.7 - index * 0.16,
@@ -461,6 +460,7 @@ export default function FleetPage() {
   const [loadingSelectedShip, setLoadingSelectedShip] = useState(false);
   const [loadingShips, setLoadingShips] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [expandedSlug, setExpandedSlug] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -651,16 +651,18 @@ export default function FleetPage() {
     }
     const qty = ship.fleetQuantity || 1;
     slugGroups[ship.slug].count += qty;
-    
+
     computedTotalShips += qty;
     const crewMax = Number(String(ship.crew || '').split('-').pop()?.replace(/[^0-9]/g, ''));
     computedTotalMaxCrew += (Number.isFinite(crewMax) ? crewMax : 0) * qty;
-    
+
     // Deduplicate CEOs if multiple config sources use the same CEO or if we just want unique names
     const ceo = ship.ceoName || ship.sourceFleet || 'KMHQ Garage';
     if (!slugGroups[ship.slug].stackedCeos.includes(ceo)) {
       slugGroups[ship.slug].stackedCeos.push(ceo);
     }
+    slugGroups[ship.slug].instances = slugGroups[ship.slug].instances || [];
+    slugGroups[ship.slug].instances.push({ ceo, qty, originalIndex: idx, id: ship.id });
   });
 
   const stackedShips = Object.values(slugGroups);
@@ -686,7 +688,7 @@ export default function FleetPage() {
       <Header />
 
       {/* Main layout — fills entire screen, pt accounts for the fixed header (~64px) */}
-      <div className="relative z-10 w-full h-full max-w-[1920px] mx-auto px-4 pb-4 pt-[72px] overflow-hidden">
+      <div className="relative z-10 w-full h-full px-4 pb-4 pt-[72px] overflow-hidden">
 
         {loadingShips && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md rounded-[2.5rem]">
@@ -725,52 +727,87 @@ export default function FleetPage() {
 
                 {/* Rare Fleets 2x2 Grid */}
                 <div className="grid grid-cols-2 gap-2.5">
-                  {rareFleets.map((ship, i) => (
-                    <button
-                      key={ship.id}
-                      onClick={() => setSelectedIndex(ship.originalIndex)}
-                      className={`group relative aspect-[16/10] rounded-xl transition-all duration-300
-                        ${activeShip?.slug === ship.slug
-                          ? 'border-2 border-lime-400 shadow-[0_0_20px_rgba(163,230,53,0.3)] z-10'
-                          : 'border border-white/10 hover:border-lime-400/40 z-0'
-                        }`}
-                    >
-                      {/* Stacking effect if multiple ships */}
-                      {ship.count > 1 && (
-                        <>
-                          <div className="absolute inset-0 bg-white/[0.05] border border-white/10 rounded-xl translate-x-1.5 translate-y-1.5 -z-10" />
-                          <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-xl translate-x-3 translate-y-3 -z-20" />
-                        </>
-                      )}
-
-                      {/* Main Card */}
-                      <div className="absolute inset-0 rounded-xl overflow-hidden bg-black">
-                        {/* BG */}
-                        {ship.thumbnail
-                          ? <img src={ship.thumbnail} alt={ship.name} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity grayscale group-hover:grayscale-0" />
-                          : <div className="absolute inset-0 flex items-center justify-center border border-dashed border-white/10 text-white/20"><div className="w-12 h-12 border border-white/10 rounded-full" /></div>
-                        }
-
-                        {/* Top Badge & Count */}
-                        <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
-                          <div className="bg-lime-400 text-black px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">{rareTags[i] || 'F-EXT'}</div>
-                          {ship.count > 1 && (
-                            <div className="bg-black/60 backdrop-blur border border-white/10 text-white px-2 py-0.5 rounded text-[10px] font-mono font-bold">×{ship.count}</div>
+                  {rareFleets.map((ship, i) => {
+                    const isExpanded = expandedSlug === ship.slug;
+                    return (
+                      <div key={ship.id} className="relative aspect-[16/10]">
+                        <button
+                          onClick={() => {
+                            if (ship.count > 1) {
+                              setExpandedSlug(isExpanded ? null : ship.slug);
+                            } else {
+                              setSelectedIndex(ship.originalIndex);
+                            }
+                          }}
+                          className={`group absolute inset-0 w-full h-full rounded-xl transition-all duration-300
+                          ${activeShip?.slug === ship.slug
+                              ? 'border-2 border-lime-400 shadow-[0_0_20px_rgba(163,230,53,0.3)] z-10'
+                              : 'border border-white/10 hover:border-lime-400/40 z-0'
+                            }`}
+                        >
+                          {/* Stacking effect if multiple ships */}
+                          {ship.count > 1 && !isExpanded && (
+                            <>
+                              <div className="absolute inset-0 bg-white/[0.05] border border-white/10 rounded-xl translate-x-1.5 translate-y-1.5 -z-10" />
+                              <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-xl translate-x-3 translate-y-3 -z-20" />
+                            </>
                           )}
-                        </div>
 
-                        {/* Bottom Info */}
-                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent z-10 text-left">
-                          <div className="text-[10px] font-mono text-lime-400/50 uppercase truncate leading-none mb-0.5">{ship.manufacturer}</div>
-                          <div className="font-bold text-white uppercase tracking-tight text-sm truncate leading-none mb-1">{ship.name}</div>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className="text-[7px] font-mono font-black uppercase tracking-widest text-lime-400/60 bg-lime-400/10 border border-lime-400/20 rounded px-1 py-px leading-none">CEO</span>
-                            <span className="text-[8px] font-mono text-white/40 uppercase truncate">{ship.ceoName || ship.sourceFleet || 'KMHQ'}</span>
+                          {/* Main Card */}
+                          <div className={`absolute inset-0 rounded-xl overflow-hidden bg-black transition-all ${isExpanded ? 'opacity-20' : ''}`}>
+                            {/* BG */}
+                            {ship.thumbnail
+                              ? <img src={ship.thumbnail} alt={ship.name} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity grayscale group-hover:grayscale-0" />
+                              : <div className="absolute inset-0 flex items-center justify-center border border-dashed border-white/10 text-white/20"><div className="w-12 h-12 border border-white/10 rounded-full" /></div>
+                            }
+
+                            {/* Top Badge & Count */}
+                            <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+                              <div className="bg-lime-400 text-black px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">{rareTags[i] || 'F-EXT'}</div>
+                              {ship.count > 1 && (
+                                <div className="bg-black/60 backdrop-blur border border-white/10 text-white px-2 py-0.5 rounded text-[10px] font-mono font-bold">×{ship.count}</div>
+                              )}
+                            </div>
+
+                            {/* Bottom Info */}
+                            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent z-10 text-left">
+                              <div className="text-[10px] font-mono text-lime-400/50 uppercase truncate leading-none mb-0.5">{ship.manufacturer}</div>
+                              <div className="font-bold text-white uppercase tracking-tight text-sm truncate leading-none mb-1">{ship.name}</div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-[7px] font-mono font-black uppercase tracking-widest text-lime-400/60 bg-lime-400/10 border border-lime-400/20 rounded px-1 py-px leading-none">CEO</span>
+                                <span className="text-[8px] font-mono text-white/40 uppercase truncate">{ship.count > 1 ? 'MULTIPLE' : (ship.ceoName || ship.sourceFleet || 'KMHQ')}</span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        </button>
+
+                        {/* Expanded View */}
+                        {isExpanded && (
+                          <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md rounded-xl border border-lime-400/30 p-2 overflow-y-auto custom-scrollbar flex flex-col gap-1.5">
+                            <div className="flex justify-between items-center mb-1 sticky top-0 bg-black/90 pb-1 z-10">
+                              <span className="text-[9px] font-black uppercase text-lime-400 tracking-widest px-1">Select Asset</span>
+                              <button onClick={(e) => { e.stopPropagation(); setExpandedSlug(null); }} className="text-white/50 hover:text-white"><X size={12} /></button>
+                            </div>
+                            {ship.instances?.map((inst, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => { setSelectedIndex(inst.originalIndex); setExpandedSlug(null); }}
+                                className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-lime-400/20 border border-white/10 hover:border-lime-400/40 text-left transition-all"
+                              >
+                                <div className="min-w-0 pr-2">
+                                  <div className="text-[10px] font-black text-white uppercase truncate">{inst.ceo}</div>
+                                  <div className="text-[8px] text-lime-400/60 font-mono tracking-widest">Qty: {inst.qty}</div>
+                                </div>
+                                <div className="shrink-0 w-4 h-4 rounded-full border border-lime-400/30 flex items-center justify-center">
+                                  {activeShip?.id === inst.id && <div className="w-2 h-2 rounded-full bg-lime-400" />}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </button>
-                  ))}
+                    );
+                  })}
                   {rareFleets.length === 0 && !loadingShips && (
                     <div className="col-span-2 aspect-[16/5] flex items-center justify-center rounded-xl border border-dashed border-white/10 text-white/25 text-[10px] font-mono uppercase tracking-widest">
                       Admin has not added rare fleets
@@ -817,36 +854,85 @@ export default function FleetPage() {
 
               {/* Ships grid — scrollable */}
               <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
-                <div className="grid grid-cols-2 gap-2">
-                  {smallFleets.map((ship, i) => (
-                    <button
-                      key={ship.id}
-                      onClick={() => {
-                        const idx = ships.findIndex(s => s.id === ship.id);
-                        if (idx !== -1) setSelectedIndex(idx);
-                      }}
-                      className={`group relative aspect-[4/3] rounded-xl overflow-hidden transition-all duration-300
-                        ${activeShip?.id === ship.id
-                          ? 'border-2 border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.25)]'
-                          : 'border border-white/[0.08] hover:border-lime-400/30'
-                        }`}
-                    >
-                      {ship.thumbnail
-                        ? <img src={ship.thumbnail} alt={ship.name} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-65 group-hover:scale-105 transition-all duration-500" />
-                        : <div className="absolute inset-0 bg-gradient-to-br from-lime-900/10 to-black/50" />
-                      }
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                <div className="grid grid-cols-3 gap-2">
+                  {smallFleets.map((ship, i) => {
+                    const isExpanded = expandedSlug === ship.slug;
+                    return (
+                      <div key={ship.id} className="relative aspect-[4/3]">
+                        <button
+                          onClick={() => {
+                            if (ship.count > 1) {
+                              setExpandedSlug(isExpanded ? null : ship.slug);
+                            } else {
+                              const idx = ships.findIndex(s => s.id === ship.id);
+                              if (idx !== -1) setSelectedIndex(idx);
+                            }
+                          }}
+                          className={`group absolute inset-0 w-full h-full rounded-xl overflow-hidden transition-all duration-300
+                          ${activeShip?.slug === ship.slug
+                              ? 'border-2 border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.25)]'
+                              : 'border border-white/[0.08] hover:border-lime-400/30'
+                            }`}
+                        >
+                          {/* Stacking effect */}
+                          {ship.count > 1 && !isExpanded && (
+                            <>
+                              <div className="absolute inset-0 bg-white/[0.05] border border-white/10 rounded-xl translate-x-1 translate-y-1 -z-10" />
+                              <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-xl translate-x-2 translate-y-2 -z-20" />
+                            </>
+                          )}
 
-                      <div className="absolute top-1.5 left-1.5 bg-white/10 text-white/70 font-black text-[8px] uppercase tracking-wide px-1.5 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
-                        {sfTags[i] || `SF${i+1}`}
-                      </div>
+                          <div className={`absolute inset-0 transition-all ${isExpanded ? 'opacity-20' : ''}`}>
+                            {ship.thumbnail
+                              ? <img src={ship.thumbnail} alt={ship.name} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-65 group-hover:scale-105 transition-all duration-500" />
+                              : <div className="absolute inset-0 bg-gradient-to-br from-lime-900/10 to-black/50" />
+                            }
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                      <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <div className="text-[8px] font-mono text-lime-300/60 uppercase truncate">{ship.manufacturer}</div>
-                        <div className="text-[11px] font-black uppercase text-white leading-tight truncate">{ship.name}</div>
+                            <div className="absolute top-1.5 left-1.5 bg-white/10 text-white/70 font-black text-[8px] uppercase tracking-wide px-1.5 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
+                              {sfTags[i] || `SF${i + 1}`}
+                            </div>
+
+                            {ship.count > 1 && (
+                              <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur border border-white/10 text-white px-1.5 py-0.5 rounded text-[9px] font-mono font-bold">
+                                ×{ship.count}
+                              </div>
+                            )}
+
+                            <div className="absolute bottom-0 left-0 right-0 p-2 text-left">
+                              <div className="text-[8px] font-mono text-lime-300/60 uppercase truncate">{ship.manufacturer}</div>
+                              <div className="text-[11px] font-black uppercase text-white leading-tight truncate">{ship.name}</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Expanded View */}
+                        {isExpanded && (
+                          <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md rounded-xl border border-lime-400/30 p-2 overflow-y-auto custom-scrollbar flex flex-col gap-1.5">
+                            <div className="flex justify-between items-center mb-1 sticky top-0 bg-black/90 pb-1 z-10">
+                              <span className="text-[9px] font-black uppercase text-lime-400 tracking-widest px-1">Select Asset</span>
+                              <button onClick={(e) => { e.stopPropagation(); setExpandedSlug(null); }} className="text-white/50 hover:text-white"><X size={12} /></button>
+                            </div>
+                            {ship.instances?.map((inst, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => { setSelectedIndex(inst.originalIndex); setExpandedSlug(null); }}
+                                className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-lime-400/20 border border-white/10 hover:border-lime-400/40 text-left transition-all"
+                              >
+                                <div className="min-w-0 pr-2">
+                                  <div className="text-[10px] font-black text-white uppercase truncate">{inst.ceo}</div>
+                                  <div className="text-[8px] text-lime-400/60 font-mono tracking-widest">Qty: {inst.qty}</div>
+                                </div>
+                                <div className="shrink-0 w-3 h-3 rounded-full border border-lime-400/30 flex items-center justify-center">
+                                  {activeShip?.id === inst.id && <div className="w-1.5 h-1.5 rounded-full bg-lime-400" />}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </button>
-                  ))}
+                    );
+                  })}
                   {smallFleets.length === 0 && !loadingShips && (
                     <div className="col-span-2 flex items-center justify-center rounded-xl border border-dashed border-white/10 aspect-[4/1] text-white/25 text-[10px] font-mono uppercase tracking-widest">
                       Admin has not added small fleets

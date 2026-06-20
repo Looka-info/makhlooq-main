@@ -36,7 +36,14 @@ export async function GET() {
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return NextResponse.json((data && data.length > 0) ? data : envConfigs);
+    
+    if (data && data.length > 0) {
+      // Combine env configs with DB configs, letting DB configs override env configs with the same slug
+      const dbSlugs = new Set(data.map(d => d.slug));
+      const filteredEnv = envConfigs.filter(env => !dbSlugs.has(env.slug));
+      return NextResponse.json([...filteredEnv, ...data]);
+    }
+    return NextResponse.json(envConfigs);
   } catch (err) {
     if (err?.code !== 'PGRST205') {
       console.error('fleet_configs lookup failed:', err);

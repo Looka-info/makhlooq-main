@@ -14,7 +14,7 @@ export async function GET() {
     .limit(1)
     .single();
 
-  if (error) {
+  if (error && error.code !== 'PGRST116') {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -27,16 +27,89 @@ export async function POST(request) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const body = await request.json();
+  const contentType = request.headers.get('content-type') || '';
+  let bridgeHeading;
+  let bridgeSubtitle;
+  let bridgeBackgroundUrl;
+  let archivesBackgroundUrl;
+  let archivesIntroYear;
+  let archivesIntroTitle;
+  let archivesIntroDesc;
+  let bridgeBackgroundFile;
+  let archivesBackgroundFile;
+
+  if (contentType.includes('multipart/form-data')) {
+    const formData = await request.formData();
+    bridgeHeading = String(formData.get('bridge_heading') || '').trim() || null;
+    bridgeSubtitle = String(formData.get('bridge_subtitle') || '').trim() || null;
+    bridgeBackgroundUrl = String(formData.get('bridge_background_url') || '').trim() || null;
+    archivesBackgroundUrl = String(formData.get('archives_background_url') || '').trim() || null;
+    archivesIntroYear = String(formData.get('archives_intro_year') || '').trim() || null;
+    archivesIntroTitle = String(formData.get('archives_intro_title') || '').trim() || null;
+    archivesIntroDesc = String(formData.get('archives_intro_desc') || '').trim() || null;
+    bridgeBackgroundFile = formData.get('bridge_background_file');
+    archivesBackgroundFile = formData.get('archives_background_file');
+  } else {
+    const body = await request.json();
+    bridgeHeading = String(body.bridge_heading || '').trim() || null;
+    bridgeSubtitle = String(body.bridge_subtitle || '').trim() || null;
+    bridgeBackgroundUrl = String(body.bridge_background_url || '').trim() || null;
+    archivesBackgroundUrl = String(body.archives_background_url || '').trim() || null;
+    archivesIntroYear = String(body.archives_intro_year || '').trim() || null;
+    archivesIntroTitle = String(body.archives_intro_title || '').trim() || null;
+    archivesIntroDesc = String(body.archives_intro_desc || '').trim() || null;
+  }
+
+  let storedBridgeBackgroundUrl = bridgeBackgroundUrl;
+  let storedArchivesBackgroundUrl = archivesBackgroundUrl;
+
+  // Handle bridge background file upload
+  if (bridgeBackgroundFile && typeof bridgeBackgroundFile !== 'string' && typeof bridgeBackgroundFile.arrayBuffer === 'function') {
+    const ext = String(bridgeBackgroundFile.name || '').split('.').pop() || 'png';
+    const fileName = `bridge-bg-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `about-settings/${fileName}`;
+    const bytes = Buffer.from(await bridgeBackgroundFile.arrayBuffer());
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, bytes, { contentType: bridgeBackgroundFile.type || 'image/png', upsert: true });
+
+    if (uploadError) {
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    }
+
+    const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(path);
+    storedBridgeBackgroundUrl = publicData?.publicUrl || null;
+  }
+
+  // Handle archives background file upload
+  if (archivesBackgroundFile && typeof archivesBackgroundFile !== 'string' && typeof archivesBackgroundFile.arrayBuffer === 'function') {
+    const ext = String(archivesBackgroundFile.name || '').split('.').pop() || 'png';
+    const fileName = `archives-bg-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `about-settings/${fileName}`;
+    const bytes = Buffer.from(await archivesBackgroundFile.arrayBuffer());
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, bytes, { contentType: archivesBackgroundFile.type || 'image/png', upsert: true });
+
+    if (uploadError) {
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    }
+
+    const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(path);
+    storedArchivesBackgroundUrl = publicData?.publicUrl || null;
+  }
+
   const draft = {
     id: 'main',
-    bridge_heading: body.bridge_heading?.trim() || null,
-    bridge_subtitle: body.bridge_subtitle?.trim() || null,
-    bridge_background_url: body.bridge_background_url?.trim() || null,
-    archives_background_url: body.archives_background_url?.trim() || null,
-    archives_intro_year: body.archives_intro_year?.trim() || null,
-    archives_intro_title: body.archives_intro_title?.trim() || null,
-    archives_intro_desc: body.archives_intro_desc?.trim() || null,
+    bridge_heading: bridgeHeading,
+    bridge_subtitle: bridgeSubtitle,
+    bridge_background_url: storedBridgeBackgroundUrl,
+    archives_background_url: storedArchivesBackgroundUrl,
+    archives_intro_year: archivesIntroYear,
+    archives_intro_title: archivesIntroTitle,
+    archives_intro_desc: archivesIntroDesc,
     updated_at: new Date().toISOString(),
   };
 
