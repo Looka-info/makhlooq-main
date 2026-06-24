@@ -249,7 +249,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.75, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Objective Infiltrations' : 'Org Scale Operations'}
+                {heroHovered ? 'Infiltrators' : 'Large Scale Operators'}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -257,7 +257,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.85, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Space Capitalists' : 'Murder Hobos?'}
+                {heroHovered ? 'Space Capitalists' : 'Bounty Hunters'}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -265,7 +265,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.95, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Deep Space Chilling' : 'Ride or Die'}
+                {heroHovered ? 'Deep Space Explorers' : 'Mercenaries'}
               </motion.div>
             </div>
           </div>
