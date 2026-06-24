@@ -95,7 +95,7 @@ export default function Hero({ isMuted, volume }) {
 
   const decodedHeading1 = useDecodedText('Join Khalai Makhlooq', 500, 600);
   const decodedHeading2 = useDecodedText('Rule the Stars', 700, 600);
-  const decodedLabel = useDecodedText(heroHovered ? 'Fleet: Full Throttle Ahead' : 'Elite Star Citizen PMCs', heroHovered ? 0 : 400, heroHovered ? 250 : 400);
+  const decodedLabel = useDecodedText(heroHovered ? 'Fleet: Full Throttle Ahead' : 'Elite Star Citizen PMC', heroHovered ? 0 : 400, heroHovered ? 250 : 400);
 
   useEffect(() => {
     if (videoRef.current) {
