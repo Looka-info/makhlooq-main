@@ -95,7 +95,7 @@ export default function Hero({ isMuted, volume }) {
 
   const decodedHeading1 = useDecodedText('Join Khalai Makhlooq', 500, 600);
   const decodedHeading2 = useDecodedText('Rule the Stars', 700, 600);
-  const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : 'Elite Star Citizen Org, laid-back scene', heroHovered ? 0 : 400, heroHovered ? 250 : 400);
+  const decodedLabel = useDecodedText(heroHovered ? 'Fleet: Full Throttle Ahead' : 'Elite Star Citizen PMCs', heroHovered ? 0 : 400, heroHovered ? 250 : 400);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -249,7 +249,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.75, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'We Enjoy PvE' : 'And, Welcome PvP '}
+                {heroHovered ? 'Objective Infiltrations' : 'Org Scale Operations'}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -257,7 +257,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.85, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Space Capitalists' : 'Also, Murder Hobos'}
+                {heroHovered ? 'Space Capitalists' : 'Murder Hobos?'}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -265,7 +265,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.95, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Deep Space Chilling' : 'Hide or Die'}
+                {heroHovered ? 'Deep Space Chilling' : 'Ride or Die'}
               </motion.div>
             </div>
           </div>
