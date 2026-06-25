@@ -405,32 +405,44 @@ const ProfileModal = ({ member, onClose }) => {
 // JOIN CTA
 // ============================================================
 
-const JoinCommunityCTA = () => (
+const JoinCommunityCTA = ({ joinCTA = {} }) => (
   <section className="relative mt-20 overflow-hidden">
     <div
       className="relative p-12 text-center overflow-hidden bg-white/[0.02] border border-white/5 rounded-[2.5rem] backdrop-blur-xl"
     >
       <div className="relative z-10 flex flex-col items-center gap-6">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase">
-          Recruitment Open
+          {joinCTA.badge || "Recruitment Open"}
         </div>
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white max-w-2xl">
-          Join <span className="text-white/40 font-light italic">Khalai Makhlooq</span>'s space crew
+          {joinCTA.heading ? (
+            joinCTA.heading.includes("Khalai Makhlooq") ? (
+              <>
+                {joinCTA.heading.split("Khalai Makhlooq")[0]}
+                <span className="text-white/40 font-light italic">Khalai Makhlooq</span>
+                {joinCTA.heading.split("Khalai Makhlooq")[1]}
+              </>
+            ) : (
+              joinCTA.heading
+            )
+          ) : (
+            <>Join <span className="text-white/40 font-light italic">Khalai Makhlooq</span>'s space crew</>
+          )}
         </h2>
         <p className="text-white/40 text-sm max-w-lg font-medium leading-relaxed">
-          Join the crew, see the ships, and grow your rank through organized action.
+          {joinCTA.description || "Join the crew, see the ships, and grow your rank through organized action."}
         </p>
         <div className="flex flex-wrap justify-center gap-4 mt-4">
           <a
-            href="https://discord.gg/K7SfxPSwXk" target="_blank" rel="noopener noreferrer"
+            href={joinCTA.discordLink || "https://discord.gg/K7SfxPSwXk"} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-2 px-8 py-4 bg-white text-black font-bold text-sm tracking-widest uppercase rounded-2xl hover:bg-white/90 transition-all active:scale-95 shadow-xl shadow-white/5"
           >
-            Join on Discord <ChevronRight size={16} />
+            {joinCTA.discordLinkText || "Join on Discord"} <ChevronRight size={16} />
           </a>
           <button
             className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-sm tracking-widest uppercase rounded-2xl hover:bg-white/10 transition-all active:scale-95"
           >
-            Learn More
+            {joinCTA.learnMoreText || "Learn More"}
           </button>
         </div>
       </div>
@@ -438,7 +450,7 @@ const JoinCommunityCTA = () => (
   </section>
 );
 
-const TeamCommandBriefing = ({ members, onlineCount, isAdmin }) => {
+const TeamCommandBriefing = ({ members, onlineCount, isAdmin, briefing = {} }) => {
   const commandCount = members.filter(m =>
     ['commander','admiral','captain','lead'].some(r => m.role?.toLowerCase().includes(r))
   ).length;
@@ -470,13 +482,13 @@ const TeamCommandBriefing = ({ members, onlineCount, isAdmin }) => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_20%,rgba(163,230,53,0.12),transparent_34%),linear-gradient(120deg,rgba(255,255,255,0.04),transparent_48%)]" />
       <div className="relative grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
         <div>
-          <p className="font-mono text-sm font-black uppercase tracking-[0.36em] text-lime-300/60">Crew Matrix</p>
+          <p className="font-mono text-sm font-black uppercase tracking-[0.36em] text-lime-300/60">{briefing.kicker || "Crew Matrix"}</p>
           <h2 className="mt-5 text-[18vw] font-black uppercase leading-[0.78] tracking-[-0.1em] text-transparent [-webkit-text-stroke:1px_rgba(217,249,157,0.28)] md:text-[9rem] lg:text-[10rem]">
-            Crew
-            <span className="block text-white [-webkit-text-stroke:0]">Scene</span>
+            {briefing.headingLine1 || "Crew"}
+            <span className="block text-white [-webkit-text-stroke:0]">{briefing.headingLine2 || "Scene"}</span>
           </h2>
           <p className="mt-7 max-w-xl text-xl leading-relaxed text-white/52">
-            Simple vibe on the team page: find someone, check their role, feel the crew energy.
+            {briefing.description || "Simple vibe on the team page: find someone, check their role, feel the crew energy."}
           </p>
         </div>
 
@@ -712,7 +724,15 @@ const EditProfileModal = ({ member, onClose, onUpdated }) => {
   );
 };
 
-export default function FleetDirectoryPage() {
+export default function FleetDirectoryPage({ pageData }) {
+  const kicker = pageData?.kicker || 'Crew Network';
+  const headingLine1 = pageData?.headingLine1 || 'Team';
+  const headingLine2 = pageData?.headingLine2 || 'Scene';
+  const description = pageData?.description || 'The roster wall, but not the boring kind. Pilots, officers, and crew — all here in clean cards with full style.';
+  const accessCard = pageData?.accessCard || {};
+  const briefing = pageData?.briefing || {};
+  const joinCTA = pageData?.joinCTA || {};
+
   const [members, setMembers]           = useState([]);
   const [loading, setLoading]           = useState(true);
   const [search, setSearch]             = useState('');
@@ -807,13 +827,13 @@ export default function FleetDirectoryPage() {
           className="mb-10 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:items-end"
         >
           <div>
-            <div className="font-mono text-sm font-black uppercase tracking-[0.4em] text-lime-300/55">Crew Network</div>
+            <div className="font-mono text-sm font-black uppercase tracking-[0.4em] text-lime-300/55">{kicker}</div>
             <div className="mt-4 leading-[0.78] tracking-[-0.11em]">
-              <div className="text-[18vw] font-black uppercase text-transparent [-webkit-text-stroke:1px_rgba(217,249,157,0.28)] md:text-[9rem] lg:text-[11rem]">Team</div>
-              <div className="text-[18vw] font-black uppercase text-white md:text-[9rem] lg:text-[11rem]">Scene</div>
+              <div className="text-[18vw] font-black uppercase text-transparent [-webkit-text-stroke:1px_rgba(217,249,157,0.28)] md:text-[9rem] lg:text-[11rem]">{headingLine1}</div>
+              <div className="text-[18vw] font-black uppercase text-white md:text-[9rem] lg:text-[11rem]">{headingLine2}</div>
             </div>
             <p className="mt-5 max-w-2xl text-xl leading-relaxed text-white/50 md:text-2xl">
-              The roster wall, but not the boring kind. Pilots, officers, and crew — all here in clean cards with full style.
+              {description}
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm font-black uppercase tracking-[0.22em] text-lime-100/40">
               <span>{members.length} personnel</span>
@@ -827,15 +847,15 @@ export default function FleetDirectoryPage() {
           <div className="rounded-[2rem] border border-lime-300/10 bg-white/[0.035] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl md:p-8">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-black uppercase tracking-[0.34em] text-lime-300/50">Crew Access</div>
-                <div className="mt-2 text-3xl font-black tracking-[-0.06em] text-white">Scene Live</div>
+                <div className="text-xs font-black uppercase tracking-[0.34em] text-lime-300/50">{accessCard.kicker || "Crew Access"}</div>
+                <div className="mt-2 text-3xl font-black tracking-[-0.06em] text-white">{accessCard.heading || "Scene Live"}</div>
               </div>
               <div className="rounded-full border border-lime-300/20 bg-lime-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-lime-200">
-                Live
+                {accessCard.badge || "Live"}
               </div>
             </div>
             <p className="mt-5 max-w-md text-base leading-relaxed text-white/48">
-              Entry is through Discord, then you set up your profile. Admins get extra tools; otherwise, chill mode.
+              {accessCard.description || "Entry is through Discord, then you set up your profile. Admins get extra tools; otherwise, chill mode."}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {session ? (
@@ -953,10 +973,10 @@ export default function FleetDirectoryPage() {
 
         {/* Recruitment CTA */}
         <div className="mt-12 mb-24">
-          <JoinCommunityCTA />
+          <JoinCommunityCTA joinCTA={joinCTA} />
         </div>
 
-        <TeamCommandBriefing members={members} onlineCount={onlineCount} isAdmin={isAdmin} />
+        <TeamCommandBriefing members={members} onlineCount={onlineCount} isAdmin={isAdmin} briefing={briefing} />
       </div>
 
       {/* Modals */}

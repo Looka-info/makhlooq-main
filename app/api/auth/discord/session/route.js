@@ -8,7 +8,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, supabaseKey)
 export async function GET(request) {
   const url = new URL(request.url);
   const requireAdmin = url.searchParams.get('admin') === '1' || url.searchParams.get('admin') === 'true';
-  const session = getAdminSession();
+  const session = await getAdminSession();
   if (!session) return NextResponse.json({ authenticated: false, admin: false }, { status: 401 });
 
   const admin = await getAdminFromDiscordId(session.discordId);

@@ -5,7 +5,8 @@ import { requireFleetAdmin } from '../../../../lib/adminAuth';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, supabaseKey);
 
-export async function PUT(request, { params }) {
+export async function PUT(request, props) {
+  const params = await props.params;
   const auth = await requireFleetAdmin();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -21,7 +22,8 @@ export async function PUT(request, { params }) {
   return NextResponse.json(data);
 }
 
-export async function DELETE(_request, { params }) {
+export async function DELETE(_request, props) {
+  const params = await props.params;
   const auth = await requireFleetAdmin();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 

@@ -7,37 +7,45 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const PILLARS = [
-  {
-    code: '01',
-    name: 'Strike Mode',
-    detail: 'Target spotted, squad deployed, scene done. Clean pressure with no extra drama.',
-  },
-  {
-    code: '02',
-    name: 'Cargo Chill',
-    detail: 'Boxes move and so do the vibes. Supply line strong, fleet well-stocked.',
-  },
-  {
-    code: '03',
-    name: 'Recovery Ops',
-    detail: 'Ship down? No stress. Salvage, extract, rebuild, then back on the runway.',
-  },
-  {
-    code: '04',
-    name: 'Deep Orbit',
-    detail: 'Map ends where KMHQ begins. Scout, mark, and plan the next move.',
-  },
-];
+export default function Showcase({ data }) {
+  // CMS-backed data with fallbacks
+  const sectionLabel = data?.sectionLabel || 'Operations Breakdown';
+  const stackWords = data?.stackWords?.map(w => w.text) || ['We', 'Never', 'Idle'];
+  const overviewText = data?.overviewText || 'Khalai Makhlooq covers every angle of the Stanton system. Whether it is moving high-value cargo through contested space, recovering downed ships in hostile territory, or locking down an orbital station with overwhelming firepower—KMHQ is equipped, trained, and ready to deploy.';
+  const metricsPanelBody = data?.metricsPanelBody || 'Every division has a simple rule: move fast, see first, and leave the battlefield so clean people ask who the cleanup crew was.';
+  const pillarsHeading = data?.pillarsHeading || 'Style under pressure.';
+  const pillarsSubtext = data?.pillarsSubtext || 'Fleet layout is simple: clear roles, wide space, and zero random button mashing. Just coordinated action.';
 
-const METRICS = [
-  { value: '2950', label: 'Scene since' },
-  { value: '6', label: 'Big ships' },
-  { value: '80+', label: 'Active pilots' },
-  { value: '24/7', label: 'Hangar ready' },
-];
+  const PILLARS = data?.pillars || [
+    {
+      code: '01',
+      name: 'Strike Mode',
+      detail: 'Target spotted, squad deployed, scene done. Clean pressure with no extra drama.',
+    },
+    {
+      code: '02',
+      name: 'Cargo Chill',
+      detail: 'Boxes move and so do the vibes. Supply line strong, fleet well-stocked.',
+    },
+    {
+      code: '03',
+      name: 'Recovery Ops',
+      detail: 'Ship down? No stress. Salvage, extract, rebuild, then back on the runway.',
+    },
+    {
+      code: '04',
+      name: 'Deep Orbit',
+      detail: 'Map ends where KMHQ begins. Scout, mark, and plan the next move.',
+    },
+  ];
 
-export default function Showcase() {
+  const METRICS = data?.metrics || [
+    { value: '2950', label: 'Scene since' },
+    { value: '6', label: 'Big ships' },
+    { value: '80+', label: 'Active pilots' },
+    { value: '24/7', label: 'Hangar ready' },
+  ];
+
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -120,12 +128,12 @@ export default function Showcase() {
             <div className="mb-5 flex items-center gap-3">
               <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.6)] animate-pulse" />
               <span className="font-mono text-base font-bold uppercase tracking-[0.35em] text-lime-300/80">
-                Operations Breakdown
+                {sectionLabel}
               </span>
             </div>
 
             <div data-showcase-stack className="max-w-6xl font-black uppercase leading-[0.78] tracking-[-0.09em] text-white will-change-transform">
-              {['We', 'Never', 'Idle'].map((word) => (
+              {stackWords.map((word) => (
                 <div key={word} className="overflow-hidden pb-4">
                   <div
                     data-showcase-word
@@ -165,8 +173,7 @@ export default function Showcase() {
               ))}
             </div>
             <p className="mt-7 max-w-2xl text-2xl leading-10 text-white/48">
-              Every division has a simple rule: move fast, see first, and leave the
-              battlefield so clean people ask who the cleanup crew was.
+              {metricsPanelBody}
             </p>
           </motion.div>
         </div>
@@ -174,11 +181,10 @@ export default function Showcase() {
         <div className="mt-16 border-t border-lime-300/15 pt-12">
           <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <h2 className="text-5xl font-bold tracking-[-0.07em] md:text-7xl">
-              Style under pressure.
+              {pillarsHeading}
             </h2>
             <p className="max-w-2xl text-xl leading-9 text-white/48">
-              Fleet layout is simple: clear roles, wide space, and zero random button mashing.
-              Just coordinated action.
+              {pillarsSubtext}
             </p>
           </div>
 

@@ -17,6 +17,7 @@ export default function Header({
   setIsMuted: setControlledMuted,
   volume: controlledVolume,
   setVolume: setControlledVolume,
+  siteSettings,
 }) {
   const [showVolume, setShowVolume] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -53,12 +54,12 @@ export default function Header({
               <div className="header-logo-mark" style={{ background: 'none' }}>
                 <img
                   src="/logo.png"
-                  alt="Khalai Makhlooq Logo"
+                  alt={`${siteSettings?.footer?.orgName || 'Khalai Makhlooq'} Logo`}
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   loading="eager"
                 />
               </div>
-              KHALAI MAKHLOOQ
+              {(siteSettings?.footer?.orgName || 'KHALAI MAKHLOOQ').toUpperCase()}
             </motion.div>
           </Link>
 
@@ -83,7 +84,7 @@ export default function Header({
             role="navigation"
             aria-label="Main navigation"
           >
-            {navItems.map((item, i) => (
+            {(siteSettings?.navLinks || navItems).map((item, i) => (
               <Link href={item.href} key={item.href}>
                 <motion.span
                   initial={{ opacity: 0, y: -10 }}

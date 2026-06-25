@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 
 function getBaseUrl(request) {
-  let url = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+  let url = new URL(request.url).origin;
   if (url.endsWith('/')) url = url.slice(0, -1);
   return url;
 }

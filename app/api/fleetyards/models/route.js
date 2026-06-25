@@ -29,7 +29,7 @@ export async function GET(request) {
     const url = new URL(request.url);
     const all = url.searchParams.get('all') === '1' || url.searchParams.get('all') === 'true';
     const fresh = url.searchParams.get('fresh') === '1' || url.searchParams.get('fresh') === 'true';
-    const perPage = url.searchParams.get('perPage') || (all ? '200' : '30');
+    const perPage = url.searchParams.get('perPage') || (all ? '50' : '30');
     const page = url.searchParams.get('page') || '1';
     const slugs = (url.searchParams.get('slugs') || '')
       .split(',')

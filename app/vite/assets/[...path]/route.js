@@ -22,7 +22,8 @@ function getContentType(path) {
 
 export async function GET(_request, { params }) {
   try {
-    const path = params.path?.join('/');
+    const resolvedParams = await params;
+    const path = resolvedParams.path?.join('/');
 
     if (!path || path.includes('..')) {
       return NextResponse.json({ error: 'Invalid asset path' }, { status: 400 });

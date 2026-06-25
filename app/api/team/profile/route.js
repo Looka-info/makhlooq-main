@@ -6,7 +6,7 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PU
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, supabaseKey);
 
 export async function PUT(request) {
-  const session = getAdminSession();
+  const session = await getAdminSession();
   if (!session?.discordId) {
     return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
   }
@@ -29,7 +29,7 @@ export async function PUT(request) {
 }
 
 export async function POST(request) {
-  const session = getAdminSession();
+  const session = await getAdminSession();
   if (!session?.discordId) {
     return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
   }

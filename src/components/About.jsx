@@ -7,27 +7,33 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const PRINCIPLES = [
-  {
-    kicker: '01 / Scene',
-    title: 'One signal. Full squad.',
-    copy: 'Comms clean, moves sharp, and no aimless orbiting. When KMHQ moves, everyone knows.',
-  },
-  {
-    kicker: '02 / Entry',
-    title: 'We arrive first, then we assess.',
-    copy: 'Positioning strong, scouting smart, and pressure so smooth the other side starts seeing loading screens.',
-  },
-  {
-    kicker: '03 / Backup',
-    title: 'Not a fleet patch — a system.',
-    copy: 'Logistics, recovery, escort, intel: all part of one machine. No one flies alone; the convoy carries the vibe.',
-  },
-];
+export default function About({ data }) {
+  // CMS-backed data with fallbacks
+  const sectionLabel = data?.sectionLabel || 'Fleet Operations Scene';
+  const introPara = data?.intro || 'Khalai Makhlooq is no boring history lecture. It is crew, ships, signal, and pressure combined. Even space took notice.';
+  const statusBadge = data?.statusBadge || 'KMHQ / Scene Active';
+  const manifestoLines = data?.manifestoLines?.map(m => m.text) || ['Move', 'Like A', 'Full Squad'];
+  const visualLabel = data?.visualLabel || 'Hangar posture';
+  const visualHeading = data?.visualHeading || 'Calm mind. Dangerous aim.';
+  const PRINCIPLES = data?.principles || [
+    {
+      kicker: '01 / Scene',
+      title: 'One signal. Full squad.',
+      copy: 'Comms clean, moves sharp, and no aimless orbiting. When KMHQ moves, everyone knows.',
+    },
+    {
+      kicker: '02 / Entry',
+      title: 'We arrive first, then we assess.',
+      copy: 'Positioning strong, scouting smart, and pressure so smooth the other side starts seeing loading screens.',
+    },
+    {
+      kicker: '03 / Backup',
+      title: 'Not a fleet patch — a system.',
+      copy: 'Logistics, recovery, escort, intel: all part of one machine. No one flies alone; the convoy carries the vibe.',
+    },
+  ];
+  const SIGNALS = data?.signals?.map(s => s.signal) || ['STRIKE', 'ESCORT', 'HAUL', 'SCAN', 'RECOVER', 'HOLD', 'EXPAND'];
 
-const SIGNALS = ['STRIKE', 'ESCORT', 'HAUL', 'SCAN', 'RECOVER', 'HOLD', 'EXPAND'];
-
-export default function About() {
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -111,23 +117,22 @@ export default function About() {
             <div className="mb-5 flex items-center gap-3">
               <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.8)]" />
               <span className="font-mono text-base font-bold uppercase tracking-[0.35em] text-lime-300/80">
-                Fleet Operations Scene
+                {sectionLabel}
               </span>
             </div>
             <p className="max-w-4xl text-2xl leading-10 text-white/48 md:text-3xl md:leading-[1.25]">
-              Khalai Makhlooq is no boring history lecture. It is crew, ships,
-              signal, and pressure combined. Even space took notice.
+              {introPara}
             </p>
           </div>
 
           <div className="rounded-2xl border border-lime-300/15 bg-lime-300/5 px-6 py-5 font-mono text-base uppercase tracking-[0.25em] text-lime-200/70">
-            KMHQ / Scene Active
+            {statusBadge}
           </div>
         </div>
 
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)] lg:items-end">
           <div data-manifesto-stack className="font-black uppercase leading-[0.78] tracking-[-0.09em] text-white will-change-transform">
-            {['Move', 'Like A', 'Full Squad'].map((line) => (
+            {manifestoLines.map((line) => (
               <div key={line} className="overflow-hidden pb-4">
                 <div
                   data-manifesto-line
@@ -156,10 +161,10 @@ export default function About() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#040704] via-[#040704]/65 to-transparent" />
             <div className="relative z-10 min-h-[480px] content-end">
               <div className="mb-5 font-mono text-base uppercase tracking-[0.35em] text-lime-300/70">
-                Hangar posture
+                {visualLabel}
               </div>
               <h3 className="max-w-2xl text-5xl font-semibold leading-[0.95] tracking-[-0.06em] text-white md:text-7xl">
-                Calm mind. Dangerous aim.
+                {visualHeading}
               </h3>
             </div>
           </motion.div>

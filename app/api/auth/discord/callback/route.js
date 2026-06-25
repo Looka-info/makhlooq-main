@@ -10,7 +10,8 @@ function sanitizeReturnTo(value) {
 }
 
 function redirectTo(request, returnTo, params = {}) {
-  const url = new URL(sanitizeReturnTo(returnTo), request.url);
+  const baseUrl = getBaseUrl(request);
+  const url = new URL(sanitizeReturnTo(returnTo), baseUrl);
   Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
   return NextResponse.redirect(url);
 }
@@ -20,7 +21,7 @@ function requiresAdmin(returnTo) {
 }
 
 function getBaseUrl(request) {
-  let url = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+  let url = new URL(request.url).origin;
   if (url.endsWith('/')) url = url.slice(0, -1);
   return url;
 }
@@ -129,6 +130,7 @@ export async function GET(request) {
   const returnTo = sanitizeReturnTo(request.cookies.get('kmhq_discord_oauth_return_to')?.value);
 
   if (!code || !state || !expectedState || state !== expectedState) {
+    console.error('OAuth state mismatch:', { code: !!code, state, expectedState });
     const response = redirectTo(request, returnTo, { error: 'oauth_state' });
     clearAdminSessionCookie(response);
     return response;

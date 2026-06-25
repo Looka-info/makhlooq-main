@@ -17,7 +17,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const updates = await request.json();
     
     const allowedFields = ['slug', 'display_name', 'sort_order', 'enabled', 'fleet_type', 'ceo_name', 'quantity'];
@@ -50,7 +50,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { error } = await supabase
       .from('fleet_configs')
       .delete()

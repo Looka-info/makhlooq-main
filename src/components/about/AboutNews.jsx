@@ -2,12 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { PortableTextRenderer } from '../PortableTextRenderer';
 
-export default function AboutNews() {
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function AboutNews({ initialNews }) {
+  const [news, setNews] = useState(initialNews || []);
+  const [loading, setLoading] = useState(!initialNews);
 
   useEffect(() => {
+    if (initialNews) return;
     let mounted = true;
 
     fetch('/api/about-news')
@@ -28,7 +30,7 @@ export default function AboutNews() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [initialNews]);
 
   return (
     <section className="relative overflow-hidden bg-[#040806] text-white border-t border-white/5">
@@ -54,22 +56,45 @@ export default function AboutNews() {
           ) : (
             news.map((item) => (
               <motion.article
-                key={item.id}
+                key={item._id || item.id}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
                 className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-10 shadow-[0_24px_90px_rgba(0,0,0,0.25)]"
               >
-                <div className="font-mono text-xs font-black uppercase tracking-[0.35em] text-lime-400/60 mb-3">
-                  {new Date(item.published_at).toLocaleDateString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                {/* Cover Image — supports both Payload URL and old Sanity format */}
+                {(item.coverImage?.url || item.coverImage?.asset?.url) && (
+                  <div className="mb-6 rounded-3xl overflow-hidden border border-white/10 aspect-video">
+                    <img
+                      src={item.coverImage?.url || item.coverImage.asset.url}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center gap-3 mb-3">
+                  <span className="font-mono text-xs font-black uppercase tracking-[0.35em] text-lime-400/60">
+                    {new Date(item.publishedAt || item.published_at).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                  {(item.category || item.media_type) && (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-mono tracking-widest bg-white/10 text-gray-300 border border-white/5">
+                      {item.category || item.media_type}
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">{item.title}</h3>
-                <p className="text-gray-400 whitespace-pre-wrap leading-relaxed">{item.body}</p>
+                
+                {Array.isArray(item.body) ? (
+                  <PortableTextRenderer content={item.body} />
+                ) : (
+                  <p className="text-gray-400 whitespace-pre-wrap leading-relaxed">{item.body}</p>
+                )}
+
                 {item.media_url ? (
                   <div className="mt-6 rounded-3xl border border-white/10 bg-black/25 p-4">
                     {item.media_type === 'image' ? (
@@ -96,6 +121,12 @@ export default function AboutNews() {
                     )}
                   </div>
                 ) : null}
+
+                {item.authorHandle && (
+                  <div className="mt-6 font-mono text-[10px] text-gray-500 uppercase tracking-widest border-t border-white/5 pt-4">
+                    Posted by: <span className="text-lime-400/80">{item.authorHandle}</span>
+                  </div>
+                )}
               </motion.article>
             ))
           )}

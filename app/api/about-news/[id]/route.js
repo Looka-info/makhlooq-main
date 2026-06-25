@@ -13,7 +13,7 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const { id } = params;
+  const { id } = await params;
   if (!id) {
     return NextResponse.json({ error: 'News ID is required.' }, { status: 400 });
   }
@@ -123,7 +123,7 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const { id } = params;
+  const { id } = await params;
   if (!id) {
     return NextResponse.json({ error: 'News ID is required.' }, { status: 400 });
   }

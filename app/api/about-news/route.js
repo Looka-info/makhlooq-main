@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireFleetAdmin } from '../../../lib/adminAuth';
+import { getPayloadInstance } from '../../../lib/payload';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -8,16 +9,29 @@ const supabase = createClient(
 );
 
 export async function GET() {
-  const { data, error } = await supabase
-    .from('about_news')
-    .select('*')
-    .order('published_at', { ascending: false });
+  try {
+    const payload = await getPayloadInstance();
+    const result = await payload.find({
+      collection: 'news-posts',
+      sort: '-publishedAt',
+      limit: 100,
+    });
 
-  if (error) {
+    const formatted = result.docs.map((item) => ({
+      id: item.id,
+      title: item.title,
+      body: typeof item.body === 'string' ? item.body : JSON.stringify(item.body || ''),
+      published_at: item.publishedAt || new Date().toISOString(),
+      media_url: item.coverImage?.url || null,
+      media_type: item.coverImage ? 'image' : null,
+      category: item.category || null,
+      author_handle: item.authorHandle || null,
+    }));
+
+    return NextResponse.json(formatted);
+  } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  return NextResponse.json(data || []);
 }
 
 export async function POST(request) {

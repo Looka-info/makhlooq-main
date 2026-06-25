@@ -16,7 +16,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { name, role } = await request.json();
 
     const updateData = {};
@@ -45,7 +45,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { error } = await supabase
       .from('fleet_members')
       .delete()

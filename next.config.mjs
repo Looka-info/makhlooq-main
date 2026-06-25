@@ -1,8 +1,8 @@
+import { withPayload } from '@payloadcms/next/withPayload'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // ▸ IMAGE OPTIMIZATION (Performance: LCP improvement)
-  // Removed `unoptimized: true` to enable automatic Image optimization
-  // Next.js will automatically optimize images: serve WebP/AVIF with JPEG fallback
   images: {
     remotePatterns: [
       {
@@ -45,7 +45,7 @@ const nextConfig = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN',
           },
           {
             key: 'X-XSS-Protection',
@@ -61,66 +61,14 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' *.discordapp.com giscus.app fleetyards.net api.fleetyards.net storage.fltyrd.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: fleetyards.net api.fleetyards.net storage.fltyrd.net; font-src 'self' data: fonts.googleapis.com fonts.gstatic.com; connect-src 'self' data: blob: *.supabase.co *.discordapp.com giscus.app fleetyards.net api.fleetyards.net storage.fltyrd.net; frame-src giscus.app fleetyards.net; media-src 'self' data: https: fleetyards.net api.fleetyards.net storage.fltyrd.net; worker-src 'self' blob:; object-src 'none';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' *.discordapp.com giscus.app fleetyards.net api.fleetyards.net storage.fltyrd.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: fleetyards.net api.fleetyards.net storage.fltyrd.net; font-src 'self' data: fonts.googleapis.com fonts.gstatic.com; connect-src 'self' data: blob: *.supabase.co *.discordapp.com giscus.app fleetyards.net api.fleetyards.net storage.fltyrd.net; frame-src 'self' giscus.app fleetyards.net; media-src 'self' data: https: fleetyards.net api.fleetyards.net storage.fltyrd.net; worker-src 'self' blob:; object-src 'none';",
           },
         ],
       },
     ];
   },
 
-  // ▸ WEBPACK OPTIMIZATION (Performance: bundle size)
-  webpack: (config, { isServer }) => {
-    config.optimization = {
-      ...config.optimization,
-      // Use best bundle splitting strategy for faster builds and smaller chunks
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          // Split Three.js + R3F into separate chunk
-          three: {
-            test: /[\\/]node_modules[\\/](three|@react-three)[\\/]/,
-            name: 'three',
-            priority: 10,
-            reuseExistingChunk: true,
-          },
-          // Split animation libraries
-          animations: {
-            test: /[\\/]node_modules[\\/](framer-motion|gsap|@studio-freight)[\\/]/,
-            name: 'animations',
-            priority: 9,
-            reuseExistingChunk: true,
-          },
-          // Split UI/rendering libraries
-          ui: {
-            test: /[\\/]node_modules[\\/](@pixi|pixi)[\\/]/,
-            name: 'pixi',
-            priority: 8,
-            reuseExistingChunk: true,
-          },
-          // Split Supabase
-          supabase: {
-            test: /[\\/]node_modules[\\/]@supabase[\\/]/,
-            name: 'supabase',
-            priority: 7,
-            reuseExistingChunk: true,
-          },
-          // Vendor split for smaller main bundle
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendor',
-            priority: 5,
-            reuseExistingChunk: true,
-          },
-        },
-      },
-    };
-    return config;
-  },
-
   // ▸ ESLINT & TS WARNINGS (Development only, fix in CI/CD later)
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -129,7 +77,14 @@ const nextConfig = {
   productionBrowserSourceMaps: false, // Reduce bundle size in production
   poweredByHeader: false, // Remove X-Powered-By header
   compress: true, // Enable gzip compression
-  swcMinify: true, // Use SWC for faster minification
+
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'react/compiler-runtime': 'react-compiler-runtime',
+    };
+    return config;
+  },
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);

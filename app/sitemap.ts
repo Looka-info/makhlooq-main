@@ -33,7 +33,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://makhlooq.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kmhq.org';
   const lastModified = new Date();
 
   // ▸ FETCH DYNAMIC TEAM MEMBERS

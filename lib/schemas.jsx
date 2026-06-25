@@ -6,6 +6,8 @@
  * Documentation: https://schema.org/
  */
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kmhq.org';
+
 /**
  * ▸ ORGANIZATION SCHEMA
  * For homepage - tells search engines about the organization
@@ -13,13 +15,13 @@
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  '@id': 'https://makhlooq.com/#organization',
+  '@id': `${SITE_URL}/#organization`,
   name: 'Khalai Makhlooq',
   alternateName: 'KMHQ',
   description: 'Elite Star Citizen Organization focused on high-stakes operations and tactical dominance.',
-  url: 'https://makhlooq.com',
-  logo: 'https://makhlooq.com/logo.png',
-  image: 'https://makhlooq.com/opengraph-image.jpg',
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
+  image: `${SITE_URL}/opengraph-image.jpg`,
   sameAs: [
     'https://discord.gg/your-link', // Add your Discord link
     'https://twitter.com/makhlooq', // Add your Twitter if exists
@@ -27,14 +29,14 @@ export const organizationSchema = {
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'Community',
-    url: 'https://makhlooq.com',
+    url: SITE_URL,
   },
   member: [
     {
       '@type': 'Person',
       name: 'Fleet Admiral',
       jobTitle: 'Fleet Admiral',
-      url: 'https://makhlooq.com/team/admiral',
+      url: `${SITE_URL}/team/admiral`,
     },
   ],
   areaServed: 'Stanton System, Pyro System',
@@ -49,15 +51,15 @@ export function createPersonSchema(username, title = 'Team Member') {
   return {
     '@context': 'https://schema.org',
     '@type': 'Person',
-    '@id': `https://makhlooq.com/team/${username}#person`,
+    '@id': `${SITE_URL}/team/${username}#person`,
     name: username.charAt(0).toUpperCase() + username.slice(1),
     jobTitle: title,
-    url: `https://makhlooq.com/team/${username}`,
-    image: `https://makhlooq.com/team/${username}/avatar.jpg`,
+    url: `${SITE_URL}/team/${username}`,
+    image: `${SITE_URL}/team/${username}/avatar.jpg`,
     memberOf: {
       '@type': 'Organization',
       name: 'Khalai Makhlooq',
-      url: 'https://makhlooq.com',
+      url: SITE_URL,
     },
     sameAs: [
       `https://discord.com/users/${username}`, // If applicable
@@ -89,15 +91,15 @@ export function createBreadcrumbSchema(items) {
 export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  '@id': 'https://makhlooq.com/#website',
-  url: 'https://makhlooq.com',
+  '@id': `${SITE_URL}/#website`,
+  url: SITE_URL,
   name: 'Khalai Makhlooq',
   description: 'Elite Star Citizen Organization',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://makhlooq.com/search?q={search_term_string}',
+      urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
     },
     'query-input': 'required name=search_term_string',
   },
@@ -110,11 +112,11 @@ export const websiteSchema = {
 export const fleetSchema = {
   '@context': 'https://schema.org',
   '@type': 'Collection',
-  '@id': 'https://makhlooq.com/fleet#fleet',
+  '@id': `${SITE_URL}/fleet#fleet`,
   name: 'Khalai Makhlooq Fleet',
   description: 'Advanced fleet of elite Star Citizen vessels optimized for high-stakes operations',
-  url: 'https://makhlooq.com/fleet',
-  image: 'https://makhlooq.com/opengraph-image.jpg',
+  url: `${SITE_URL}/fleet`,
+  image: `${SITE_URL}/opengraph-image.jpg`,
   collectionSize: 'Multiple vessels',
   mainEntity: {
     '@type': 'Thing',
@@ -140,7 +142,7 @@ export function createEventSchema(eventName, startDate, endDate, description) {
     organizer: {
       '@type': 'Organization',
       name: 'Khalai Makhlooq',
-      url: 'https://makhlooq.com',
+      url: SITE_URL,
     },
   };
 }

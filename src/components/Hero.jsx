@@ -85,17 +85,28 @@ function GlitchOverlay() {
   );
 }
 
-export default function Hero({ isMuted, volume }) {
-
-  const trackingRef = useRef(null);
-  const cursorRef = useRef(null);
+export default function Hero({ isMuted, volume, data }) {
   const videoRef = useRef(null);
-  const [coords, setCoords] = useState({ x: '0000', y: '0000' });
   const [heroHovered, setHeroHovered] = useState(false);
 
-  const decodedHeading1 = useDecodedText('Join Khalai Makhlooq', 500, 600);
-  const decodedHeading2 = useDecodedText('Rule the Stars', 700, 600);
-  const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : 'Elite Star Citizen Org, laid-back scene', heroHovered ? 0 : 400, heroHovered ? 250 : 400);
+  // Support both old Sanity format and new Payload format with fallbacks
+  const hero = data?.hero || {};
+  const heading1 = hero.heading1 || data?.heroHeading?.split(' | ')?.[0] || 'Join Khalai Makhlooq';
+  const heading2 = hero.heading2 || data?.heroHeading?.split(' | ')?.[1] || 'Rule the Stars';
+  const description = hero.description || data?.heroDescription || 'Elite Star Citizen Org, laid-back scene';
+  const ctaText = hero.ctaText || data?.ctaText || 'Click Here to Join Discord';
+  const ctaLink = hero.ctaLink || data?.ctaLink || 'https://discord.gg/kmhq';
+
+  const sub1Normal = hero.subheading1Normal || 'And, Welcome PvP';
+  const sub1Hover = hero.subheading1Hover || 'We Enjoy PvE';
+  const sub2Normal = hero.subheading2Normal || 'Also, Murder Hobos';
+  const sub2Hover = hero.subheading2Hover || 'Space Capitalists';
+  const sub3Normal = hero.subheading3Normal || 'Hide or Die';
+  const sub3Hover = hero.subheading3Hover || 'Deep Space Chilling';
+
+  const decodedHeading1 = useDecodedText(heading1, 500, 600);
+  const decodedHeading2 = useDecodedText(heading2, 700, 600);
+  const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : description, heroHovered ? 0 : 400, heroHovered ? 250 : 400);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -104,48 +115,8 @@ export default function Hero({ isMuted, volume }) {
     }
   }, [isMuted, volume]);
 
-
-  useEffect(() => {
-    const area = trackingRef.current;
-
-    const cursor = cursorRef.current;
-    if (!area || !cursor) return;
-    let coordFrame = 0;
-    let nextCoords = { x: '0000', y: '0000' };
-
-    const handleMouseMove = (e) => {
-      cursor.style.left = e.clientX + 'px';
-      cursor.style.top = e.clientY + 'px';
-      nextCoords = {
-        x: String(e.clientX).padStart(4, '0'),
-        y: String(e.clientY).padStart(4, '0')
-      };
-
-      if (!coordFrame) {
-        coordFrame = requestAnimationFrame(() => {
-          setCoords(nextCoords);
-          coordFrame = 0;
-        });
-      }
-    };
-
-    const handleEnter = () => cursor.style.opacity = '1';
-    const handleLeave = () => cursor.style.opacity = '0';
-
-    area.addEventListener('mousemove', handleMouseMove);
-    area.addEventListener('mouseenter', handleEnter);
-    area.addEventListener('mouseleave', handleLeave);
-
-    return () => {
-      area.removeEventListener('mousemove', handleMouseMove);
-      area.removeEventListener('mouseenter', handleEnter);
-      area.removeEventListener('mouseleave', handleLeave);
-      if (coordFrame) cancelAnimationFrame(coordFrame);
-    };
-  }, []);
-
   return (
-    <section id="hero" className="hero-section" ref={trackingRef} onMouseEnter={() => setHeroHovered(true)} onMouseLeave={() => setHeroHovered(false)}>
+    <section id="hero" className="hero-section" onMouseEnter={() => setHeroHovered(true)} onMouseLeave={() => setHeroHovered(false)}>
       <div className="hero-bg">
         <motion.video
           ref={videoRef}
@@ -166,18 +137,6 @@ export default function Hero({ isMuted, volume }) {
       </div>
 
 
-      <div className="tracking-area">
-        <div className="custom-cursor" ref={cursorRef}>
-          <div className="line-vertical"></div>
-          <div className="line-horizontal"></div>
-          <div className="cursor-dot"></div>
-          <div className="coords">
-            <div className="coord-x">X: <span className="coords-x-val">{coords.x}</span></div>
-            <div className="coord-y">Y: <span className="coords-y-val">{coords.y}</span></div>
-          </div>
-        </div>
-      </div>
-
       <div className="hero-wrapper">
         <div className="hero-bottom">
           <div className="hero-left">
@@ -187,10 +146,17 @@ export default function Hero({ isMuted, volume }) {
               transition={{ delay: 0.4, duration: 0.3 }}
               className="hero-label"
             >
+              <span className="red-sq" />
               <span className="hero-label-text">{decodedLabel}</span>
+              <a
+                href={ctaLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-3 px-2 py-0.5 border border-lime-300/30 bg-lime-300/10 text-lime-300 text-[9px] font-black uppercase tracking-wider rounded animate-pulse hover:bg-lime-300/20 hover:border-lime-300 transition-all z-30 cursor-pointer"
+              >
+                [ Connect ]
+              </a>
             </motion.div>
-
-
 
             <div className="hero-heading-wrapper">
               <a
@@ -203,9 +169,12 @@ export default function Hero({ isMuted, volume }) {
                   initial={{ y: '100%' }}
                   animate={{ y: 0, letterSpacing: heroHovered ? '-0.055em' : '-0.03em' }}
                   transition={{ delay: 0.5, duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-                  className="hero-heading text-glow"
+                  className="hero-heading text-glow transition-all duration-300 group-hover:text-lime-300 group-hover:scale-[1.01] flex items-center"
                 >
                   {decodedHeading1}
+                  <span className="hidden md:inline-block ml-6 text-sm font-mono uppercase tracking-[0.3em] text-lime-400/80 border border-lime-400/30 bg-lime-400/10 px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0">
+                    Click Here
+                  </span>
                 </motion.h1>
               </a>
             </div>
@@ -221,7 +190,7 @@ export default function Hero({ isMuted, volume }) {
                   initial={{ y: '100%' }}
                   animate={{ y: 0, scale: heroHovered ? 1.025 : 1 }}
                   transition={{ delay: 0.6, duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-                  className="hero-heading accent text-glow"
+                  className="hero-heading accent text-glow transition-all duration-300 group-hover:text-lime-200 group-hover:scale-[1.01] flex items-center"
                   whileHover={{ scale: 1.05, skewX: -5 }}
                 >
                   <img
@@ -237,6 +206,9 @@ export default function Hero({ isMuted, volume }) {
                     }}
                   />
                   {decodedHeading2}
+                  <span className="hidden md:inline-block ml-6 text-sm font-mono uppercase tracking-[0.3em] text-lime-400/80 border border-lime-400/30 bg-lime-400/10 px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0" style={{ transform: 'skewX(5deg)' }}>
+                    Click Here
+                  </span>
                 </motion.h1>
               </a>
             </div>
@@ -249,7 +221,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.75, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'We Enjoy PvE' : 'And, Welcome PvP '}
+                {heroHovered ? sub1Hover : sub1Normal}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -257,7 +229,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.85, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Space Capitalists' : 'Also, Murder Hobos'}
+                {heroHovered ? sub2Hover : sub2Normal}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -265,7 +237,7 @@ export default function Hero({ isMuted, volume }) {
                 transition={{ delay: 0.95, duration: 0.5 }}
                 className="hero-subheading"
               >
-                {heroHovered ? 'Deep Space Chilling' : 'Hide or Die'}
+                {heroHovered ? sub3Hover : sub3Normal}
               </motion.div>
             </div>
           </div>

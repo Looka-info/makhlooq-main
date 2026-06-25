@@ -16,7 +16,7 @@ export async function GET(request) {
     const url = new URL(request.url);
     const slug = url.searchParams.get('slug');
     const all = url.searchParams.get('all') === '1' || url.searchParams.get('all') === 'true';
-    const perPage = url.searchParams.get('perPage') || (all ? '200' : '30');
+    const perPage = url.searchParams.get('perPage') || (all ? '50' : '30');
     const page = url.searchParams.get('page') || '1';
 
     if (!slug) {

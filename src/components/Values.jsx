@@ -36,7 +36,8 @@ const STYLES = `
   }
 `;
 
-const NARRATIVES = [
+// Default narratives used as fallback when no CMS data is available
+const DEFAULT_NARRATIVES = [
   {
     id: 'intro',
     subtitle: '◈ STANTON SYSTEM — GRID REF 4.7 — KM-FLEET ACTIVE ◈',
@@ -100,7 +101,19 @@ function getNarrativeOpacity(progress, index, total) {
   return 1;
 }
 
-export default function Values() {
+export default function Values({ data }) {
+  // Build narratives from CMS data or fall back to hardcoded defaults
+  const NARRATIVES = React.useMemo(() => {
+    if (data?.narratives && Array.isArray(data.narratives) && data.narratives.length > 0) {
+      return data.narratives.map(n => ({
+        id: n.id || '',
+        subtitle: n.subtitle || '',
+        title: [n.title1, n.title2].filter(Boolean),
+        desc: n.desc || '',
+      }));
+    }
+    return DEFAULT_NARRATIVES;
+  }, [data]);
   const wrapperRef = useRef(null);
   const [progress, setProgress] = useState(0);
 

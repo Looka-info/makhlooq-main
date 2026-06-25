@@ -8,7 +8,7 @@ import { MetadataRoute } from 'next';
  * Documentation: https://developers.google.com/search/docs/beginner/robots-txt
  */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://makhlooq.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kmhq.org';
 
   return {
     rules: [

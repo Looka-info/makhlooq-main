@@ -91,16 +91,23 @@ function FAQItem({ faq, index, isOpen, onClick }) {
   );
 }
 
-export default function FAQ() {
+export default function FAQ({ data }) {
+  const sectionLabel = data?.sectionLabel || 'Quick Q&A';
+  const headlineLines = data?.headlineLines?.map(l => l.text) || ['Straight', 'Answers'];
+  const description = data?.description || 'Toss your confusion out the airlock. Ask the question, get the answer, then head back to the hangar for more fun.';
+  const searchPlaceholder = data?.searchPlaceholder || 'Search a question...';
+  const noResultsText = data?.noResultsText || 'No matching answers found — try checking the spelling';
+  const questionsList = data?.questions || faqs;
+
   const sectionRef = useRef(null);
   const [openIndex, setOpenIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredFaqs = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    if (!term) return faqs;
-    return faqs.filter((faq) => `${faq.q} ${faq.a}`.toLowerCase().includes(term));
-  }, [searchTerm]);
+    if (!term) return questionsList;
+    return questionsList.filter((faq) => `${faq.q} ${faq.a}`.toLowerCase().includes(term));
+  }, [searchTerm, questionsList]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -154,11 +161,11 @@ export default function FAQ() {
             <div className="mb-5 flex items-center gap-3">
               <span className="h-2 w-2 rounded-sm bg-lime-400 shadow-[0_0_18px_rgba(163,230,53,0.8)]" />
               <span className="font-mono text-base font-bold uppercase tracking-[0.35em] text-lime-300/80">
-                Quick Q&A
+                {sectionLabel}
               </span>
             </div>
             <div data-faq-title-stack className="font-black uppercase leading-[0.78] tracking-[-0.09em] will-change-transform">
-              {['Straight', 'Answers'].map((line) => (
+              {headlineLines.map((line) => (
                 <div key={line} className="overflow-hidden pb-4">
                   <div
                     data-faq-title
@@ -173,8 +180,7 @@ export default function FAQ() {
 
           <div className="rounded-[2rem] border border-lime-300/15 bg-white/[0.035] p-6 backdrop-blur-xl">
             <p className="text-2xl leading-10 text-white/50">
-              Toss your confusion out the airlock. Ask the question, get the answer,
-              then head back to the hangar for more fun.
+              {description}
             </p>
             <div className="mt-8 flex items-center gap-4 rounded-2xl border border-lime-300/15 bg-black/35 px-5 py-4">
               <span className="font-mono text-lg text-lime-300/70">&gt;_</span>
@@ -184,7 +190,7 @@ export default function FAQ() {
                   setSearchTerm(event.target.value);
                   setOpenIndex(0);
                 }}
-                placeholder="Search a question..."
+                placeholder={searchPlaceholder}
                 className="min-w-0 flex-1 bg-transparent text-xl text-white outline-none placeholder:text-white/25"
               />
               <span className="font-mono text-sm uppercase tracking-[0.22em] text-lime-300/45">
@@ -208,7 +214,7 @@ export default function FAQ() {
 
         {filteredFaqs.length === 0 && (
           <div className="rounded-[1.75rem] border border-lime-300/12 bg-white/[0.025] p-10 text-center font-mono text-lg uppercase tracking-[0.24em] text-white/35">
-            No matching answers found — try checking the spelling
+            {noResultsText}
           </div>
         )}
       </div>

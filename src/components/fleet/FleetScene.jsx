@@ -134,6 +134,14 @@ export default function FleetScene({ selectedShip }) {
   const modelUrl = selectedShip?.modelPath || selectedShip?.holoUrl || '';
   const loaderUrl = useMemo(() => toModelProxyUrl(modelUrl), [modelUrl]);
   const modelKey = selectedShip?.id || modelUrl;
+  const cellColorObj = useMemo(() => {
+    const c = new THREE.Color('#27272a');
+    return [c.r, c.g, c.b];
+  }, []);
+  const sectionColorObj = useMemo(() => {
+    const c = new THREE.Color(accentColor);
+    return [c.r, c.g, c.b];
+  }, [accentColor]);
   const handleModelError = useCallback(() => {
     setModelFailed(true);
     setModelLoading(false);
@@ -227,10 +235,10 @@ export default function FleetScene({ selectedShip }) {
           args={[100, 100]}
           cellSize={1}
           cellThickness={0.25}
-          cellColor="#27272a"
+          cellColor={cellColorObj}
           sectionSize={5}
           sectionThickness={0.5}
-          sectionColor={accentColor}
+          sectionColor={sectionColorObj}
           fadeDistance={38}
           fadeStrength={1}
           infiniteGrid
