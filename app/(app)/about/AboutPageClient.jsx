@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
+import Lenis from '@studio-freight/lenis';
 import Header from '../../../src/components/Header';
 import Footer from '../../../src/components/Footer';
 import AboutNews from '../../../src/components/about/AboutNews';
@@ -12,7 +13,7 @@ import { useLivePreview } from '@payloadcms/live-preview-react';
 export default function AboutPageClient({ data: initialData, newsPosts }) {
   const { data } = useLivePreview({
     initialData,
-    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://makhlooq-main.vercel.app',
+    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org',
     depth: 2,
   });
 
@@ -32,6 +33,28 @@ export default function AboutPageClient({ data: initialData, newsPosts }) {
     { title: "Logistics & Trade", desc: "The backbone of our operations, moving high-value assets securely across systems. Our trade networks are unmatched." },
     { title: "Deep Exploration", desc: "Charting unknown territories and securing valuable intelligence and resources before they hit the open market." }
   ];
+
+  useEffect(() => {
+    // Lenis smooth scroll initialization
+    const lenis = new Lenis({
+      duration: 0.9,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+      wheelMultiplier: 0.9,
+    });
+
+    let rafId;
+    function raf(time) {
+      if (!document.hidden) lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
 
   return (
     <div className="min-h-[100dvh] w-full bg-[#020402] relative text-white selection:bg-lime-400/30 flex flex-col">

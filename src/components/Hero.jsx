@@ -104,6 +104,10 @@ export default function Hero({ isMuted, volume, data }) {
   const sub3Normal = hero.subheading3Normal || 'Hide or Die';
   const sub3Hover = hero.subheading3Hover || 'Deep Space Chilling';
 
+  const backgroundVideoUrl = hero.backgroundVideo?.url || "/Fight space and ground  Star Citizen epic cinematic,   Lighthouse.mp4";
+  const posterImageUrl = hero.posterImage?.url || "/backgrounds/jp.jpg";
+  const logoImageUrl = hero.logoImage?.url || "/nobglogo.png";
+
   const decodedHeading1 = useDecodedText(heading1, 500, 600);
   const decodedHeading2 = useDecodedText(heading2, 700, 600);
   const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : description, heroHovered ? 0 : 400, heroHovered ? 250 : 400);
@@ -126,11 +130,11 @@ export default function Hero({ isMuted, volume, data }) {
           muted={isMuted}
           loop
           playsInline
-          preload="metadata"
-          poster="/backgrounds/jp.jpg"
+          preload="none"
+          poster={posterImageUrl}
           className="w-full h-full object-cover"
         >
-          <source src="/Fight space and ground  Star Citizen epic cinematic,   Lighthouse.mp4" type="video/mp4" />
+          <source src={backgroundVideoUrl} type="video/mp4" />
         </motion.video>
         <GlitchOverlay />
       </div>
@@ -193,7 +197,7 @@ export default function Hero({ isMuted, volume, data }) {
                   whileHover={{ scale: 1.05, skewX: -5 }}
                 >
                   <img
-                    src="/nobglogo.png"
+                    src={logoImageUrl}
                     alt="Khalai Makhlooq"
                     style={{
                       display: 'inline-block',
@@ -205,9 +209,6 @@ export default function Hero({ isMuted, volume, data }) {
                     }}
                   />
                   {decodedHeading2}
-                  <span className="hidden md:inline-block ml-6 text-sm font-mono uppercase tracking-[0.3em] text-lime-400/80 border border-lime-400/30 bg-lime-400/10 px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0" style={{ transform: 'skewX(5deg)' }}>
-                    Click Here
-                  </span>
                 </motion.h1>
               </a>
             </div>

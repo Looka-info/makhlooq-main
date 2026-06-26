@@ -15,6 +15,7 @@ export default function About({ data }) {
   const manifestoLines = data?.manifestoLines?.map(m => m.text) || ['Move', 'Like A', 'Full Squad'];
   const visualLabel = data?.visualLabel || 'Hangar posture';
   const visualHeading = data?.visualHeading || 'Calm mind. Dangerous aim.';
+  const fleetImageUrl = data?.fleetImage?.url || '/backgrounds/SC-3.19_20230524_130313_Fleet-selfie_ILW2953_f.png';
   const PRINCIPLES = data?.principles || [
     {
       kicker: '01 / Scene',
@@ -153,8 +154,10 @@ export default function About({ data }) {
             className="relative overflow-hidden rounded-[2rem] border border-lime-300/15 bg-black/35 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl"
           >
             <img
-              src="/backgrounds/SC-3.19_20230524_130313_Fleet-selfie_ILW2953_f.png"
+              src={fleetImageUrl}
               alt="Khalai Makhlooq fleet command"
+              width={1280}
+              height={720}
               className="absolute inset-0 h-full w-full object-cover opacity-75"
               loading="lazy"
             />

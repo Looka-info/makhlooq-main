@@ -20,7 +20,10 @@ export async function GET(request) {
       .select('*')
       .order('joined_at');
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('Supabase error fetching all members:', error.message);
+      return NextResponse.json({ error: 'Database connection failed. Please check your Supabase credentials.' }, { status: 500 });
+    }
     return NextResponse.json(data || []);
   }
 
@@ -31,7 +34,10 @@ export async function GET(request) {
     .eq('is_approved', true)
     .order('joined_at');
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('Supabase error fetching approved members:', error.message);
+    return NextResponse.json({ error: 'Database connection failed. Please check your Supabase credentials.' }, { status: 500 });
+  }
   return NextResponse.json(data || []);
 }
 

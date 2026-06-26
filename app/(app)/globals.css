@@ -123,22 +123,7 @@
 }
 
 * {
-  cursor: none !important;
-}
-
-a,
-a *,
-button,
-button *,
-[role="button"],
-[role="button"] *,
-select {
-  cursor: pointer !important;
-}
-
-input,
-textarea {
-  cursor: text !important;
+  /* Cursor hidden styles removed */
 }
 
 html {

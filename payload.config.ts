@@ -27,7 +27,7 @@ export default buildConfig({
       favicon: "/favicon.ico",
     },
     livePreview: {
-      url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://makhlooq-main.vercel.app',
+      url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org',
       collections: ['news-posts'],
       globals: ['home-page', 'site-settings', 'about-page', 'fleet-page', 'team-page'],
     },

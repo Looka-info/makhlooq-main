@@ -450,78 +450,6 @@ const JoinCommunityCTA = ({ joinCTA = {} }) => (
   </section>
 );
 
-const TeamCommandBriefing = ({ members, onlineCount, isAdmin, briefing = {} }) => {
-  const commandCount = members.filter(m =>
-    ['commander','admiral','captain','lead'].some(r => m.role?.toLowerCase().includes(r))
-  ).length;
-  const rows = [
-    {
-      label: 'Roster',
-      metric: members.length,
-      title: 'Crew lineup ready',
-      body: `${members.length} profiles ready here. Search, filter, and find your crew.`,
-    },
-    {
-      label: 'Access',
-      metric: isAdmin ? 'Unlocked' : 'Locked',
-      title: 'Discord-gated entry',
-      body: isAdmin
-        ? 'Your ID has the green light. Admin tools ready — handle with care.'
-        : 'Admin tools are VIP. Match your Discord to unlock the profile scene.',
-    },
-    {
-      label: 'Squad',
-      metric: commandCount,
-      title: 'Command squad',
-      body: `${CATEGORIES.length} divisions set up, and command profiles keep the whole crew in line.`,
-    },
-  ];
-
-  return (
-    <section className="relative mt-24 overflow-hidden rounded-[2.5rem] border border-lime-300/10 bg-white/[0.025] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.35)] backdrop-blur-xl md:p-10">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_20%,rgba(163,230,53,0.12),transparent_34%),linear-gradient(120deg,rgba(255,255,255,0.04),transparent_48%)]" />
-      <div className="relative grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
-        <div>
-          <p className="font-mono text-sm font-black uppercase tracking-[0.36em] text-lime-300/60">{briefing.kicker || "Crew Matrix"}</p>
-          <h2 className="mt-5 text-[18vw] font-black uppercase leading-[0.78] tracking-[-0.1em] text-transparent [-webkit-text-stroke:1px_rgba(217,249,157,0.28)] md:text-[9rem] lg:text-[10rem]">
-            {briefing.headingLine1 || "Crew"}
-            <span className="block text-white [-webkit-text-stroke:0]">{briefing.headingLine2 || "Scene"}</span>
-          </h2>
-          <p className="mt-7 max-w-xl text-xl leading-relaxed text-white/52">
-            {briefing.description || "Simple vibe on the team page: find someone, check their role, feel the crew energy."}
-          </p>
-        </div>
-
-        <div className="grid gap-4">
-          {rows.map((item, index) => (
-            <motion.div
-              key={item.label}
-              className="group overflow-hidden rounded-[1.6rem] border border-lime-300/10 bg-black/35 p-5 transition-colors hover:border-lime-300/35 hover:bg-lime-300/[0.04]"
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ delay: index * 0.08 }}
-              whileHover={{ x: 6 }}
-            >
-              <div className="flex items-start justify-between gap-5">
-                <div>
-                  <div className="font-mono text-xs font-black uppercase tracking-[0.3em] text-lime-300/45">{item.label}</div>
-                  <div className="mt-3 text-2xl font-black tracking-[-0.05em] text-white md:text-3xl">{item.title}</div>
-                </div>
-                <div className="rounded-2xl border border-lime-300/15 bg-lime-300/10 px-4 py-3 text-right font-mono text-sm font-black uppercase tracking-[0.16em] text-lime-200">
-                  {item.metric}
-                </div>
-              </div>
-              <p className="mt-5 text-lg leading-relaxed text-white/52">
-                {item.body}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
 
 // ============================================================
 // ADD MEMBER MODAL
@@ -742,18 +670,27 @@ export default function FleetDirectoryPage({ pageData }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [session, setSession]             = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [fetchError, setFetchError]       = useState(null);
+  const [authError, setAuthError]         = useState(null);
 
   const [currentUserMember, setCurrentUserMember] = useState(null);
 
   const fetchMembers = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       // Public API — returns only approved members
       const res = await fetch('/api/team-members', { cache: 'no-store' });
-      const data = await res.json().catch(() => []);
-      setMembers(Array.isArray(data) ? data : []);
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setFetchError(data?.error || 'Failed to establish connection with the central database.');
+        setMembers([]);
+      } else {
+        setMembers(Array.isArray(data) ? data : []);
+      }
     } catch (err) {
       console.error('Failed to fetch members:', err);
+      setFetchError('Network communication error. Check your connection to the grid.');
     } finally {
       setLoading(false);
     }
@@ -769,12 +706,19 @@ export default function FleetDirectoryPage({ pageData }) {
           setSession(data.user);
           // The session endpoint also returns the member profile (even if unapproved)
           if (data.member) setCurrentUserMember(data.member);
+          setAuthError(null);
         } else {
           setSession(null);
           setCurrentUserMember(null);
+          if (data?.error) setAuthError(data.error);
         }
       })
-      .catch(() => { setSession(null); setCurrentUserMember(null); });
+      .catch((err) => { 
+        console.error('Auth error:', err);
+        setSession(null); 
+        setCurrentUserMember(null); 
+        setAuthError('Authentication service unreachable.');
+      });
 
     const sub = supabase.channel('team_members_changes')
       .on('postgres_changes', { event:'*', schema:'public', table:'team_members' }, fetchMembers)
@@ -924,6 +868,38 @@ export default function FleetDirectoryPage({ pageData }) {
           </motion.div>
         )}
 
+        {/* Error Banners */}
+        {(fetchError || authError) && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 flex flex-col gap-3 rounded-[1.75rem] border border-red-500/20 bg-red-500/5 p-5 backdrop-blur-xl"
+          >
+            {fetchError && (
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 text-red-400">
+                  <WifiOff size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Database Error</div>
+                  <p className="mt-0.5 text-xs text-white/55">{fetchError}</p>
+                </div>
+              </div>
+            )}
+            {authError && (
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 text-red-400">
+                  <Terminal size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Auth Error</div>
+                  <p className="mt-0.5 text-xs text-white/55">{authError}</p>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
         {/* Member Grid */}
         <div className="mt-2">
           {loading ? (
@@ -975,9 +951,7 @@ export default function FleetDirectoryPage({ pageData }) {
         <div className="mt-12 mb-24">
           <JoinCommunityCTA joinCTA={joinCTA} />
         </div>
-
-        <TeamCommandBriefing members={members} onlineCount={onlineCount} isAdmin={isAdmin} briefing={briefing} />
-      </div>
+        </div>
 
       {/* Modals */}
       <AnimatePresence>

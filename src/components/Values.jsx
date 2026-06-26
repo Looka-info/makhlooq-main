@@ -217,7 +217,7 @@ export default function Values({ data }) {
           willChange: 'transform, opacity',
           pointerEvents: 'none',
         }}>
-          <img src="/clouds.png" alt="" style={{
+          <img src="/clouds.png" alt="" width={1920} height={600} loading="lazy" style={{
             width: '100%', height: 'auto', display: 'block',
             mixBlendMode: 'multiply',
             filter: 'brightness(1.1) saturate(1.3)',
@@ -237,7 +237,7 @@ export default function Values({ data }) {
           willChange: 'transform, opacity',
           pointerEvents: 'none',
         }}>
-          <img src="/ship.png" alt="" style={{
+          <img src="/ship.png" alt="" width={960} height={600} loading="lazy" style={{
             width: '100%',
             height: 'auto',
             display: 'block',
@@ -260,7 +260,7 @@ export default function Values({ data }) {
           overflow: 'hidden',
         }}>
           <div style={{ animation: 'rock-float 4.8s ease-in-out infinite' }}>
-            <img src="/rocks.png" alt="" style={{
+            <img src="/rocks.png" alt="" width={1920} height={700} loading="lazy" style={{
               width: '100%', height: 'auto', display: 'block',
               mixBlendMode: 'multiply',
               filter: 'brightness(1.1) contrast(1.05)',
@@ -282,7 +282,7 @@ export default function Values({ data }) {
           pointerEvents: 'none',
         }}>
           <div style={{ animation: 'rock-float-b 6.2s ease-in-out infinite', animationDelay: '1s' }}>
-            <img src="/stones.png" alt="" style={{
+            <img src="/stones.png" alt="" width={1920} height={500} loading="lazy" style={{
               width: '100%', height: 'auto', display: 'block',
               mixBlendMode: 'multiply',
               filter: 'brightness(1.05) contrast(1.1)',

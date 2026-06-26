@@ -9,7 +9,7 @@ export default function PayloadRefresh() {
   return (
     <RefreshRouteOnSave
       refresh={router.refresh}
-      serverURL={process.env.NEXT_PUBLIC_SERVER_URL || 'https://makhlooq-main.vercel.app'}
+      serverURL={process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org'}
     />
   );
 }

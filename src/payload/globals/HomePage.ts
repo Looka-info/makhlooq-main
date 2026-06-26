@@ -91,6 +91,24 @@ export const HomePage: GlobalConfig = {
           label: "Subheading 3 (On Hover)",
           defaultValue: "Deep Space Chilling",
         },
+        {
+          name: "backgroundVideo",
+          type: "upload",
+          relationTo: "media",
+          label: "Background Video (Optional fallback: /Fight space and ground  Star Citizen epic cinematic,   Lighthouse.mp4)",
+        },
+        {
+          name: "posterImage",
+          type: "upload",
+          relationTo: "media",
+          label: "Poster Image (Optional fallback: /backgrounds/jp.jpg)",
+        },
+        {
+          name: "logoImage",
+          type: "upload",
+          relationTo: "media",
+          label: "Logo Image (Optional fallback: /nobglogo.png)",
+        },
       ],
     },
 
@@ -137,6 +155,12 @@ export const HomePage: GlobalConfig = {
           type: "text",
           label: "Fleet Image Heading",
           defaultValue: "Calm mind. Dangerous aim.",
+        },
+        {
+          name: "fleetImage",
+          type: "upload",
+          relationTo: "media",
+          label: "Fleet Background Image (Optional fallback)",
         },
         {
           name: "principles",

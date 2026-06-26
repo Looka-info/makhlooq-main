@@ -1,7 +1,5 @@
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import './globals.css';
-import CursorSpotlight from '@/components/CursorSpotlight';
-import ShawlTrail from '@/components/ShawlTrail';
 import ConditionalStudioWrapper from '@/components/ConditionalStudioWrapper';
 import PayloadRefresh from '@/components/PayloadRefresh';
 
@@ -24,7 +22,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 // ▸ STRUCTURED DATA (SEO: +5 points)
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://makhlooq-main.vercel.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kmhq.org';
 
 const organizationSchema = {
   '@context': 'https://schema.org',
@@ -149,8 +147,6 @@ export default function RootLayout({ children }) {
       <body>
         <PayloadRefresh />
         <ConditionalStudioWrapper>
-          <CursorSpotlight />
-          <ShawlTrail />
         </ConditionalStudioWrapper>
         {children}
       </body>
