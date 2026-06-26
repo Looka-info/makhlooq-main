@@ -3,11 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import { requireFleetAdmin } from '../../../lib/adminAuth';
 
 // Use service role key for admin operations to bypass RLS, fallback to anon key for local dev
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  supabaseKey
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 function getEnvFleetConfigs() {
   const raw = process.env.FLEETYARDS_FLEET_SLUGS || process.env.NEXT_PUBLIC_FLEETYARDS_FLEET_SLUGS || '';
@@ -26,7 +24,7 @@ function getEnvFleetConfigs() {
 }
 
 // GET — list all fleet configs (ordered by sort_order)
-export async function GET() {
+export async function GET(request) {
   try {
     const envConfigs = getEnvFleetConfigs();
     const { data, error } = await supabase

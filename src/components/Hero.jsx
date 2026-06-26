@@ -89,7 +89,6 @@ export default function Hero({ isMuted, volume, data }) {
   const videoRef = useRef(null);
   const [heroHovered, setHeroHovered] = useState(false);
 
-<<<<<<< HEAD
   // Support both old Sanity format and new Payload format with fallbacks
   const hero = data?.hero || {};
   const heading1 = hero.heading1 || data?.heroHeading?.split(' | ')?.[0] || 'Join Khalai Makhlooq';
@@ -108,12 +107,6 @@ export default function Hero({ isMuted, volume, data }) {
   const decodedHeading1 = useDecodedText(heading1, 500, 600);
   const decodedHeading2 = useDecodedText(heading2, 700, 600);
   const decodedLabel = useDecodedText(heroHovered ? 'Signal Shift: Full Throttle Mode' : description, heroHovered ? 0 : 400, heroHovered ? 250 : 400);
-=======
-  const decodedHeading1 = useDecodedText('Join Khalai Makhlooq', 500, 600);
-  const decodedHeading2 = useDecodedText('Rule the Stars', 700, 600);
-  const decodedLabel = useDecodedText(heroHovered ? 'Fleet: Full Throttle Ahead' : 'Elite Star Citizen PMC', heroHovered ? 0 : 400, heroHovered ? 250 : 400);
->>>>>>> b8f42eaa64a66bdd218d59d7107fbeebdbfc0c62
-
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = isMuted;
@@ -225,37 +218,22 @@ export default function Hero({ isMuted, volume, data }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, color: heroHovered ? '#bef264' : undefined }}
                 transition={{ delay: 0.75, duration: 0.5 }}
-                className="hero-subheading"
               >
-<<<<<<< HEAD
                 {heroHovered ? sub1Hover : sub1Normal}
-=======
-                {heroHovered ? 'Infiltrators' : 'Large Scale Operators'}
->>>>>>> b8f42eaa64a66bdd218d59d7107fbeebdbfc0c62
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, color: heroHovered ? '#a3e635' : undefined }}
                 transition={{ delay: 0.85, duration: 0.5 }}
-                className="hero-subheading"
               >
-<<<<<<< HEAD
                 {heroHovered ? sub2Hover : sub2Normal}
-=======
-                {heroHovered ? 'Space Capitalists' : 'Bounty Hunters'}
->>>>>>> b8f42eaa64a66bdd218d59d7107fbeebdbfc0c62
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, color: heroHovered ? '#84cc16' : undefined }}
                 transition={{ delay: 0.95, duration: 0.5 }}
-                className="hero-subheading"
               >
-<<<<<<< HEAD
                 {heroHovered ? sub3Hover : sub3Normal}
-=======
-                {heroHovered ? 'Deep Space Explorers' : 'Mercenaries'}
->>>>>>> b8f42eaa64a66bdd218d59d7107fbeebdbfc0c62
               </motion.div>
             </div>
           </div>

@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { clearAdminSessionCookie, isEnvAdminDiscordId, setAdminSessionCookie } from '../../../../../lib/adminAuth';
 
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, supabaseKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 function sanitizeReturnTo(value) {
   return value && value.startsWith('/') && !value.startsWith('//') ? value : '/team';
