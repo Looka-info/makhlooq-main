@@ -74,6 +74,7 @@ const nextConfig = {
   },
 
   // ▸ PRODUCTION OPTIMIZATION
+  output: 'standalone', // Required for Hostinger/cPanel Node.js hosting (Passenger)
   productionBrowserSourceMaps: false, // Reduce bundle size in production
   poweredByHeader: false, // Remove X-Powered-By header
   compress: true, // Enable gzip compression
