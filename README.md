@@ -176,7 +176,7 @@ Execute the SQL migration files found in the `/supabase/migrations` folder insid
 npm install
 npm run dev
 ```
-The website will be available at `http://localhost:3000`.
+The website will be available at `https://kmhq.org`.
 
 **Start the Discord Sync Bot (In a separate terminal):**
 ```bash
