@@ -12,7 +12,7 @@ import { useLivePreview } from '@payloadcms/live-preview-react';
 export default function AboutPageClient({ data: initialData, newsPosts }) {
   const { data } = useLivePreview({
     initialData,
-    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org',
+    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://makhlooq-main.vercel.app',
     depth: 2,
   });
 

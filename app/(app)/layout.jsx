@@ -24,7 +24,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 // ▸ STRUCTURED DATA (SEO: +5 points)
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kmhq.org';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://makhlooq-main.vercel.app';
 
 const organizationSchema = {
   '@context': 'https://schema.org',

@@ -6,7 +6,7 @@
  * Documentation: https://schema.org/
  */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kmhq.org';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://makhlooq-main.vercel.app';
 
 /**
  * ▸ ORGANIZATION SCHEMA
