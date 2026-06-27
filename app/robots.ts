@@ -35,11 +35,6 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: 'Googlebot',
         allow: '/',
         crawlDelay: 0, // Google can crawl more frequently
-        requestRate: {
-          userAgent: 'Googlebot',
-          requests: 10, // 10 requests per second
-          evaluationFunction: 'adaptive', // Automatically adjust based on load
-        },
       },
 
       // ▸ BLOCK BAD BOTS

@@ -24,7 +24,7 @@ export default buildConfig({
     user: Users.slug,
     meta: {
       titleSuffix: "— KMHQ CMS",
-      favicon: "/favicon.ico",
+      icons: [{ rel: "icon", url: "/favicon.ico" }],
     },
     livePreview: {
       url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org',

@@ -5,6 +5,7 @@
  * 
  * Documentation: https://schema.org/
  */
+import React from 'react';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kmhq.org';
 
@@ -223,51 +224,3 @@ export function MultipleJsonLd({ schemas }) {
     </>
   );
 }
-
-/**
- * ▸ USAGE EXAMPLES
- *
- * 1. In layout.jsx (root):
- * ```jsx
- * import { JsonLd, organizationSchema } from '@/lib/schemas';
- *
- * export default function RootLayout({ children }) {
- *   return (
- *     <html>
- *       <head>
- *         <JsonLd data={organizationSchema} />
- *       </head>
- *       <body>{children}</body>
- *     </html>
- *   );
- * }
- * ```
- *
- * 2. In page component (team member):
- * ```jsx
- * import { JsonLd, createPersonSchema } from '@/lib/schemas';
- *
- * export default function TeamMemberPage({ params }) {
- *   const schema = createPersonSchema(params.username, 'Commander');
- *   return (
- *     <>
- *       <JsonLd data={schema} />
- *       {/* page content */}
- *     </>
- *   );
- * }
- * ```
- *
- * 3. Breadcrumbs in navigation:
- * ```jsx
- * import { JsonLd, createBreadcrumbSchema } from '@/lib/schemas';
- *
- * const breadcrumbs = [
- *   { name: 'Home', url: 'https://makhlooq.com' },
- *   { name: 'Team', url: 'https://makhlooq.com/team' },
- *   { name: 'Admiral', url: 'https://makhlooq.com/team/admiral' },
- * ];
- *
- * <JsonLd data={createBreadcrumbSchema(breadcrumbs)} />
- * ```
- */
