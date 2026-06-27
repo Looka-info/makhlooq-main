@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Grid, OrbitControls, Stars } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { DRACOLoader, GLTFLoader } from 'three-stdlib';
 import * as THREE from 'three';
 
@@ -118,6 +118,40 @@ function ScanRing({ color }) {
   );
 }
 
+function SimpleStars({ count = 650, radius = 80 }) {
+  const points = useMemo(() => {
+    const p = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(Math.random() * 2 - 1);
+      const r = radius * (0.8 + Math.random() * 0.2);
+      p[i3] = r * Math.sin(phi) * Math.cos(theta);
+      p[i3 + 1] = Math.abs(r * Math.sin(phi) * Math.sin(theta)); // Keep them mostly overhead
+      p[i3 + 2] = r * Math.cos(phi);
+    }
+    return p;
+  }, [count, radius]);
+
+  return (
+    <points>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[points, 3]}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        color="#ffffff"
+        size={0.25}
+        sizeAttenuation
+        transparent
+        opacity={0.5}
+      />
+    </points>
+  );
+}
+
 function LoadingModel() {
   return (
     <mesh>
@@ -154,6 +188,7 @@ export default function FleetScene({ selectedShip }) {
     setModelFailed(false);
     setModelLoading(Boolean(modelUrl));
   }, [modelKey, modelUrl]);
+
 
   if (!modelUrl) {
     return (
@@ -205,10 +240,9 @@ export default function FleetScene({ selectedShip }) {
         dpr={[1, 1.35]}
         frameloop="always"
         performance={{ min: 0.5 }}
-        gl={{
-          antialias: false,
-          powerPreference: 'low-power',
-          toneMapping: THREE.ACESFilmicToneMapping,
+        gl={{ antialias: false, powerPreference: 'low-power' }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
         }}
         style={{ background: 'transparent', minHeight: 'inherit' }}
       >
@@ -230,20 +264,11 @@ export default function FleetScene({ selectedShip }) {
       ) : null}
 
         <ScanRing color={accentColor} />
-        <Grid
+        <gridHelper
+          args={[100, 100, accentColor, '#27272a']}
           position={[0, -2.8, 0]}
-          args={[100, 100]}
-          cellSize={1}
-          cellThickness={0.25}
-          cellColor={cellColorObj}
-          sectionSize={5}
-          sectionThickness={0.5}
-          sectionColor={sectionColorObj}
-          fadeDistance={38}
-          fadeStrength={1}
-          infiniteGrid
         />
-        <Stars radius={80} depth={45} count={650} factor={2} saturation={0} fade speed={0} />
+        <SimpleStars radius={80} count={650} />
         <OrbitControls
           target={[0, 0.35, 0]}
           enableDamping
