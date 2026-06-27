@@ -1,222 +1,194 @@
 <div align="center">
-  <img src="public/logo.png" alt="Khalai Makhlooq Logo" width="180" style="margin-bottom: 20px;" />
-  
-  # Khalai Makhlooq (KHLA) Command Center
-  
-  <p>
-    <strong>Official Web Infrastructure, Roster, & Fleet Management System</strong>
-  </p>
 
-  <p>
-    <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" /></a>
-    <a href="https://react.dev"><img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" /></a>
-    <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-1C1C1C?style=for-the-badge&logo=supabase&logoColor=3ECF8E" alt="Supabase" /></a>
-    <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind_CSS-0B1120?style=for-the-badge&logo=tailwindcss&logoColor=38B2AC" alt="Tailwind CSS" /></a>
-    <a href="https://threejs.org"><img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=threedotjs&logoColor=white" alt="Three.js" /></a>
-    <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" /></a>
-  </p>
+# Khalai Makhlooq
+### Official Star Citizen Organization Website
+
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19-61dafb?logo=react)](https://react.dev)
+[![Payload CMS](https://img.shields.io/badge/Payload_CMS-3-000?logo=payloadcms)](https://payloadcms.com)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ecf8e?logo=supabase)](https://supabase.com)
+[![License](https://img.shields.io/badge/license-Private-red)](/)
+
+**[kmhq.org](https://kmhq.org)** — Fleet management, team roster & member portal for the Khalai Makhlooq Star Citizen org.
+
 </div>
 
-<br />
+---
 
-<div align="center">
-  <img src="public/backgrounds/Screenshot_2025-09-10_231035.png" alt="Dashboard Preview" width="100%" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);" />
-</div>
+## Features
 
-<br />
-
-> A highly immersive, interactive, and automated web presence for the **Khalai Makhlooq** Star Citizen organization. Built with modern web technologies, featuring real-time roster syncing, a dynamic 3D fleet viewer, and a securely integrated administrative control panel.
+- 🚀 **Fleet Browser** — Live 3D ship viewer powered by Three.js / React Three Fiber + Fleetyards API
+- 👥 **Team Roster** — Discord-authenticated member directory with admin approval workflow
+- 🛡️ **Admin Panel** — Full Payload CMS backend for content management
+- 📰 **News & Updates** — Rich-text articles managed via Payload CMS
+- 🎮 **Discord OAuth** — Login with Discord; guild membership verification via Bot API
+- ✨ **Cinematic UI** — GSAP animations, PixiJS parallax, CSS glassmorphism
 
 ---
 
-## 📑 Table of Contents
-- [✨ Key Features](#-key-features)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [🗄️ Database Architecture](#️-database-architecture)
-- [📸 Gallery](#-gallery)
-- [⚙️ Local Development Setup](#️-local-development-setup)
-- [📂 Project Structure](#-project-structure)
-- [🤝 Contributing](#-contributing)
+## Tech Stack
 
----
-
-## ✨ Key Features
-
-- **🌐 Automated Roster Synchronization**  
-  Includes a dedicated Discord bot running silently in the background, communicating with `starcitizen-api.com`. It automatically fetches live organizational data (handles, ranks, avatars) and syncs it to our database every 12 hours.
-
-- **🛸 3D Fleet Viewer & Command System**  
-  Explore the organization's fleet in an interactive 3D viewport powered by Three.js. Supports loading high-fidelity `.glb` ship models or generating intelligent holographic fallbacks based on the ship's classification. Directly integrated with the **FleetYards API**.
-
-- **📊 Interactive Team Network Graph**  
-  An immersive, physics-based, Obsidian-style network graph that visualizes the organization's roster, connecting members back to the central KHLA hub.
-
-- **🛡️ Secure Admin Panel & CMS**  
-  A secure management dashboard protected by Supabase Auth and Discord OAuth. Authorized admins can dynamically register new fleet slugs, toggle visibility, post news updates with media attachments, and validate configurations in real-time.
-
-- **🎨 Premium UI/UX Aesthetics**  
-  Built with a "vibe-engineered" approach utilizing glassmorphism, deep contrast cyberpunk themes, modern HUD interfaces, interactive cursors, and buttery-smooth page transitions via `motion/react`.
-
----
-
-## 🛠️ Tech Stack
-
-| Category | Technologies |
+| Layer | Technology |
 |---|---|
-| **Frontend Framework** | Next.js 14 (App Router), React 18, TypeScript/JavaScript |
-| **Styling & Animation** | Tailwind CSS, Lucide React, Framer Motion (`motion/react`) |
-| **3D Rendering** | Three.js, `@react-three/fiber`, `@react-three/drei` |
-| **Backend & Database** | Supabase (PostgreSQL / Storage), Next.js Serverless API Routes |
-| **Authentication** | Discord OAuth2, Supabase Auth |
-| **External Integrations** | StarCitizen-API, FleetYards Public API |
+| **Framework** | Next.js 16 (App Router) |
+| **UI** | React 19, Tailwind CSS v3, shadcn/ui |
+| **3D / Animation** | Three.js, React Three Fiber, Drei, GSAP, PixiJS |
+| **CMS** | Payload CMS 3 (Postgres adapter) |
+| **Database** | Supabase (PostgreSQL) |
+| **Auth** | Discord OAuth2 + Bot API guild verification |
+| **Hosting** | Hostinger Node.js (LiteSpeed reverse proxy) |
 
 ---
 
-## 🗄️ Database Architecture
+## Getting Started
 
-The core relational database schema running on Supabase PostgreSQL.
+### Prerequisites
 
-```mermaid
-erDiagram
-    TEAM_MEMBERS {
-        uuid id PK
-        string discord_id "Unique ID from Discord"
-        string handle "In-game RSI Handle"
-        string rank "Org Rank"
-        string avatar_url "Profile Image"
-    }
-    
-    FLEET_SHIPS {
-        uuid id PK
-        string ship_name "Display Name"
-        string slug "FleetYards Slug"
-        string manufacturer "Ship Maker"
-        string classification "Ship Role/Type"
-    }
-    
-    ABOUT_NEWS {
-        uuid id PK
-        string title "Headline"
-        text body "Main content"
-        string media_url "Image/Video URL"
-        string media_type "image or video"
-        timestamp published_at "Post Date"
-    }
-    
-    ABOUT_SETTINGS {
-        uuid id PK
-        string bridge_background_url "Custom hero bg"
-        string archives_background_url "Custom archives bg"
-    }
-    
-    FLEET_CONFIGS {
-        uuid id PK
-        string setting_name
-        string setting_value
-    }
-    
-    TEAM_MEMBERS ||--o{ FLEET_SHIPS : "owns"
+- Node.js 20+
+- A [Supabase](https://supabase.com) project with Postgres enabled
+- A [Discord Application](https://discord.com/developers/applications) with OAuth2 configured
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/your-org/makhlooq.git
+cd makhlooq
+npm install
 ```
-
----
-
-## 📸 Gallery
-
-<div align="center">
-  <img src="public/backgrounds/Screenshot_2025-09-10_231238.png" alt="Fleet 3D Viewer" width="48%" style="border-radius: 8px; margin-right: 2%;" />
-  <img src="public/backgrounds/Screenshot_2025-09-10_231349.png" alt="Team Roster" width="48%" style="border-radius: 8px;" />
-</div>
-<br />
-<div align="center">
-  <img src="public/backgrounds/Screenshot_2025-09-10_231415.png" alt="Admin Dashboard" width="100%" style="border-radius: 8px;" />
-</div>
-
----
-
-## ⚙️ Local Development Setup
-
-### 1. Prerequisites
-- **Node.js** (v18+)
-- A **Supabase Project** (Database & Auth)
-- A **Discord Developer Application** (for Bot and OAuth)
-- A **StarCitizen-API.com Key**
 
 ### 2. Environment Variables
-Create a `.env.local` file in the root directory and configure your keys:
 
-```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+Copy `.env.example` to `.env` and fill in the values:
 
-# Discord OAuth & Bot Configuration
-DISCORD_CLIENT_ID=your_discord_client_id
-DISCORD_CLIENT_SECRET=your_discord_client_secret
-DISCORD_BOT_TOKEN=your_discord_bot_token
-DISCORD_GUILD_ID=your_discord_server_id
-ADMIN_DISCORD_IDS=your_discord_id_here
-
-# External APIs
-SC_API_KEY=your_starcitizen_api_key
+```bash
+cp .env.example .env
 ```
 
-### 3. Database Initialization
-Execute the SQL migration files found in the `/supabase/migrations` folder inside your Supabase SQL Editor. Ensure you apply schemas for:
-- `about_news` & `about_settings`
-- `fleet_ships` & `fleet_configs`
-- `team_members`
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | Supabase Postgres connection URI (URL-encode special chars in password) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase `anon` / publishable key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase `service_role` secret key |
+| `DISCORD_CLIENT_ID` | Discord App OAuth2 Client ID |
+| `DISCORD_CLIENT_SECRET` | Discord App OAuth2 Client Secret |
+| `DISCORD_BOT_TOKEN` | Discord Bot token (for guild membership checks) |
+| `DISCORD_GUILD_ID` | Your Discord server (guild) ID |
+| `ADMIN_DISCORD_IDS` | Comma-separated Discord User IDs with super-admin access |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL, e.g. `https://kmhq.org` |
+| `PAYLOAD_SECRET` | *(Optional)* Secret for Payload CMS JWT signing |
 
-*Ensure your Supabase storage buckets (e.g. `media`) are created and set to **Public**.*
+> [!IMPORTANT]
+> `DATABASE_URL` must have special characters in the password **percent-encoded**.
+> Example: `!` → `%21`, `)` → `%29`, `@` → `%40`
+> Get the pre-encoded URI from: **Supabase → Settings → Database → Connection string → URI tab**
 
-### 4. Running the Project
+### 3. Discord OAuth Redirect URIs
 
-**Start the Next.js Web Application:**
+In your [Discord Developer Portal](https://discord.com/developers/applications), add these **redirect URIs**:
+
+```
+http://localhost:3000/api/auth/discord/callback   # development
+https://kmhq.org/api/auth/discord/callback        # production
+```
+
+### 4. Run Locally
+
 ```bash
-npm install
 npm run dev
 ```
-The website will be available at `https://kmhq.org`.
 
-**Start the Discord Sync Bot (In a separate terminal):**
-```bash
-cd discord-bot-master
-npm install
-node deploy-commands.js # Register slash commands
-npm run start
-```
+The app runs at [http://localhost:3000](http://localhost:3000).
+The Payload admin panel is at [http://localhost:3000/admin](http://localhost:3000/admin).
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
-```text
+```
 makhlooq/
-├── app/                  # Next.js App Router (Home, Fleet, Team, About, Admin)
-│   ├── admin/            # Secure Admin & CMS Dashboards
-│   ├── api/              # Serverless API endpoints (Supabase & FleetYards Proxy)
-│   └── globals.css       # Global stylesheet & Tailwind directives
+├── app/                        # Next.js App Router
+│   ├── (app)/                  # Public-facing pages
+│   ├── (payload)/              # Payload CMS admin routes
+│   └── api/                    # API routes
+│       ├── auth/discord/       # Discord OAuth login & callback
+│       ├── fleetyards/         # Fleetyards API proxy (ships & models)
+│       └── team/               # Team member CRUD endpoints
 ├── src/
-│   └── components/       # Reusable React components (3D Scene, Modals, UI)
-├── public/               # Static assets (Images, Logos, Backgrounds)
-├── supabase/             # Database migration SQL files
-└── discord-bot-master/   # Standalone Node.js roster sync bot
+│   ├── components/             # React components
+│   │   ├── fleet/              # 3D fleet viewer (Three.js / R3F)
+│   │   ├── team/               # Member roster & admin panel
+│   │   └── about/              # About / news sections
+│   ├── payload/                # Payload CMS collections & globals
+│   └── lib/                    # Shared utilities & auth helpers
+├── lib/                        # Server-side utilities (adminAuth, supabase)
+├── public/                     # Static assets (images, fonts)
+├── scripts/                    # Dev & deployment scripts
+│   ├── create-deploy-zip.ps1   # Build production ZIP for Hostinger
+│   └── create-static-link.js  # Symlinks .next/static after build
+├── supabase/                   # Database schema & migrations
+├── payload.config.ts           # Payload CMS configuration
+├── next.config.mjs             # Next.js configuration
+└── server.js                   # Custom Node.js server entry point
 ```
 
 ---
 
-## 🤝 Contributing
+## Deployment (Hostinger)
 
-For organization members looking to contribute code or 3D models:
-1. Ensure all `.glb` files are optimized and compressed (Draco compression recommended).
-2. Create feature branches off of `main` (e.g., `feature/hud-improvements`).
-3. Ensure no hydration mismatches occur when dealing with 3D components or custom cursors.
-4. Run `npm run build` locally before opening a Pull Request.
+### Build & Package
 
-<br />
+```powershell
+# 1. Build the project locally
+npm run build
+
+# 2. Create deployment ZIP (includes .next, excludes node_modules/dev files)
+./scripts/create-deploy-zip.ps1
+```
+
+### Upload to Hostinger
+
+1. Upload `deploy.zip` via **hPanel → File Manager** to `~/domains/kmhq.org/nodejs/`
+2. SSH in and extract: `unzip deploy.zip -d ~/domains/kmhq.org/nodejs/`
+3. Install production dependencies:
+   ```bash
+   cd ~/domains/kmhq.org/nodejs
+   npm install --omit=dev
+   ```
+4. Restart the Node.js app from **hPanel → Node.js → Restart**
+
+### Environment Variables on Hostinger
+
+Set all variables from the [table above](#2-environment-variables) via:
+**hPanel → Node.js → Environment Variables**
+
+> [!NOTE]
+> **Static assets** — LiteSpeed intercepts `/_next/static` before Node.js.
+> After first deploy, SSH in and run:
+> ```bash
+> mkdir -p ~/domains/kmhq.org/public_html/_next
+> ln -s ~/domains/kmhq.org/nodejs/.next/static ~/domains/kmhq.org/public_html/_next/static
+> ```
+
+---
+
+## Database
+
+The `supabase/` directory contains the full schema:
+
+- **`schema.sql`** — baseline table definitions (`team_members`, etc.)
+- **`migrations/`** — incremental migration files
+
+To apply the schema to a fresh Supabase project, run `schema.sql` in the **Supabase SQL Editor**.
+
+---
+
+## Contributing
+
+This is a private organization project. Contact an admin via Discord to request access.
+
+---
 
 <div align="center">
-  <img src="public/favicon.png" width="40" alt="Icon" />
-  <br />
-  <i>See You In The 'Verse.</i>
+Made with ☕ by the Khalai Makhlooq command team
 </div>

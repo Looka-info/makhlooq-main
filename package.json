@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
-    "postbuild": "node create-static-link.js",
+    "postbuild": "node scripts/create-static-link.js",
     "start": "next start",
     "lint": "next lint"
   },

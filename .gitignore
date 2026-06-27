@@ -16,6 +16,7 @@
 # misc
 .DS_Store
 *.pem
+deploy.zip
 
 # debug
 npm-debug.log*
@@ -23,7 +24,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
+.env.local
 
 # vercel
 .vercel
@@ -31,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# temp / scratch files
+/scratch
+/dist
+tmp_*
