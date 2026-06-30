@@ -31,7 +31,7 @@ function StatusBadge({ enabled }) {
 }
 
 /* ───────── Single fleet row ───────── */
-function FleetRow({ cfg, onEdit, onDelete, onToggle, toggling, onManageMembers }) {
+function FleetRow({ cfg, memberCount, onEdit, onDelete, onToggle, toggling, onManageMembers }) {
   return (
     <tr className="group hover:bg-white/[0.02] transition-colors">
       <td className="px-5 py-5">
@@ -61,6 +61,15 @@ function FleetRow({ cfg, onEdit, onDelete, onToggle, toggling, onManageMembers }
       </td>
       <td className="px-5 py-5 text-center">
         <span className="inline-flex items-center justify-center min-w-[28px] h-[28px] rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-xs shadow-[0_0_10px_rgba(16,185,129,0.1)]">×{cfg.quantity || 1}</span>
+      </td>
+      <td className="px-5 py-5 text-center">
+        <button
+          onClick={() => onManageMembers(cfg)}
+          className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/40 hover:shadow-[0_0_10px_rgba(59,130,246,0.15)] transition-all font-mono text-xs font-bold"
+        >
+          <Users size={12} />
+          {memberCount || 0}
+        </button>
       </td>
       <td className="px-5 py-5">
         <span className="text-gray-500 text-xs font-mono bg-white/5 px-2 py-1 rounded-md">{cfg.sort_order ?? 0}</span>
@@ -172,6 +181,7 @@ function EditRow({ data, onChange, onSave, onCancel, saving }) {
           className="w-16 rounded-lg border border-emerald-500/20 bg-white/5 px-2 py-1.5 text-white text-xs font-mono outline-none focus:border-emerald-500/50 transition-colors text-center"
         />
       </td>
+      <td className="px-5 py-3" /> {/* Members Column */}
       <td className="px-5 py-3">
         <input
           type="number"
@@ -180,7 +190,7 @@ function EditRow({ data, onChange, onSave, onCancel, saving }) {
           className="w-16 rounded-lg border border-emerald-500/20 bg-white/5 px-2 py-1.5 text-white text-xs font-mono outline-none focus:border-emerald-500/50 transition-colors"
         />
       </td>
-      <td className="px-5 py-3" />
+      <td className="px-5 py-3" /> {/* Registered Column */}
       <td className="px-5 py-3">
         <div className="flex flex-col gap-1.5">
           <button
@@ -414,6 +424,12 @@ function ManageMembersModal({ fleet, onClose }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // Inline editing states
+  const [editingMemberId, setEditingMemberId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editRole, setEditRole] = useState('');
+  const [updating, setUpdating] = useState(false);
+
   const fetchMembers = async () => {
     setLoading(true);
     try {
@@ -448,14 +464,44 @@ function ManageMembersModal({ fleet, onClose }) {
     await fetchMembers();
   };
 
+  const startEdit = (m) => {
+    setEditingMemberId(m.id);
+    setEditName(m.name);
+    setEditRole(m.role || 'Member');
+    setError('');
+  };
+
+  const cancelEdit = () => {
+    setEditingMemberId(null);
+    setEditName('');
+    setEditRole('');
+  };
+
+  const handleUpdate = async (id) => {
+    if (!editName.trim()) { setError('Name is required.'); return; }
+    setUpdating(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/fleet-members/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName.trim(), role: editRole.trim() }),
+      });
+      if (!res.ok) { const d = await res.json(); setError(d.error || 'Failed to update.'); return; }
+      cancelEdit();
+      await fetchMembers();
+    } catch { setError('Network error.'); }
+    finally { setUpdating(false); }
+  };
+
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0 bg-[#020408]/80 backdrop-blur-md" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#020408]/85 backdrop-blur-md" onClick={onClose} />
       <motion.div
-        className="relative z-10 w-full max-w-md rounded-[2rem] border border-white/[0.07] bg-[#050B08] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col max-h-[80vh]"
+        className="relative z-10 w-full max-w-md rounded-[2rem] border border-white/[0.08] bg-[#050B08]/90 backdrop-blur-3xl shadow-[0_0_50px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.05)] flex flex-col max-h-[80vh] overflow-hidden"
         initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 20 }}
       >
         {/* Header */}
@@ -476,7 +522,7 @@ function ManageMembersModal({ fleet, onClose }) {
 
         {/* Members list */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-          {loading ? (
+          {loading && !updating ? (
             <div className="flex items-center justify-center py-8 text-gray-500">
               <Loader2 size={20} className="animate-spin text-blue-400/50 mr-2" />
               <span className="text-xs font-mono uppercase tracking-widest">Loading...</span>
@@ -487,21 +533,71 @@ function ManageMembersModal({ fleet, onClose }) {
             </div>
           ) : (
             members.map(m => (
-              <div key={m.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] group">
+              <div key={m.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all group">
                 <div className="w-7 h-7 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 text-[10px] font-black uppercase">
                   {m.name.charAt(0)}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-white truncate">{m.name}</div>
-                  <div className="text-[10px] font-mono text-blue-400/60 uppercase tracking-widest">{m.role || 'Member'}</div>
+
+                {editingMemberId === m.id ? (
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      value={editName}
+                      onChange={e => setEditName(e.target.value)}
+                      placeholder="Name"
+                      className="flex-1 min-w-0 rounded-lg border border-blue-500/30 bg-black/40 px-2 py-1 text-white text-xs outline-none focus:border-blue-500"
+                    />
+                    <input
+                      value={editRole}
+                      onChange={e => setEditRole(e.target.value)}
+                      placeholder="Role"
+                      className="w-24 rounded-lg border border-blue-500/30 bg-black/40 px-2 py-1 text-white text-xs outline-none focus:border-blue-500"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-white truncate">{m.name}</div>
+                    <div className="text-[10px] font-mono text-blue-400/60 uppercase tracking-widest">{m.role || 'Member'}</div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1">
+                  {editingMemberId === m.id ? (
+                    <>
+                      <button
+                        onClick={() => handleUpdate(m.id)}
+                        disabled={updating}
+                        className="p-1 rounded-lg border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                        title="Save changes"
+                      >
+                        <Save size={12} />
+                      </button>
+                      <button
+                        onClick={cancelEdit}
+                        className="p-1 rounded-lg border border-white/10 text-gray-400 hover:bg-white/5 transition-all"
+                        title="Cancel"
+                      >
+                        <X size={12} />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => startEdit(m)}
+                        className="p-1 rounded-lg border border-blue-500/20 text-blue-400 hover:bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                        title="Edit member"
+                      >
+                        <Edit3 size={12} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(m.id)}
+                        className="p-1.5 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                        title="Remove member"
+                      >
+                        <UserMinus size={13} />
+                      </button>
+                    </>
+                  )}
                 </div>
-                <button
-                  onClick={() => handleDelete(m.id)}
-                  className="p-1.5 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
-                  title="Remove member"
-                >
-                  <UserMinus size={13} />
-                </button>
               </div>
             ))
           )}
@@ -564,12 +660,27 @@ export default function FleetAdminPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('registry');
 
+  // Member management states
+  const [selectedFleetForMembers, setSelectedFleetForMembers] = useState(null);
+  const [memberCounts, setMemberCounts] = useState({});
+
   const fetchConfigs = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/fleet-configs');
       const data = await res.json();
       setConfigs(Array.isArray(data) ? data : []);
+
+      // Fetch member counts
+      const mRes = await fetch('/api/fleet-members');
+      const mData = await mRes.json();
+      if (Array.isArray(mData)) {
+        const counts = {};
+        mData.forEach(m => {
+          counts[m.fleet_config_id] = (counts[m.fleet_config_id] || 0) + 1;
+        });
+        setMemberCounts(counts);
+      }
     } catch {
       setConfigs([]);
     } finally {
@@ -797,7 +908,7 @@ export default function FleetAdminPage() {
               <table className="w-full text-sm text-left border-collapse">
                 <thead className="sticky top-0 bg-[#050B08]/90 backdrop-blur-md z-20 shadow-[0_1px_0_rgba(255,255,255,0.05)]">
                   <tr>
-                    {['Asset ID / Fleet', 'Status', 'Class', 'CO Name', 'Qty', 'Sort', 'Registered', 'Actions'].map(h => (
+                    {['Asset ID / Fleet', 'Status', 'Class', 'CO Name', 'Qty', 'Members', 'Sort', 'Registered', 'Actions'].map(h => (
                       <th key={h} className="px-5 py-4 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -806,7 +917,16 @@ export default function FleetAdminPage() {
                   {filtered.map(cfg =>
                     editId === cfg.id
                       ? <EditRow key={cfg.id} data={editData} onChange={handleEditChange} onSave={handleEditSave} onCancel={cancelEdit} saving={editSaving} />
-                      : <FleetRow key={cfg.id} cfg={cfg} onEdit={startEdit} onDelete={handleDelete} onToggle={handleToggle} toggling={toggling} />
+                      : <FleetRow
+                          key={cfg.id}
+                          cfg={cfg}
+                          memberCount={memberCounts[cfg.id] || 0}
+                          onEdit={startEdit}
+                          onDelete={handleDelete}
+                          onToggle={handleToggle}
+                          toggling={toggling}
+                          onManageMembers={setSelectedFleetForMembers}
+                        />
                   )}
                 </tbody>
               </table>
@@ -831,9 +951,18 @@ export default function FleetAdminPage() {
         )}
       </div>
 
-      {/* Add Modal */}
+      {/* Modals */}
       <AnimatePresence>
         {showAddModal && <AddFleetModal onClose={() => setShowAddModal(false)} onAdd={handleAdd} />}
+        {selectedFleetForMembers && (
+          <ManageMembersModal
+            fleet={selectedFleetForMembers}
+            onClose={() => {
+              setSelectedFleetForMembers(null);
+              fetchConfigs();
+            }}
+          />
+        )}
       </AnimatePresence>
     </div>
   );

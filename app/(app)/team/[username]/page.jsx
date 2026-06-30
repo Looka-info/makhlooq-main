@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { supabase } from '../../../../lib/supabase';
 import Header from '../../../../src/components/Header';
 
 import { useParams } from 'next/navigation';
@@ -16,13 +15,20 @@ export default function TeamMemberProfile() {
   useEffect(() => {
     const fetchMember = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from('team_members')
-        .select('*')
-        .eq('discord_uid', params.username)
-        .single();
-      setMember(data);
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/team-members?discord_uid=${params.username}`);
+        const data = await res.json().catch(() => null);
+        if (res.ok && data && !data.error) {
+          setMember(data);
+        } else {
+          setMember(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch member details:', err);
+        setMember(null);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchMember();
   }, [params.username]);

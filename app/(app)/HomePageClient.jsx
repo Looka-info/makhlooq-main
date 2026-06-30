@@ -60,7 +60,7 @@ import { useLivePreview } from '@payloadcms/live-preview-react';
 export default function HomePageClient({ data: initialData }) {
   const { data } = useLivePreview({
     initialData,
-    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org',
+    serverURL: (typeof window !== 'undefined' && window.__SERVER_URL__) || process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org',
     depth: 2,
   });
 

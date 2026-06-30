@@ -8,6 +8,25 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET(request) {
   const url = new URL(request.url);
+  const discordUid = url.searchParams.get('discord_uid');
+
+  if (discordUid) {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .eq('discord_uid', discordUid)
+      .maybeSingle();
+
+    if (error) {
+      console.error(`Supabase error fetching member by discord_uid ${discordUid}:`, error.message);
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
+    }
+    if (!data) {
+      return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+    }
+    return NextResponse.json(data);
+  }
+
   const showAll = url.searchParams.get('all') === '1';
 
   // Only admins can request all members (including unapproved)

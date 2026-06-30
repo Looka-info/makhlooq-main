@@ -3,8 +3,8 @@ const path = require('path');
 
 console.log('Running postbuild script to fix Hostinger static files...');
 
-const nextStaticDir = path.join(__dirname, '.next', 'static');
-const nextPublicDir = path.join(__dirname, '_next');
+const nextStaticDir = path.resolve(__dirname, '..', '.next', 'static');
+const nextPublicDir = path.resolve(__dirname, '..', '_next');
 const symlinkPath = path.join(nextPublicDir, 'static');
 
 try {

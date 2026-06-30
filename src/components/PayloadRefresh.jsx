@@ -9,7 +9,7 @@ export default function PayloadRefresh() {
   return (
     <RefreshRouteOnSave
       refresh={router.refresh}
-      serverURL={process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org'}
+      serverURL={(typeof window !== 'undefined' && window.__SERVER_URL__) || process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org'}
     />
   );
 }

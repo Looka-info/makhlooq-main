@@ -21,6 +21,7 @@ create table public.team_members (
   bio           text,
   skills        text[] default '{}',
   status        text default 'offline',
+  is_approved   boolean default false,
   is_admin      boolean default false,
   joined_at     timestamptz default now(),
   updated_at    timestamptz default now()

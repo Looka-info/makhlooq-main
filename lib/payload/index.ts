@@ -1,12 +1,19 @@
 import { getPayload } from "payload";
 import config from "../../payload.config";
 
-// Cache the payload instance
-let cached: ReturnType<typeof getPayload> | null = null;
+// Cache the resolved payload instance (not the promise)
+// so a failed connection doesn't permanently poison the cache.
+let cached: Awaited<ReturnType<typeof getPayload>> | null = null;
 
 export async function getPayloadInstance() {
-  if (!cached) {
-    cached = getPayload({ config });
+  if (cached) return cached;
+
+  try {
+    cached = await getPayload({ config });
+    return cached;
+  } catch (err) {
+    // Reset so the next request can retry — don't hold a broken promise.
+    cached = null;
+    throw err;
   }
-  return cached;
 }

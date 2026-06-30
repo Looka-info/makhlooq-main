@@ -8,7 +8,6 @@ import {
   Plus, Upload, Palette, Shield as ShieldIcon, LogIn,
   Terminal, Wifi, WifiOff, Clock, Zap, LogOut
 } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
 import ProfileEditor from './ProfileEditor';
 
 // ============================================================
@@ -720,12 +719,11 @@ export default function FleetDirectoryPage({ pageData }) {
         setAuthError('Authentication service unreachable.');
       });
 
-    const sub = supabase.channel('team_members_changes')
-      .on('postgres_changes', { event:'*', schema:'public', table:'team_members' }, fetchMembers)
-      .subscribe();
+    // Poll for updates every 15 seconds
+    const interval = setInterval(fetchMembers, 15000);
 
     return () => {
-      sub.unsubscribe();
+      clearInterval(interval);
     };
   }, [fetchMembers]);
 

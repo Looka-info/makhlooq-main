@@ -143,6 +143,15 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+
+        {/* ▸ RUNTIME ENVIRONMENT VARIABLES INJECTION FOR PAYLOAD LIVE PREVIEW */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.__SERVER_URL__ = ${JSON.stringify(process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org')};
+            `,
+          }}
+        />
       </head>
       <body>
         <PayloadRefresh />
