@@ -1,10 +1,15 @@
 import { CollectionConfig } from "payload";
+import { revalidatePathHook } from "../hooks/revalidate";
 
 export const NewsPosts: CollectionConfig = {
   slug: "news-posts",
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "category", "publishedAt"],
+  },
+  hooks: {
+    afterChange: [revalidatePathHook("/about")],
+    afterDelete: [revalidatePathHook("/about")],
   },
   fields: [
     {

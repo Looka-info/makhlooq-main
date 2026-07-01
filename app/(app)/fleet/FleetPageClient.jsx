@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'motion/react';
 import { CalendarDays, Loader2, X } from 'lucide-react';
 
@@ -101,15 +101,8 @@ const getModelName = (item = {}) => {
   return model?.name || item?.name || 'Unknown Vessel';
 };
 
-const dedupeItems = (items) => {
-  const seen = new Set();
-  return items.filter((item) => {
-    const key = getModelSlug(item) || item.id || `${getModelName(item)}-${item.serial || ''}`;
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-};
+// No dedup — each fleet config entry is its own ship (even if same slug).
+// Unique IDs are assigned per config in fetchData below.
 
 const formatCurrency = (value) => {
   if (!Number.isFinite(value)) return '$0.00';
@@ -480,6 +473,10 @@ export default function FleetPageClient({ data: initialData }) {
   const [loadingShips, setLoadingShips] = useState(false);
   const [apiError, setApiError] = useState('');
   const [expandedSlug, setExpandedSlug] = useState(null);
+  const [capitalPage, setCapitalPage] = useState(0);
+  const carouselRef = useRef(null);
+  const lastScrollTime = useRef(0);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -505,14 +502,16 @@ export default function FleetPageClient({ data: initialData }) {
         }
 
         const fleetResults = await Promise.all(
-          sourceConfigs.map(async (cfg) => {
+          sourceConfigs.map(async (cfg, cfgIndex) => {
             // 1) First attempt to fetch as a specific ship MODEL
             const modelRes = await fetch(`/api/fleetyards/models?slugs=${encodeURIComponent(cfg.slug)}&fresh=1`, { cache: 'no-store' });
             const modelData = await modelRes.json().catch(() => ({}));
             const model = Array.isArray(modelData?.items) ? modelData.items.find(item => item && !item.error) : null;
 
             if (modelRes.ok && model) {
-              return [{ ...model, __fleetSlug: '', __fleetName: cfg.display_name || model.name || cfg.slug, __fleetType: cfg.fleet_type, __ceoName: cfg.ceo_name, __fleetQuantity: cfg.quantity || 1, __sourceType: 'model' }];
+              // Assign a unique ID per config entry so same-slug ships are not deduped
+              const uniqueId = cfg.id ? `cfg-${cfg.id}` : `cfg-${cfgIndex}-${cfg.slug}`;
+              return [{ ...model, id: uniqueId, __fleetSlug: '', __fleetName: cfg.display_name || model.name || cfg.slug, __fleetType: cfg.fleet_type, __ceoName: cfg.ceo_name, __fleetQuantity: cfg.quantity || 1, __sourceType: 'model' }];
             }
 
             // 2) If it wasn't a valid model, fallback to treating it as a FLEET
@@ -521,7 +520,16 @@ export default function FleetPageClient({ data: initialData }) {
 
             if (fleetRes.ok && !fleetData?.error) {
               const items = Array.isArray(fleetData?.items) ? fleetData.items : [];
-              return items.map((item) => ({ ...item, __fleetSlug: cfg.slug, __fleetName: cfg.display_name || cfg.slug, __fleetType: cfg.fleet_type, __ceoName: cfg.ceo_name, __fleetQuantity: cfg.quantity || 1, __sourceType: 'fleet' }));
+              return items.map((item, itemIdx) => ({ 
+                ...item, 
+                id: item.id ? `${item.id}-cfg${cfgIndex}` : `cfg-${cfgIndex}-item${itemIdx}`,
+                __fleetSlug: cfg.slug, 
+                __fleetName: cfg.display_name || cfg.slug, 
+                __fleetType: cfg.fleet_type, 
+                __ceoName: cfg.ceo_name, 
+                __fleetQuantity: cfg.quantity || 1, 
+                __sourceType: 'fleet',
+              }));
             }
 
             console.warn(`FleetYards slug "${cfg.slug}" failed as model and fleet`, {
@@ -532,11 +540,14 @@ export default function FleetPageClient({ data: initialData }) {
           })
         );
 
-        const combinedItems = dedupeItems(fleetResults.flat());
+        // No global dedup — each config entry is intentionally its own ship card.
+        const combinedItems = fleetResults.flat();
         const enrichedShips = combinedItems.map((item) => {
           const ship = mapVehicleToShip(item);
           return {
             ...ship,
+            // Use admin display_name (__fleetName) as the primary ship name for model-type configs
+            name: item.__fleetName || ship.name,
             sourceFleet: item.__fleetName || '',
             fleetSlug: item.__fleetSlug || '',
             fleetType: item.__fleetType || 'small',
@@ -617,8 +628,10 @@ export default function FleetPageClient({ data: initialData }) {
           ...selectedShip,
           ...mapVehicleToShip(model),
           id: selectedShip.id,
+          name: selectedShip.sourceFleet || selectedShip.name, // Keep admin custom name
           fleetSlug: selectedShip.fleetSlug,
           sourceFleet: selectedShip.sourceFleet,
+          ceoName: selectedShip.ceoName,
         });
       } catch (err) {
         if (!cancelled) {
@@ -646,40 +659,44 @@ export default function FleetPageClient({ data: initialData }) {
   ].filter(item => item.value > 0);
   const activeFleetName = 'Khalai Makhlooq Fleet';
 
-  // Group identical ships by slug to stack them and compute totals
+  // Each config entry is its own card — group only by unique ship ID (not slug),
+  // so two Polaris configs show as two separate cards.
+  // Slug grouping is kept only for crew/value totals and the details panel lookup.
   const slugGroups = {};
   let computedTotalShips = 0;
   let computedTotalMaxCrew = 0;
 
   ships.forEach((ship, idx) => {
+    // For slug lookup (details panel), still track by slug
     if (!slugGroups[ship.slug]) {
-      slugGroups[ship.slug] = { ...ship, count: 0, originalIndex: idx, stackedCeos: [] };
+      slugGroups[ship.slug] = { stackedCeos: [] };
     }
     const qty = ship.fleetQuantity || 1;
-    slugGroups[ship.slug].count += qty;
-
     computedTotalShips += qty;
     const crewMax = Number(String(ship.crew || '').split('-').pop()?.replace(/[^0-9]/g, ''));
     computedTotalMaxCrew += (Number.isFinite(crewMax) ? crewMax : 0) * qty;
-
-    // Deduplicate CEOs if multiple config sources use the same CEO or if we just want unique names
     const ceo = ship.ceoName && ship.ceoName.trim() !== '' ? ship.ceoName.trim() : null;
     if (ceo && !slugGroups[ship.slug].stackedCeos.includes(ceo)) {
       slugGroups[ship.slug].stackedCeos.push(ceo);
     }
-    slugGroups[ship.slug].instances = slugGroups[ship.slug].instances || [];
-    slugGroups[ship.slug].instances.push({ ceo, qty, originalIndex: idx, id: ship.id });
   });
 
-  const stackedShips = Object.values(slugGroups);
+  // Each ship entry is now its own card with count = its fleetQuantity
+  const stackedShips = ships.map((ship, idx) => ({
+    ...ship,
+    count: ship.fleetQuantity || 1,
+    originalIndex: idx,
+    instances: [{ ceo: ship.ceoName || null, qty: ship.fleetQuantity || 1, originalIndex: idx, id: ship.id }],
+  }));
   const totalShips = computedTotalShips;
   const totalMaxCrew = computedTotalMaxCrew;
 
   const capitalFleets = stackedShips.filter(s => ['sub_capital', 'capital'].includes(s.fleetType));
   const standardFleets = stackedShips.filter(s => !['sub_capital', 'capital'].includes(s.fleetType));
 
-  const capitalTags = ['F1', 'F2', 'F3', 'F4'];
-  const sfTags = ['SF1', 'SF2', 'SF3', 'SF4', 'SF5', 'SF6', 'SF7', 'SF8'];
+
+  const getCapitalTag = (idx) => `F${idx + 1}`;
+  const getSfTag = (idx) => `SF${idx + 1}`;
 
   return (
     <div className="fleet-page h-[100dvh] w-full overflow-hidden flex flex-col bg-[#020402] relative text-white">
@@ -731,97 +748,183 @@ export default function FleetPageClient({ data: initialData }) {
                   </div>
                 </div>
 
-                {/* Capital Fleets 2x2 Grid */}
-                <div className="grid grid-cols-2 gap-2.5">
-                  {capitalFleets.map((ship, i) => {
-                    const isExpanded = expandedSlug === ship.slug;
-                    return (
-                      <div key={ship.id} className="relative aspect-[16/10]">
-                        <button
-                          onClick={() => {
-                            if (ship.count > 1) {
-                              setExpandedSlug(isExpanded ? null : ship.slug);
-                            } else {
-                              setSelectedIndex(ship.originalIndex);
-                            }
-                          }}
-                          className={`group absolute inset-0 w-full h-full rounded-xl transition-all duration-300
-                          ${activeShip?.slug === ship.slug
-                              ? 'border-2 border-lime-400 shadow-[0_0_20px_rgba(163,230,53,0.3)] z-10'
-                              : 'border border-white/10 hover:border-lime-400/40 z-0'
-                            }`}
-                        >
-                          {/* Stacking effect if multiple ships */}
-                          {ship.count > 1 && !isExpanded && (
-                            <>
-                              <div className="absolute inset-0 bg-white/[0.05] border border-white/10 rounded-xl translate-x-1.5 translate-y-1.5 -z-10" />
-                              <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-xl translate-x-3 translate-y-3 -z-20" />
-                            </>
-                          )}
+                {/* Capital Fleets — Horizontal Scroll-Snap Carousel */}
+                {(() => {
+                  const CARDS_PER_SLIDE = 4;
+                  const totalPages = Math.max(1, Math.ceil(capitalFleets.length / CARDS_PER_SLIDE));
+                  
+                  const handleScroll = (e) => {
+                    const container = e.currentTarget;
+                    const page = Math.round(container.scrollLeft / container.clientWidth);
+                    setCapitalPage(page);
+                  };
 
-                          {/* Main Card */}
-                          <div className={`absolute inset-0 rounded-xl overflow-hidden bg-black transition-all ${isExpanded ? 'opacity-20' : ''}`}>
-                            {/* BG */}
-                            {ship.thumbnail
-                              ? <img src={ship.thumbnail} alt={ship.name} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity grayscale group-hover:grayscale-0" />
-                              : <div className="absolute inset-0 flex items-center justify-center border border-dashed border-white/10 text-white/20"><div className="w-12 h-12 border border-white/10 rounded-full" /></div>
-                            }
+                  const scrollToPage = (pageIdx) => {
+                    const container = carouselRef.current;
+                    if (container) {
+                      container.scrollTo({
+                        left: pageIdx * container.clientWidth,
+                        behavior: 'smooth'
+                      });
+                      setCapitalPage(pageIdx);
+                    }
+                  };
 
-                            {/* Top Badge & Count */}
-                            <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
-                              <div className="bg-lime-400 text-black px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">{capitalTags[i] || 'F-EXT'}</div>
-                              {ship.count > 1 && (
-                                <div className="bg-black/60 backdrop-blur border border-white/10 text-white px-2 py-0.5 rounded text-[10px] font-mono font-bold">×{ship.count}</div>
-                              )}
+                  const handleWheel = (e) => {
+                    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                      const now = Date.now();
+                      if (now - lastScrollTime.current > 400) { // 400ms cooldown for page flipping
+                        const direction = e.deltaY > 0 ? 1 : -1;
+                        const targetPage = Math.min(Math.max(0, capitalPage + direction), totalPages - 1);
+                        if (targetPage !== capitalPage) {
+                          e.preventDefault();
+                          scrollToPage(targetPage);
+                          lastScrollTime.current = now;
+                        }
+                      } else {
+                        e.preventDefault();
+                      }
+                    }
+                  };
+
+                  return (
+                    <div>
+                      {/* Horizontal Scroll-Snap Container */}
+                      <div 
+                        ref={carouselRef}
+                        onScroll={handleScroll}
+                        onWheel={handleWheel}
+                        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 scroll-smooth w-full"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                      >
+                        {Array.from({ length: totalPages }).map((_, pageIdx) => {
+                          const slideShips = capitalFleets.slice(pageIdx * CARDS_PER_SLIDE, (pageIdx + 1) * CARDS_PER_SLIDE);
+                          const globalOffset = pageIdx * CARDS_PER_SLIDE;
+                          
+                          return (
+                            <div key={pageIdx} className="w-full shrink-0 snap-start snap-always grid grid-cols-2 gap-2.5">
+                              {slideShips.map((ship, i) => {
+                                const globalIdx = globalOffset + i;
+                                const isExpanded = expandedSlug === ship.id;
+                                return (
+                                  <div key={ship.id} className="relative aspect-[16/10]">
+                                    <button
+                                      onClick={() => {
+                                        if (ship.count > 1) {
+                                          setExpandedSlug(isExpanded ? null : ship.id);
+                                        } else {
+                                          setSelectedIndex(ship.originalIndex);
+                                        }
+                                      }}
+                                      className={`group absolute inset-0 w-full h-full rounded-xl transition-all duration-300
+                                      ${activeShip?.id === ship.id
+                                          ? 'border-2 border-lime-400 shadow-[0_0_20px_rgba(163,230,53,0.3)] z-10'
+                                          : 'border border-white/10 hover:border-lime-400/40 z-0'
+                                        }`}
+                                    >
+                                      {/* Stacking effect */}
+                                      {ship.count > 1 && !isExpanded && (
+                                        <>
+                                          <div className="absolute inset-0 bg-white/[0.05] border border-white/10 rounded-xl translate-x-1.5 translate-y-1.5 -z-10" />
+                                          <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-xl translate-x-3 translate-y-3 -z-20" />
+                                        </>
+                                      )}
+
+                                      {/* Main Card */}
+                                      <div className={`absolute inset-0 rounded-xl overflow-hidden bg-black transition-all ${isExpanded ? 'opacity-20' : ''}`}>
+                                        {ship.thumbnail
+                                          ? <img src={ship.thumbnail} alt={ship.name} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity grayscale group-hover:grayscale-0" />
+                                          : <div className="absolute inset-0 flex items-center justify-center border border-dashed border-white/10 text-white/20"><div className="w-12 h-12 border border-white/10 rounded-full" /></div>
+                                        }
+
+                                        {/* Top Badge & Count */}
+                                        <div className="absolute top-2 left-2 right-2 flex justify-between items-start z-10">
+                                          <div className="bg-lime-400 text-black px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest">{getCapitalTag(globalIdx)}</div>
+                                          {ship.count > 1 && (
+                                            <div className="bg-black/60 backdrop-blur border border-white/10 text-white px-1.5 py-0.5 rounded text-[9px] font-mono font-bold">×{ship.count}</div>
+                                          )}
+                                        </div>
+
+                                        {/* Bottom Info */}
+                                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/90 to-transparent z-10 text-left">
+                                          <div className="text-[9px] font-mono text-lime-400/50 uppercase truncate leading-none mb-0.5">{ship.manufacturer}</div>
+                                          <div className="font-bold text-white uppercase tracking-tight text-[11px] truncate leading-none mb-0.5">{ship.name}</div>
+                                          {ship.ceoName && (
+                                            <div className="flex items-center gap-1">
+                                              <span className="text-[7px] font-mono font-black uppercase tracking-widest text-lime-400/60 bg-lime-400/10 border border-lime-400/20 rounded px-1 py-px leading-none">CO</span>
+                                              <span className="text-[8px] font-mono text-white/40 uppercase truncate">{ship.count > 1 ? 'MULTIPLE' : ship.ceoName}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </button>
+
+                                    {/* Expanded View */}
+                                    {isExpanded && (
+                                      <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md rounded-xl border border-lime-400/30 p-2 overflow-y-auto custom-scrollbar flex flex-col gap-1.5">
+                                        <div className="flex justify-between items-center mb-1 sticky top-0 bg-black/90 pb-1 z-10">
+                                          <span className="text-[9px] font-black uppercase text-lime-400 tracking-widest px-1">Select Asset</span>
+                                          <button onClick={(e) => { e.stopPropagation(); setExpandedSlug(null); }} className="text-white/50 hover:text-white"><X size={12} /></button>
+                                        </div>
+                                        {ship.instances?.map((inst, idx) => (
+                                          <button
+                                            key={idx}
+                                            onClick={() => { setSelectedIndex(inst.originalIndex); setExpandedSlug(null); }}
+                                            className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-lime-400/20 border border-white/10 hover:border-lime-400/40 text-left transition-all"
+                                          >
+                                            <div className="min-w-0 pr-2">
+                                              {inst.ceo && <div className="text-[10px] font-black text-white uppercase truncate">{inst.ceo}</div>}
+                                              <div className="text-[8px] text-lime-400/60 font-mono tracking-widest">Qty: {inst.qty}</div>
+                                            </div>
+                                            <div className="shrink-0 w-4 h-4 rounded-full border border-lime-400/30 flex items-center justify-center">
+                                              {activeShip?.id === inst.id && <div className="w-2 h-2 rounded-full bg-lime-400" />}
+                                            </div>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+
+                              {/* Fill slide with empty blocks if it has fewer than 4 items */}
+                              {slideShips.length < 4 && Array.from({ length: 4 - slideShips.length }).map((_, emptyIdx) => (
+                                <div key={`empty-${emptyIdx}`} className="relative aspect-[16/10] border border-dashed border-white/5 rounded-xl opacity-20" />
+                              ))}
                             </div>
+                          );
+                        })}
+                      </div>
 
-                            {/* Bottom Info */}
-                            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent z-10 text-left">
-                              <div className="text-[10px] font-mono text-lime-400/50 uppercase truncate leading-none mb-0.5">{ship.manufacturer}</div>
-                              <div className="font-bold text-white uppercase tracking-tight text-sm truncate leading-none mb-1">{ship.name}</div>
-                              {ship.ceoName && (
-                                <div className="flex items-center gap-1 mt-0.5">
-                                  <span className="text-[7px] font-mono font-black uppercase tracking-widest text-lime-400/60 bg-lime-400/10 border border-lime-400/20 rounded px-1 py-px leading-none">CO</span>
-                                  <span className="text-[8px] font-mono text-white/40 uppercase truncate">{ship.count > 1 ? 'MULTIPLE' : ship.ceoName}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </button>
-
-                        {/* Expanded View */}
-                        {isExpanded && (
-                          <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md rounded-xl border border-lime-400/30 p-2 overflow-y-auto custom-scrollbar flex flex-col gap-1.5">
-                            <div className="flex justify-between items-center mb-1 sticky top-0 bg-black/90 pb-1 z-10">
-                              <span className="text-[9px] font-black uppercase text-lime-400 tracking-widest px-1">Select Asset</span>
-                              <button onClick={(e) => { e.stopPropagation(); setExpandedSlug(null); }} className="text-white/50 hover:text-white"><X size={12} /></button>
-                            </div>
-                            {ship.instances?.map((inst, idx) => (
+                      {/* Carousel Pagination Controls */}
+                      {totalPages > 1 && (
+                        <div className="flex items-center justify-between mt-2.5">
+                          <button
+                            onClick={() => scrollToPage(Math.max(0, capitalPage - 1))}
+                            disabled={capitalPage === 0}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-white/10 text-white/50 hover:text-white hover:border-lime-400/40 transition-all disabled:opacity-30 text-[10px] font-mono font-bold uppercase tracking-widest"
+                          >‹ Prev</button>
+                          <div className="flex items-center gap-1.5">
+                            {Array.from({ length: totalPages }).map((_, pi) => (
                               <button
-                                key={idx}
-                                onClick={() => { setSelectedIndex(inst.originalIndex); setExpandedSlug(null); }}
-                                className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-lime-400/20 border border-white/10 hover:border-lime-400/40 text-left transition-all"
-                              >
-                                <div className="min-w-0 pr-2">
-                                  {inst.ceo && <div className="text-[10px] font-black text-white uppercase truncate">{inst.ceo}</div>}
-                                  <div className="text-[8px] text-lime-400/60 font-mono tracking-widest">Qty: {inst.qty}</div>
-                                </div>
-                                <div className="shrink-0 w-4 h-4 rounded-full border border-lime-400/30 flex items-center justify-center">
-                                  {activeShip?.id === inst.id && <div className="w-2 h-2 rounded-full bg-lime-400" />}
-                                </div>
-                              </button>
+                                key={pi}
+                                onClick={() => scrollToPage(pi)}
+                                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                  pi === capitalPage ? 'bg-lime-400 w-4' : 'bg-white/20 hover:bg-white/40'
+                                }`}
+                              />
                             ))}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {capitalFleets.length === 0 && !loadingShips && (
-                    <div className="col-span-2 aspect-[16/5] flex items-center justify-center rounded-xl border border-dashed border-white/10 text-white/25 text-[10px] font-mono uppercase tracking-widest">
-                      Admin has not added capital fleets
+                          <button
+                            onClick={() => scrollToPage(Math.min(totalPages - 1, capitalPage + 1))}
+                            disabled={capitalPage === totalPages - 1}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-white/10 text-white/50 hover:text-white hover:border-lime-400/40 transition-all disabled:opacity-30 text-[10px] font-mono font-bold uppercase tracking-widest"
+                          >Next ›</button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
               </div>
 
               {/* Stats bar */}
@@ -864,20 +967,19 @@ export default function FleetPageClient({ data: initialData }) {
               <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
                 <div className="grid grid-cols-3 gap-2">
                   {standardFleets.map((ship, i) => {
-                    const isExpanded = expandedSlug === ship.slug;
+                    const isExpanded = expandedSlug === ship.id;
                     return (
                       <div key={ship.id} className="relative aspect-[4/3]">
                         <button
                           onClick={() => {
                             if (ship.count > 1) {
-                              setExpandedSlug(isExpanded ? null : ship.slug);
+                              setExpandedSlug(isExpanded ? null : ship.id);
                             } else {
-                              const idx = ships.findIndex(s => s.id === ship.id);
-                              if (idx !== -1) setSelectedIndex(idx);
+                              setSelectedIndex(ship.originalIndex);
                             }
                           }}
                           className={`group absolute inset-0 w-full h-full rounded-xl overflow-hidden transition-all duration-300
-                          ${activeShip?.slug === ship.slug
+                          ${activeShip?.id === ship.id
                               ? 'border-2 border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.25)]'
                               : 'border border-white/[0.08] hover:border-lime-400/30'
                             }`}
@@ -898,7 +1000,7 @@ export default function FleetPageClient({ data: initialData }) {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
                             <div className="absolute top-1.5 left-1.5 bg-white/10 text-white/70 font-black text-[8px] uppercase tracking-wide px-1.5 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
-                              {sfTags[i] || `SF${i + 1}`}
+                              {getSfTag(i)}
                             </div>
 
                             {ship.count > 1 && (

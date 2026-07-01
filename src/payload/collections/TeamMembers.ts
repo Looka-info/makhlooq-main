@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload';
+import { revalidatePathHook } from '../hooks/revalidate';
 
 export const TeamMembers: CollectionConfig = {
   slug: 'team_members',
@@ -10,6 +11,10 @@ export const TeamMembers: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'role', 'category', 'is_approved', 'is_admin'],
     group: 'Team',
+  },
+  hooks: {
+    afterChange: [revalidatePathHook("/team")],
+    afterDelete: [revalidatePathHook("/team")],
   },
   access: {
     read: () => true,

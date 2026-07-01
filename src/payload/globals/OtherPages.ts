@@ -1,9 +1,13 @@
 import { GlobalConfig } from "payload";
+import { revalidatePathHook } from "../hooks/revalidate";
 
 export const AboutPage: GlobalConfig = {
   slug: "about-page",
   label: "About Page",
   admin: { group: "Pages" },
+  hooks: {
+    afterChange: [revalidatePathHook("/about")],
+  },
   fields: [
     {
       name: "seo",
@@ -77,6 +81,9 @@ export const FleetPage: GlobalConfig = {
   slug: "fleet-page",
   label: "Fleet Page",
   admin: { group: "Pages" },
+  hooks: {
+    afterChange: [revalidatePathHook("/fleet")],
+  },
   fields: [
     {
       name: "seo",
@@ -105,6 +112,9 @@ export const TeamPage: GlobalConfig = {
   slug: "team-page",
   label: "Team Page",
   admin: { group: "Pages" },
+  hooks: {
+    afterChange: [revalidatePathHook("/team")],
+  },
   fields: [
     {
       name: "seo",

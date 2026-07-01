@@ -31,9 +31,26 @@ function StatusBadge({ enabled }) {
 }
 
 /* ───────── Single fleet row ───────── */
-function FleetRow({ cfg, memberCount, onEdit, onDelete, onToggle, toggling, onManageMembers }) {
+function FleetRow({ cfg, memberCount, onEdit, onDelete, onToggle, toggling, onManageMembers, onDragStart, onDragOver, onDrop, onDragEnd, isDragOver }) {
   return (
-    <tr className="group hover:bg-white/[0.02] transition-colors">
+    <tr
+      className={`group transition-colors cursor-grab active:cursor-grabbing ${
+        isDragOver ? 'bg-emerald-500/[0.06] border-t-2 border-emerald-500/50' : 'hover:bg-white/[0.02]'
+      }`}
+      draggable
+      onDragStart={() => onDragStart(cfg.id)}
+      onDragOver={e => { e.preventDefault(); onDragOver(cfg.id); }}
+      onDrop={() => onDrop(cfg.id)}
+      onDragEnd={onDragEnd}
+    >
+      {/* Drag Handle */}
+      <td className="pl-3 pr-0 py-5 w-8">
+        <div className="flex flex-col gap-0.5 opacity-30 group-hover:opacity-70 transition-opacity cursor-grab">
+          <div className="w-4 h-0.5 bg-white/60 rounded" />
+          <div className="w-4 h-0.5 bg-white/60 rounded" />
+          <div className="w-3 h-0.5 bg-white/40 rounded" />
+        </div>
+      </td>
       <td className="px-5 py-5">
         <div className="flex flex-col gap-1">
           <span className="text-white font-bold text-sm tracking-wide">{cfg.display_name || cfg.slug}</span>
@@ -70,9 +87,6 @@ function FleetRow({ cfg, memberCount, onEdit, onDelete, onToggle, toggling, onMa
           <Users size={12} />
           {memberCount || 0}
         </button>
-      </td>
-      <td className="px-5 py-5">
-        <span className="text-gray-500 text-xs font-mono bg-white/5 px-2 py-1 rounded-md">{cfg.sort_order ?? 0}</span>
       </td>
       <td className="px-5 py-5">
         <span className="text-gray-600 text-[10px] font-mono uppercase tracking-wider">
@@ -123,6 +137,7 @@ function FleetRow({ cfg, memberCount, onEdit, onDelete, onToggle, toggling, onMa
 function EditRow({ data, onChange, onSave, onCancel, saving }) {
   return (
     <tr className="bg-emerald-500/[0.03] border-y border-emerald-500/20 shadow-[inset_4px_0_0_rgba(16,185,129,1)] relative z-10">
+      <td className="pl-3 pr-0 py-3 w-8" /> {/* drag handle placeholder */}
       <td className="px-5 py-3">
         <div className="space-y-1.5">
           <input
@@ -156,7 +171,6 @@ function EditRow({ data, onChange, onSave, onCancel, saving }) {
           onChange={e => onChange('fleet_type', e.target.value)}
           className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-2 py-1.5 text-white text-xs outline-none focus:border-emerald-500/50 transition-colors"
         >
-          <option value="snub">Snub</option>
           <option value="small">Small</option>
           <option value="medium">Medium</option>
           <option value="large">Large</option>
@@ -182,14 +196,6 @@ function EditRow({ data, onChange, onSave, onCancel, saving }) {
         />
       </td>
       <td className="px-5 py-3" /> {/* Members Column */}
-      <td className="px-5 py-3">
-        <input
-          type="number"
-          value={data.sort_order ?? 0}
-          onChange={e => onChange('sort_order', parseInt(e.target.value, 10))}
-          className="w-16 rounded-lg border border-emerald-500/20 bg-white/5 px-2 py-1.5 text-white text-xs font-mono outline-none focus:border-emerald-500/50 transition-colors"
-        />
-      </td>
       <td className="px-5 py-3" /> {/* Registered Column */}
       <td className="px-5 py-3">
         <div className="flex flex-col gap-1.5">
@@ -360,7 +366,6 @@ function AddFleetModal({ onClose, onAdd }) {
               onChange={e => setFleetType(e.target.value)}
               className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-white text-sm outline-none focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-all cursor-pointer"
             >
-              <option value="snub" className="bg-[#050B08] text-white">Snub</option>
               <option value="small" className="bg-[#050B08] text-white">Small</option>
               <option value="medium" className="bg-[#050B08] text-white">Medium</option>
               <option value="large" className="bg-[#050B08] text-white">Large</option>
@@ -660,6 +665,11 @@ export default function FleetAdminPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('registry');
 
+  // Drag-to-sort states
+  const [dragId, setDragId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
+  const [sortSaving, setSortSaving] = useState(false);
+
   // Member management states
   const [selectedFleetForMembers, setSelectedFleetForMembers] = useState(null);
   const [memberCounts, setMemberCounts] = useState({});
@@ -772,6 +782,43 @@ export default function FleetAdminPage() {
     cancelEdit();
     await fetchConfigs();
     setEditSaving(false);
+  };
+
+  /* ── Drag-to-sort handlers ── */
+  const handleDragStart = (id) => setDragId(id);
+  const handleDragOver = (id) => { if (id !== dragId) setDragOverId(id); };
+  const handleDragEnd = () => { setDragId(null); setDragOverId(null); };
+
+  const handleDrop = async (targetId) => {
+    if (!dragId || dragId === targetId) { handleDragEnd(); return; }
+    // Reorder configs list
+    const reordered = [...configs];
+    const fromIdx = reordered.findIndex(c => c.id === dragId);
+    const toIdx = reordered.findIndex(c => c.id === targetId);
+    if (fromIdx === -1 || toIdx === -1) { handleDragEnd(); return; }
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+    // Assign sequential sort_order
+    const updated = reordered.map((c, i) => ({ ...c, sort_order: i }));
+    setConfigs(updated);
+    handleDragEnd();
+    // Persist only changed sort_orders
+    setSortSaving(true);
+    try {
+      await Promise.all(
+        updated
+          .filter((c, i) => configs[i]?.id !== c.id || configs.find(x => x.id === c.id)?.sort_order !== c.sort_order)
+          .map(c => fetch(`/api/fleet-configs/${c.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sort_order: c.sort_order }),
+          }))
+      );
+    } catch (e) {
+      console.error('Sort save failed:', e);
+    } finally {
+      setSortSaving(false);
+    }
   };
 
   const filtered = searchQ
@@ -905,11 +952,14 @@ export default function FleetAdminPage() {
                 <p className="font-mono text-xs uppercase tracking-widest">No matching registry entries found.</p>
               </div>
             ) : (
-              <table className="w-full text-sm text-left border-collapse">
+<table className="w-full text-sm text-left border-collapse">
                 <thead className="sticky top-0 bg-[#050B08]/90 backdrop-blur-md z-20 shadow-[0_1px_0_rgba(255,255,255,0.05)]">
                   <tr>
-                    {['Asset ID / Fleet', 'Status', 'Class', 'CO Name', 'Qty', 'Members', 'Sort', 'Registered', 'Actions'].map(h => (
-                      <th key={h} className="px-5 py-4 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold whitespace-nowrap">{h}</th>
+                    <th className="pl-3 pr-0 py-4 w-8" />
+                    {['Asset ID / Fleet', 'Status', 'Class', 'CO Name', 'Qty', 'Members', 'Registered', 'Actions'].map(h => (
+                      <th key={h} className="px-5 py-4 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold whitespace-nowrap">
+                        {h}{h === 'Asset ID / Fleet' && sortSaving && <span className="ml-2 text-emerald-500/60 font-mono normal-case tracking-normal">saving…</span>}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -926,6 +976,11 @@ export default function FleetAdminPage() {
                           onToggle={handleToggle}
                           toggling={toggling}
                           onManageMembers={setSelectedFleetForMembers}
+                          onDragStart={handleDragStart}
+                          onDragOver={handleDragOver}
+                          onDrop={handleDrop}
+                          onDragEnd={handleDragEnd}
+                          isDragOver={dragOverId === cfg.id}
                         />
                   )}
                 </tbody>

@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Showcase({ data }) {
   // CMS-backed data with fallbacks
   const sectionLabel = data?.sectionLabel || 'Operations Breakdown';
-  const stackWords = data?.stackWords?.map(w => w.text) || ['We', 'Never', 'Idle'];
+  const stackWords = (data?.headlineWords?.map(w => w.word) || data?.stackWords?.map(w => w.text)) || ['We', 'Never', 'Idle'];
   const overviewText = data?.overviewText || 'Khalai Makhlooq covers every angle of the Stanton system. Whether it is moving high-value cargo through contested space, recovering downed ships in hostile territory, or locking down an orbital station with overwhelming firepower—KMHQ is equipped, trained, and ready to deploy.';
   const metricsPanelBody = data?.metricsPanelBody || 'Every division has a simple rule: move fast, see first, and leave the battlefield so clean people ask who the cleanup crew was.';
   const pillarsHeading = data?.pillarsHeading || 'Style under pressure.';

@@ -19,10 +19,16 @@ export async function PUT(request, { params }) {
     const updates = await request.json();
     
     const allowedFields = ['slug', 'display_name', 'sort_order', 'enabled', 'fleet_type', 'ceo_name', 'quantity'];
+    const validFleetTypes = ['small', 'medium', 'large', 'sub_capital', 'capital'];
     const updateData = {};
     for (const field of allowedFields) {
       if (updates[field] !== undefined) {
-        updateData[field] = updates[field];
+        if (field === 'fleet_type') {
+          // Validate and sanitize fleet_type to prevent enum errors
+          updateData[field] = validFleetTypes.includes(updates[field]) ? updates[field] : 'small';
+        } else {
+          updateData[field] = updates[field];
+        }
       }
     }
 

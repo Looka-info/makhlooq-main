@@ -36,7 +36,8 @@ export async function GET(request) {
     if (error) throw error;
     
     if (data && data.length > 0) {
-      // Combine env configs with DB configs, letting DB configs override env configs with the same slug
+      // Combine env configs with DB configs; since slugs are no longer unique,
+      // we show all DB configs as-is, and prepend any env slugs not yet in DB.
       const dbSlugs = new Set(data.map(d => d.slug));
       const filteredEnv = envConfigs.filter(env => !dbSlugs.has(env.slug));
       return NextResponse.json([...filteredEnv, ...data]);
@@ -51,6 +52,7 @@ export async function GET(request) {
 }
 
 // POST — create new fleet config
+// Note: slug is NOT unique — multiple ships of the same type (e.g. two Polaris) are allowed.
 export async function POST(request) {
   try {
     const auth = await requireFleetAdmin();
@@ -64,16 +66,20 @@ export async function POST(request) {
       return NextResponse.json({ error: 'slug is required' }, { status: 400 });
     }
 
+    // Validate fleet_type against allowed values
+    const validFleetTypes = ['small', 'medium', 'large', 'sub_capital', 'capital'];
+    const safeFleetType = validFleetTypes.includes(fleet_type) ? fleet_type : 'small';
+
     const { data, error } = await supabase
       .from('fleet_configs')
       .insert([{ 
-        slug, 
-        display_name, 
+        slug: slug.trim(), 
+        display_name: display_name?.trim() || slug.trim(), 
         sort_order: sort_order || 0, 
         enabled: enabled ?? true,
-        fleet_type: fleet_type || 'small',
-        ceo_name: ceo_name || null,
-        quantity: quantity || 1
+        fleet_type: safeFleetType,
+        ceo_name: ceo_name?.trim() || null,
+        quantity: Math.max(1, parseInt(quantity) || 1)
       }])
       .select()
       .single();

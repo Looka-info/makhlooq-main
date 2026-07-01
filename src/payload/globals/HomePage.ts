@@ -1,10 +1,14 @@
 import { GlobalConfig } from "payload";
+import { revalidatePathHook } from "../hooks/revalidate";
 
 export const HomePage: GlobalConfig = {
   slug: "home-page",
   label: "Home Page",
   admin: {
     group: "Pages",
+  },
+  hooks: {
+    afterChange: [revalidatePathHook("/")],
   },
   fields: [
     // --- SEO ---
@@ -225,6 +229,12 @@ export const HomePage: GlobalConfig = {
           label: "Large Headline Words",
           defaultValue: [{ word: "We" }, { word: "Never" }, { word: "Idle" }],
           fields: [{ name: "word", type: "text" }],
+        },
+        {
+          name: "overviewText",
+          type: "textarea",
+          label: "Overview Text",
+          defaultValue: "Khalai Makhlooq covers every angle of the Stanton system. Whether it is moving high-value cargo through contested space, recovering downed ships in hostile territory, or locking down an orbital station with overwhelming firepower—KMHQ is equipped, trained, and ready to deploy.",
         },
         {
           name: "metrics",

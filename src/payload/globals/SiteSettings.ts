@@ -1,10 +1,14 @@
 import { GlobalConfig } from "payload";
+import { revalidateAllHook } from "../hooks/revalidate";
 
 export const SiteSettings: GlobalConfig = {
   slug: "site-settings",
   label: "Site Settings",
   admin: {
     group: "Global",
+  },
+  hooks: {
+    afterChange: [revalidateAllHook()],
   },
   fields: [
     // --- Navigation ---
