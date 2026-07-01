@@ -1,6 +1,8 @@
 import { getPayloadInstance } from '../../../lib/payload'
 import AboutPageClient from './AboutPageClient'
 
+export const dynamic = 'force-dynamic';
+
 async function getAboutPageData() {
   try {
     const payload = await getPayloadInstance();

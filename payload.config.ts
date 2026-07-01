@@ -10,6 +10,7 @@ import { Media } from "./src/payload/collections/Media";
 import { NewsPosts } from "./src/payload/collections/NewsPosts";
 import { Announcements } from "./src/payload/collections/Announcements";
 import { FleetConfigs } from "./src/payload/collections/FleetConfigs";
+import { TeamMembers } from "./src/payload/collections/TeamMembers";
 
 // Globals
 import { HomePage } from "./src/payload/globals/HomePage";
@@ -32,7 +33,7 @@ export default buildConfig({
       globals: ['home-page', 'site-settings', 'about-page', 'fleet-page', 'team-page'],
     },
   },
-  collections: [Users, Media, NewsPosts, Announcements, FleetConfigs],
+  collections: [Users, Media, NewsPosts, Announcements, FleetConfigs, TeamMembers],
   globals: [HomePage, SiteSettings, AboutPage, FleetPage, TeamPage],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || "KMHQ_DEFAULT_SECRET_CHANGE_ME",
@@ -47,7 +48,7 @@ export default buildConfig({
   }),
   upload: {
     limits: {
-      fileSize: 5000000, // 5MB
+      fileSize: 20000000, // 20MB
     },
   },
 });

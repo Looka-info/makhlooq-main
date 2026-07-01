@@ -41,7 +41,20 @@ export async function POST(request) {
     return NextResponse.json({ error: 'avatar file is required' }, { status: 400 });
   }
 
-  const ext = String(file.name || 'png').split('.').pop() || 'png';
+  // Size restriction (20MB = 20,971,520 bytes)
+  if (file.size > 20971520) {
+    return NextResponse.json({ error: 'File size exceeds the 20MB limit.' }, { status: 400 });
+  }
+
+  // Mimetype and Extension safety restrictions
+  const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+  const ext = String(file.name || 'png').split('.').pop()?.toLowerCase() || 'png';
+
+  if (!allowedMimes.includes(file.type) || !allowedExts.includes(ext)) {
+    return NextResponse.json({ error: 'Only JPG, PNG, WEBP, and GIF images are allowed.' }, { status: 400 });
+  }
+
   const path = `avatars/${session.discordId}.${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
 

@@ -1,6 +1,8 @@
 import { getPayloadInstance } from '../../../lib/payload'
 import FleetPageClient from './FleetPageClient'
 
+export const dynamic = 'force-dynamic';
+
 async function getFleetPageData() {
   try {
     const payload = await getPayloadInstance();

@@ -12,7 +12,21 @@ export const PRESET_COLORS = [
 
 export const STATUS_COLORS = { online: '#22c55e', idle: '#f59e0b', dnd: '#ef4444', offline: '#6b7280' };
 export const ROLES = ['Fleet Admiral', 'Commander', 'Admiral', 'Captain', 'Lieutenant', 'Squadron Leader', 'Pilot', 'Engineer', 'Medic', 'Scout', 'Comms Officer', 'Member'];
-export const CATS = ['Command', 'Combat', 'Support', 'Exploration', 'Communications', 'Engineering', 'General'];
+export const CATS = [
+  'MAKHLOOQ- E1',
+  'CITIZEN - E2',
+  'SOLDIER - E3',
+  'CORPORAL - E4',
+  'SERGEANT - E5',
+  'LIEUTENANT - O1',
+  'OFFICER - O2',
+  'CAPTAIN - O3',
+  'MAJOR - O4',
+  'COLONEL - O5',
+  'COMMANDER - C1',
+  'GENERAL - C2',
+  'FIELD MARSHAL - C3'
+];
 
 export function ColorPicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
@@ -49,7 +63,7 @@ export function ColorPicker({ value, onChange }) {
 }
 
 export function AddMemberModal({ onClose, onAdded }) {
-  const blank = { discord_uid: '', discord_tag: '', name: '', role: 'Member', category: 'General', node_color: '#10b981', bio: '', status: 'offline', is_admin: false, avatar_url: '' };
+  const blank = { discord_uid: '', discord_tag: '', name: '', role: 'Member', category: 'MAKHLOOQ- E1', node_color: '#10b981', bio: '', status: 'offline', is_admin: false, avatar_url: '' };
   const [form, setForm] = useState(blank);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -111,7 +125,7 @@ export function AddMemberModal({ onClose, onAdded }) {
           {field('discord_tag', 'Discord Tag')}
           {field('name', 'Display Name *')}
           {field('role', 'Role', 'text', ROLES)}
-          {field('category', 'Category', 'text', CATS)}
+          {field('category', 'Rank', 'text', CATS)}
           {field('avatar_url', 'Avatar URL', 'url')}
           {field('bio', 'Bio')}
           {field('status', 'Status', 'text', ['online', 'idle', 'dnd', 'offline'])}

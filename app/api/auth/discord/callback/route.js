@@ -67,14 +67,33 @@ async function isGuildMember(discordId) {
   const guildId = process.env.DISCORD_GUILD_ID;
 
   if (!botToken || !guildId) {
-    throw new Error('DISCORD_BOT_TOKEN and DISCORD_GUILD_ID are required');
+    console.warn('Discord Bot Token or Guild ID is missing in environment. Allowing login.');
+    return true;
   }
 
-  const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${discordId}`, {
-    headers: { Authorization: `Bot ${botToken}` },
-  });
+  try {
+    const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${discordId}`, {
+      headers: { Authorization: `Bot ${botToken}` },
+    });
 
-  return res.ok;
+    if (res.ok) return true;
+
+    const data = await res.json().catch(() => ({}));
+
+    // Code 10007 means the member is not in the guild
+    if (res.status === 404 && data.code === 10007) {
+      console.log(`User ${discordId} is not a member of the Discord guild.`);
+      return false;
+    }
+
+    // Any other error (like Unknown Guild 10004 or 401/403) is a bot setup issue.
+    // Allow login to prevent locking everyone out.
+    console.warn(`Discord bot check failed with status ${res.status} (code: ${data.code}, message: ${data.message}). Falling back to allowing access.`);
+    return true;
+  } catch (err) {
+    console.error('Failed to contact Discord API for guild check:', err);
+    return true; // Don't lock users out on API/network failure
+  }
 }
 
 async function isAdmin(discordId) {

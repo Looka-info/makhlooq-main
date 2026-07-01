@@ -47,7 +47,7 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
         <label className="flex items-center gap-4 cursor-pointer group">
           <div className="flex-1 rounded-2xl border-2 border-dashed border-white/10 bg-white/5 p-8 text-center group-hover:border-emerald-500/40 group-hover:bg-emerald-500/5 transition-all">
             <p className="text-gray-500 text-sm font-medium group-hover:text-emerald-400">
-              {uploading ? 'Uploading avatar...' : 'Upload your best photo (PNG/JPG)'}
+              {uploading ? 'Uploading avatar...' : 'Upload your best photo (PNG/JPG, Max 20MB)'}
             </p>
           </div>
           <input type="file" accept="image/*" className="hidden" onChange={onUploadAvatar} disabled={uploading} />

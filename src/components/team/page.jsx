@@ -21,8 +21,19 @@ const ROLES = [
 ];
 
 const CATEGORIES = [
-  'Command', 'Combat', 'Support', 'Exploration',
-  'Communications', 'Engineering', 'General'
+  'MAKHLOOQ- E1',
+  'CITIZEN - E2',
+  'SOLDIER - E3',
+  'CORPORAL - E4',
+  'SERGEANT - E5',
+  'LIEUTENANT - O1',
+  'OFFICER - O2',
+  'CAPTAIN - O3',
+  'MAJOR - O4',
+  'COLONEL - O5',
+  'COMMANDER - C1',
+  'GENERAL - C2',
+  'FIELD MARSHAL - C3'
 ];
 
 const STATUS_META = {
@@ -123,8 +134,8 @@ const MemberCard = ({ member, onClick }) => {
               {status.label}
             </span>
           </div>
-          <span className="font-mono text-[10px] tracking-widest text-lime-200/25 uppercase">
-            {member.discord_uid?.slice(0,8) || '--------'}
+          <span className="font-mono text-[9px] tracking-normal text-lime-200/25 uppercase">
+            {member.discord_uid || '--------'}
           </span>
         </div>
 
@@ -172,7 +183,7 @@ const MemberCard = ({ member, onClick }) => {
 
         {/* Footer */}
         <div className="mt-1 flex items-center justify-between border-t border-lime-300/10 pt-4 font-mono text-[11px] tracking-[0.16em] text-lime-100/35 group-hover:border-lime-300/25">
-          <span className="uppercase text-lime-100/50">{member.category || 'GENERAL'}</span>
+          <span className="uppercase text-lime-100/50">{member.category || 'MAKHLOOQ- E1'}</span>
           <div className="flex items-center gap-1">
             <Clock size={12} />
             <span>{formatDate(member.joined_at)}</span>
@@ -259,13 +270,13 @@ const FilterBar = ({ search, setSearch, roleFilter, setRoleFilter, categoryFilte
     </div>
 
     <div className="space-y-2">
-      <label className="px-1 text-sm font-black uppercase tracking-[0.18em] text-lime-100/45">Division</label>
+      <label className="px-1 text-sm font-black uppercase tracking-[0.18em] text-lime-100/45">Rank</label>
       <select
         value={categoryFilter}
         onChange={e => setCategoryFilter(e.target.value)}
         className="w-full cursor-pointer appearance-none rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-4 text-base text-white transition-all hover:bg-lime-300/[0.055] focus:border-lime-300/35 focus:outline-none"
       >
-        <option value="" className="bg-[#0a0a0a]">All Divisions</option>
+        <option value="" className="bg-[#0a0a0a]">All Ranks</option>
         {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-[#0a0a0a]">{cat}</option>)}
       </select>
     </div>
@@ -370,10 +381,10 @@ const ProfileModal = ({ member, onClose }) => {
               {/* Meta fields */}
               <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 {[
-                  { label: 'DIVISION', val: member.category || 'GENERAL' },
+                  { label: 'RANK', val: member.category || 'MAKHLOOQ- E1' },
                   { label: 'DEPLOYED', val: formatDate(member.joined_at) },
                   { label: 'SEC_LEVEL', val: member.is_admin ? 'ALPHA' : 'SIGMA' },
-                  { label: 'UID', val: member.discord_uid?.slice(0,10) || '0x??????' },
+                  { label: 'UID', val: member.discord_uid || '0x??????' },
                 ].map(f => (
                   <div key={f.label} className="border-l-2 pl-2" style={{ borderColor: `${accent}30` }}>
                     <div className="font-mono text-[7px] tracking-[0.2em] text-[#2a5c35] uppercase mb-0.5">{f.label}</div>
@@ -457,7 +468,7 @@ const JoinCommunityCTA = ({ joinCTA = {} }) => (
 const AddMemberModal = ({ onClose, onAdded }) => {
   const blank = {
     discord_uid:'', discord_tag:'', name:'', role:'Member',
-    category:'General', node_color:'#10b981', bio:'', status:'offline', is_admin:false, avatar_url:''
+    category:'MAKHLOOQ- E1', node_color:'#10b981', bio:'', status:'offline', is_admin:false, avatar_url:''
   };
   const [form, setForm] = useState(blank);
   const [saving, setSaving] = useState(false);
@@ -520,7 +531,7 @@ const AddMemberModal = ({ onClose, onAdded }) => {
           <div className="grid grid-cols-2 gap-4">
             {[
               { label:'ROLE', key:'role', opts:ROLES },
-              { label:'DIVISION', key:'category', opts:CATEGORIES },
+              { label:'RANK', key:'category', opts:CATEGORIES },
             ].map(f => (
               <div key={f.key} className="space-y-1.5">
                 <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">{f.label}</label>
@@ -626,6 +637,20 @@ const EditProfileModal = ({ member, onClose, onUpdated }) => {
             onUploadAvatar={async (e) => {
               const file = e.target.files[0];
               if (!file) return;
+
+              // Client-side size check (20MB)
+              if (file.size > 20971520) {
+                setError('Avatar file size cannot exceed 20MB.');
+                return;
+              }
+
+              // Client-side mimetype check
+              const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+              if (!allowedMimes.includes(file.type)) {
+                setError('Only JPG, PNG, WEBP, and GIF images are allowed.');
+                return;
+              }
+
               const formData = new FormData();
               formData.append('avatar', file);
               const res = await fetch('/api/team/profile', { method: 'POST', body: formData });

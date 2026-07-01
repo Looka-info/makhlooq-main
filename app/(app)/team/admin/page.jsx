@@ -84,11 +84,11 @@ export default function AdminPage() {
 
   const saveEdit = async () => {
     setSaving(true);
-    const { name, node_color, role, category, status, bio, is_admin, avatar_url } = editData;
+    const { name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at } = editData;
     await window.fetch(`/api/team-members/${editId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, node_color, role, category, status, bio, is_admin, avatar_url }),
+      body: JSON.stringify({ name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at }),
     });
     await loadMembers();
     cancelEdit();
@@ -336,16 +336,16 @@ export default function AdminPage() {
             <table className="w-full text-sm text-left">
               <thead>
                 <tr className="border-b border-white/5 bg-white/2">
-                  {['Crew', 'Role', 'Status', 'Color Vibe', 'Power', 'Actions'].map(h => (
+                  {['Crew', 'Role / Rank', 'Status', 'Color Vibe', 'Deployed', 'Power', 'Actions'].map(h => (
                     <th key={h} className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {loading ? (
-                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest animate-pulse">Loading crew list...</td></tr>
+                  <tr><td colSpan={7} className="px-6 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest animate-pulse">Loading crew list...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="px-6 py-20 text-center text-gray-500 font-mono text-xs uppercase tracking-widest">No matching members found</td></tr>
+                  <tr><td colSpan={7} className="px-6 py-20 text-center text-gray-500 font-mono text-xs uppercase tracking-widest">No matching members found</td></tr>
                 ) : filtered.map(m => {
                   const isEditing = editId === m.id;
                   const d = isEditing ? editData : m;
@@ -424,6 +424,34 @@ export default function AdminPage() {
                             <div className="w-6 h-6 rounded-lg border border-white/10" style={{ background: m.node_color || '#10b981' }} />
                             <span className="text-gray-600 text-xs font-mono">{m.node_color}</span>
                           </div>
+                        )}
+                      </td>
+
+                      {/* Deployed */}
+                      <td className="px-6 py-5">
+                        {isEditing ? (
+                          <input 
+                            type="date" 
+                            value={d.joined_at ? (() => {
+                              try {
+                                return new Date(d.joined_at).toISOString().split('T')[0];
+                              } catch {
+                                return '';
+                              }
+                            })() : ''} 
+                            onChange={e => setEditData(p => ({ ...p, joined_at: e.target.value ? new Date(e.target.value + 'T12:00:00Z').toISOString() : null }))} 
+                            className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs outline-none focus:border-emerald-500/40"
+                          />
+                        ) : (
+                          <span className="text-gray-400 text-xs font-mono">
+                            {(() => {
+                              try {
+                                return d.joined_at ? new Date(d.joined_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : 'N/A';
+                              } catch {
+                                return 'N/A';
+                              }
+                            })()}
+                          </span>
                         )}
                       </td>
 

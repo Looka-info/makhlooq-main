@@ -1,6 +1,8 @@
 import { getPayloadInstance } from '../../../lib/payload'
 import TeamPageClient from './TeamPageClient'
 
+export const dynamic = 'force-dynamic';
+
 async function getTeamPageData() {
   try {
     const payload = await getPayloadInstance();
