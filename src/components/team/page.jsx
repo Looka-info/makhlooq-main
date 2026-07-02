@@ -9,15 +9,15 @@ import {
   Terminal, Wifi, WifiOff, Clock, Zap, LogOut
 } from 'lucide-react';
 import ProfileEditor from './ProfileEditor';
+import NetworkGraph from './NetworkGraph';
 
 // ============================================================
 // CONSTANTS
 // ============================================================
 
 const ROLES = [
-  'Fleet Admiral', 'Commander', 'Admiral', 'Captain',
-  'Lieutenant', 'Squadron Leader', 'Pilot', 'Engineer',
-  'Medic', 'Scout', 'Comms Officer', 'Member'
+  'Field Marshal', 'General', 'Commander', 'Colonel',
+  'Major', 'Captain', 'Officer'
 ];
 
 const CATEGORIES = [
@@ -36,6 +36,8 @@ const CATEGORIES = [
   'FIELD MARSHAL - C3'
 ];
 
+const SEC_LEVELS = ['R0', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6'];
+
 const STATUS_META = {
   online:  { color: '#00ff41', label: 'ONLINE',  dot: 'bg-[#00ff41] shadow-[0_0_8px_#00ff41] animate-pulse' },
   idle:    { color: '#f59e0b', label: 'IDLE',    dot: 'bg-amber-400' },
@@ -50,9 +52,8 @@ const PRESET_COLORS = [
 ];
 
 const ROLE_ORDER = {
-  'Fleet Admiral':1,'Commander':2,'Admiral':3,'Captain':4,
-  'Lieutenant':5,'Squadron Leader':6,'Pilot':7,'Engineer':8,
-  'Medic':9,'Scout':10,'Comms Officer':11,'Member':12
+  'Field Marshal':1,'General':2,'Commander':3,'Colonel':4,
+  'Major':5,'Captain':6,'Officer':7
 };
 
 // ============================================================
@@ -66,11 +67,11 @@ const formatDate = (date) => {
 
 const getRoleConfig = (role) => {
   const r = role?.toLowerCase() || '';
-  if (r.includes('admiral') || r.includes('founder'))
+  if (r.includes('marshal') || r.includes('general') || r.includes('founder'))
     return { Icon: Crown,  accent: '#fbbf24', label: 'COMMAND' };
-  if (r.includes('commander') || r.includes('captain'))
+  if (r.includes('commander') || r.includes('colonel'))
     return { Icon: Shield, accent: '#f87171', label: 'COMMAND' };
-  if (r.includes('lead') || r.includes('lieutenant'))
+  if (r.includes('major') || r.includes('captain'))
     return { Icon: Sword,  accent: '#60a5fa', label: 'OFFICER' };
   return { Icon: Users, accent: '#00ff41', label: 'CREW' };
 };
@@ -383,7 +384,7 @@ const ProfileModal = ({ member, onClose }) => {
                 {[
                   { label: 'RANK', val: member.category || 'MAKHLOOQ- E1' },
                   { label: 'DEPLOYED', val: formatDate(member.joined_at) },
-                  { label: 'SEC_LEVEL', val: member.is_admin ? 'ALPHA' : 'SIGMA' },
+                  { label: 'SEC_LEVEL', val: (member.sec_level && SEC_LEVELS.includes(member.sec_level)) ? member.sec_level : 'R0' },
                   { label: 'UID', val: member.discord_uid || '0x??????' },
                 ].map(f => (
                   <div key={f.label} className="border-l-2 pl-2" style={{ borderColor: `${accent}30` }}>
@@ -467,8 +468,8 @@ const JoinCommunityCTA = ({ joinCTA = {} }) => (
 
 const AddMemberModal = ({ onClose, onAdded }) => {
   const blank = {
-    discord_uid:'', discord_tag:'', name:'', role:'Member',
-    category:'MAKHLOOQ- E1', node_color:'#10b981', bio:'', status:'offline', is_admin:false, avatar_url:''
+    discord_uid:'', discord_tag:'', name:'', role:'Officer',
+    category:'MAKHLOOQ- E1', sec_level:'R0', node_color:'#10b981', bio:'', status:'offline', is_admin:false, avatar_url:''
   };
   const [form, setForm] = useState(blank);
   const [saving, setSaving] = useState(false);
@@ -532,6 +533,7 @@ const AddMemberModal = ({ onClose, onAdded }) => {
             {[
               { label:'ROLE', key:'role', opts:ROLES },
               { label:'RANK', key:'category', opts:CATEGORIES },
+              { label:'SEC_LEVEL', key:'sec_level', opts:SEC_LEVELS },
             ].map(f => (
               <div key={f.key} className="space-y-1.5">
                 <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">{f.label}</label>
@@ -594,6 +596,7 @@ const AddMemberModal = ({ onClose, onAdded }) => {
 const EditProfileModal = ({ member, onClose, onUpdated }) => {
   const [form, setForm] = useState({ ...member });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   const save = async () => {
@@ -605,7 +608,47 @@ const EditProfileModal = ({ member, onClose, onUpdated }) => {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { setError(data.error || 'Failed to update dossier.'); setSaving(false); return; }
-    onUpdated(); onClose();
+    onUpdated(data); onClose();
+  };
+
+  const uploadAvatar = async (fileOrEvent) => {
+    let file;
+    if (fileOrEvent instanceof File) {
+      file = fileOrEvent;
+    } else {
+      file = fileOrEvent?.target?.files?.[0];
+    }
+    if (!file) return;
+
+    setUploading(true);
+    setError('');
+
+    // Client-side size check (20MB)
+    if (file.size > 20971520) {
+      setError('Avatar file size cannot exceed 20MB.');
+      setUploading(false);
+      return;
+    }
+
+    // Client-side mimetype check
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedMimes.includes(file.type)) {
+      setError('Only JPG, PNG, WEBP, and GIF images are allowed.');
+      setUploading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const res = await fetch('/api/team/profile', { method: 'POST', body: formData });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setError(data.error || 'Avatar upload failed.');
+    } else {
+      setForm(data);
+      onUpdated(data);
+    }
+    setUploading(false);
   };
 
   return (
@@ -634,39 +677,23 @@ const EditProfileModal = ({ member, onClose, onUpdated }) => {
             member={member} 
             form={form} 
             setForm={setForm} 
-            onUploadAvatar={async (e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-
-              // Client-side size check (20MB)
-              if (file.size > 20971520) {
-                setError('Avatar file size cannot exceed 20MB.');
-                return;
-              }
-
-              // Client-side mimetype check
-              const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-              if (!allowedMimes.includes(file.type)) {
-                setError('Only JPG, PNG, WEBP, and GIF images are allowed.');
-                return;
-              }
-
-              const formData = new FormData();
-              formData.append('avatar', file);
-              const res = await fetch('/api/team/profile', { method: 'POST', body: formData });
-              const data = await res.json().catch(() => ({}));
-              if (!res.ok) setError(data.error || 'Avatar upload failed.');
-              else setForm(data);
-            }} 
-            uploading={false} 
+            onUploadAvatar={uploadAvatar} 
+            uploading={uploading} 
           />
           
+          {error && (
+            <div className="mt-6 font-mono text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              {error}
+            </div>
+          )}
+          
           <div className="mt-8 flex gap-4">
-            <button onClick={onClose} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all">
-              Cancel
+            <button onClick={onClose} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all font-mono tracking-wider">
+              CANCEL
             </button>
-            <button onClick={save} disabled={saving}
-              className="flex-[2] py-4 bg-emerald-500 text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-[0_0_30px_rgba(16,185,129,0.2)] disabled:opacity-50">
+            <button onClick={save} disabled={saving || uploading}
+              className="flex-[2] py-4 bg-emerald-500 text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-[0_0_30px_rgba(16,185,129,0.2)] disabled:opacity-50 font-mono tracking-wider">
               {saving ? 'UPDATING DOSSIER…' : 'SAVE CHANGES'}
             </button>
           </div>
@@ -698,6 +725,7 @@ export default function FleetDirectoryPage({ pageData }) {
   const [authError, setAuthError]         = useState(null);
 
   const [currentUserMember, setCurrentUserMember] = useState(null);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'network'
 
   const fetchMembers = useCallback(async () => {
     setLoading(true);
@@ -858,12 +886,36 @@ export default function FleetDirectoryPage({ pageData }) {
         <StatsBar members={members} />
 
         {/* Filters */}
-        <div className="mt-10 mb-8">
-          <FilterBar
-            search={search} setSearch={setSearch}
-            roleFilter={roleFilter} setRoleFilter={setRoleFilter}
-            categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
-          />
+        <div className="mt-10 mb-8 flex flex-col xl:flex-row xl:items-end gap-6 justify-between">
+          <div className="flex-1 min-w-0">
+            <FilterBar
+              search={search} setSearch={setSearch}
+              roleFilter={roleFilter} setRoleFilter={setRoleFilter}
+              categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
+            />
+          </div>
+          <div className="flex-shrink-0 flex items-center bg-white/[0.02] border border-white/5 backdrop-blur-md rounded-[1.25rem] p-1 self-start xl:self-auto">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-5 py-2.5 rounded-xl font-mono text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-lime-300 text-[#020402] shadow-[0_0_15px_rgba(163,230,53,0.25)]'
+                  : 'text-lime-100/40 hover:text-white'
+              }`}
+            >
+              Roster Wall
+            </button>
+            <button
+              onClick={() => setViewMode('network')}
+              className={`px-5 py-2.5 rounded-xl font-mono text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
+                viewMode === 'network'
+                  ? 'bg-lime-300 text-[#020402] shadow-[0_0_15px_rgba(163,230,53,0.25)]'
+                  : 'text-lime-100/40 hover:text-white'
+              }`}
+            >
+              Tactical Graph
+            </button>
+          </div>
         </div>
 
         {/* Pending Self-Banner: show only to the logged-in user who hasn't been approved yet */}
@@ -946,6 +998,13 @@ export default function FleetDirectoryPage({ pageData }) {
                 <p className="text-xs text-white/20 uppercase tracking-[0.2em] mt-1">Try a broader search</p>
               </div>
             </div>
+          ) : viewMode === 'network' ? (
+            <div className="rounded-[2.5rem] border border-lime-300/10 bg-black/40 shadow-2xl overflow-hidden backdrop-blur-xl relative">
+              <NetworkGraph
+                members={filteredMembers}
+                onSelect={(member) => setSelectedMember(member)}
+              />
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <AnimatePresence mode="popLayout">
@@ -990,7 +1049,10 @@ export default function FleetDirectoryPage({ pageData }) {
           <EditProfileModal 
             member={currentUserMember} 
             onClose={() => setShowEditModal(false)} 
-            onUpdated={fetchMembers} 
+            onUpdated={(updatedMember) => {
+              setCurrentUserMember(updatedMember);
+              fetchMembers();
+            }} 
           />
         )}
       </AnimatePresence>

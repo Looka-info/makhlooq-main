@@ -11,7 +11,8 @@ import {
   AddMemberModal, 
   STATUS_COLORS, 
   ROLES, 
-  CATS 
+  CATS,
+  SEC_LEVELS
 } from '../../../../src/components/team/AdminComponents';
 
 export default function AdminPage() {
@@ -84,11 +85,11 @@ export default function AdminPage() {
 
   const saveEdit = async () => {
     setSaving(true);
-    const { name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at } = editData;
+    const { name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at, sec_level } = editData;
     await window.fetch(`/api/team-members/${editId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at }),
+      body: JSON.stringify({ name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at, sec_level }),
     });
     await loadMembers();
     cancelEdit();
@@ -389,11 +390,15 @@ export default function AdminPage() {
                             <select value={d.category} onChange={e => setEditData(p => ({ ...p, category: e.target.value }))} className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs outline-none focus:border-emerald-500/40">
                               {CATS.map(c => <option key={c} value={c} className="bg-[#0a1a12]">{c}</option>)}
                             </select>
+                            <select value={(d.sec_level && SEC_LEVELS.includes(d.sec_level)) ? d.sec_level : 'R0'} onChange={e => setEditData(p => ({ ...p, sec_level: e.target.value }))} className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs outline-none focus:border-emerald-500/40">
+                              {SEC_LEVELS.map(s => <option key={s} value={s} className="bg-[#0a1a12]">{s}</option>)}
+                            </select>
                           </div>
                         ) : (
                           <div>
                             <div className="text-emerald-400 font-medium text-xs uppercase tracking-wider">{m.role}</div>
                             <div className="text-gray-600 text-[10px] uppercase tracking-widest">{m.category}</div>
+                            <div className="text-gray-500 text-[9px] font-mono mt-0.5">SEC: {(m.sec_level && SEC_LEVELS.includes(m.sec_level)) ? m.sec_level : 'R0'}</div>
                           </div>
                         )}
                       </td>

@@ -14,8 +14,9 @@ create table public.team_members (
   discord_uid   text unique not null,
   discord_tag   text,
   name          text not null,
-  role          text default 'Member',
-  category      text default 'General',
+  role          text default 'Officer',
+  category      text default 'MAKHLOOQ- E1',
+  sec_level     text default 'R0',
   avatar_url    text,
   node_color    text default '#10b981',
   bio           text,
@@ -24,7 +25,8 @@ create table public.team_members (
   is_approved   boolean default false,
   is_admin      boolean default false,
   joined_at     timestamptz default now(),
-  updated_at    timestamptz default now()
+  updated_at    timestamptz default now(),
+  constraint team_members_sec_level_check check (sec_level in ('R0', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6'))
 );
 
 -- 3. Row-level security

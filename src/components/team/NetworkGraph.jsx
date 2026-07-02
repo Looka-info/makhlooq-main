@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const ROLE_TIER = {
-  'fleet admiral': 'center',
+  'field marshal': 'center',
+  'general': 'high',
   'commander': 'high',
-  'admiral': 'high',
+  'colonel': 'high',
+  'major': 'high',
   'captain': 'high',
-  'lieutenant': 'high',
-  'lead': 'high',
 };
 
 const NODE_CONFIG = {
@@ -89,19 +89,21 @@ function tickPhysics(nodes, W, H, pinnedId, physics) {
 }
 
 export default function NetworkGraph({ members, onSelect, physics }) {
+  const defaultPhysics = { repel: 15000, spring: 0.04, damp: 0.85 };
+  const currentPhysics = physics || defaultPhysics;
   const wrapRef = useRef(null);
   const nodesRef = useRef([]);
   const pinnedRef = useRef(null);
   const dragRef = useRef(null);
   const dragOff = useRef({ x: 0, y: 0 });
   const rafRef = useRef(null);
-  const physicsRef = useRef(physics);
+  const physicsRef = useRef(currentPhysics);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
-    physicsRef.current = physics;
-  }, [physics]);
+    physicsRef.current = currentPhysics;
+  }, [currentPhysics]);
 
   useEffect(() => {
     const el = wrapRef.current;

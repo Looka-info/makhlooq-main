@@ -92,10 +92,14 @@ export const metadata = {
 
   // ▸ MANIFEST & ICONS
   icons: {
-    icon: '/nobglogo.png',
-    shortcut: '/nobglogo.png',
-    apple: '/nobglogo.png',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
+  manifest: '/site.webmanifest',
 
   // ▸ VERIFICATION (For Google Search Console, etc.)
   verification: {
@@ -136,7 +140,7 @@ export default function RootLayout({ children }) {
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
         {/* ▸ FAVICON */}
-        <link rel="icon" type="image/png" href="/nobglogo.png" />
+        <link rel="icon" href="/favicon.ico" />
 
         {/* ▸ STRUCTURED DATA (JSON-LD) */}
         <script
