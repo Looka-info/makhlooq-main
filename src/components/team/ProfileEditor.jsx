@@ -1,11 +1,37 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Upload, Palette, Shield } from 'lucide-react';
 import { ColorPicker, PRESET_COLORS } from './AdminComponents';
+import AvatarCropperModal from './AvatarCropperModal';
+import { AnimatePresence } from 'motion/react';
 
 export default function ProfileEditor({ member, form, setForm, onUploadAvatar, uploading }) {
   const color = form.node_color;
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setCropImageSrc(URL.createObjectURL(file));
+      e.target.value = '';
+    }
+  };
+
+  const handleCropComplete = (croppedBlob) => {
+    if (!selectedFile) return;
+    const croppedFile = new File([croppedBlob], selectedFile.name, { type: 'image/jpeg' });
+    onUploadAvatar(croppedFile);
+    setCropImageSrc(null);
+    setSelectedFile(null);
+  };
+
+  const handleCropClose = () => {
+    setCropImageSrc(null);
+    setSelectedFile(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -50,7 +76,7 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
               {uploading ? 'Uploading avatar...' : 'Upload your best photo (PNG/JPG, Max 20MB)'}
             </p>
           </div>
-          <input type="file" accept="image/*" className="hidden" onChange={onUploadAvatar} disabled={uploading} />
+          <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
         </label>
       </div>
 
@@ -112,6 +138,15 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
           </div>
         </div>
       </div>
+      <AnimatePresence>
+        {cropImageSrc && (
+          <AvatarCropperModal
+            imageUrl={cropImageSrc}
+            onCrop={handleCropComplete}
+            onClose={handleCropClose}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

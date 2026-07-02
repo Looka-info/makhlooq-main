@@ -2,6 +2,9 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    turbopackServerFastRefresh: true,
+  },
   // ▸ IMAGE OPTIMIZATION (Performance: LCP improvement)
   images: {
     remotePatterns: [

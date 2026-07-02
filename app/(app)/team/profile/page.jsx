@@ -90,8 +90,13 @@ export default function UserProfilePage() {
     }
   };
 
-  const uploadAvatar = async (e) => {
-    const file = e.target.files?.[0];
+  const uploadAvatar = async (fileOrEvent) => {
+    let file;
+    if (fileOrEvent instanceof File) {
+      file = fileOrEvent;
+    } else {
+      file = fileOrEvent?.target?.files?.[0];
+    }
     if (!file || !member) return;
     setUploading(true);
     setError('');

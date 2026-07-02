@@ -28,8 +28,22 @@ export default buildConfig({
       icons: [{ rel: "icon", url: "/favicon.ico" }],
     },
     livePreview: {
-      url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org',
-      collections: ['news-posts'],
+      url: ({ collectionConfig, globalConfig }) => {
+        const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://kmhq.org';
+        if (globalConfig) {
+          if (globalConfig.slug === 'about-page') return `${baseUrl}/about`;
+          if (globalConfig.slug === 'fleet-page') return `${baseUrl}/fleet`;
+          if (globalConfig.slug === 'team-page') return `${baseUrl}/team`;
+          if (globalConfig.slug === 'home-page') return `${baseUrl}/`;
+        }
+        if (collectionConfig) {
+          if (collectionConfig.slug === 'news-posts') return `${baseUrl}/about`;
+          if (collectionConfig.slug === 'team_members') return `${baseUrl}/team`;
+          if (collectionConfig.slug === 'fleet_configs') return `${baseUrl}/fleet`;
+        }
+        return baseUrl;
+      },
+      collections: ['news-posts', 'team_members', 'fleet_configs'],
       globals: ['home-page', 'site-settings', 'about-page', 'fleet-page', 'team-page'],
     },
   },
