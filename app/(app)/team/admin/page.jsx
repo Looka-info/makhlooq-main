@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash2, Edit3, Save, X, Shield, Search, LogOut, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit3, Save, X, Shield, Search, LogOut, RefreshCw, Award } from 'lucide-react';
 
 // Modular Components
 import { 
@@ -23,6 +23,7 @@ export default function AdminPage() {
   const [editData, setEditData] = useState({});
   const [saving, setSaving] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [selectedMemberForAwards, setSelectedMemberForAwards] = useState(null);
   const [session, setSession] = useState(null);
   const [authing, setAuthing] = useState(true);
   const [authed, setAuthed] = useState(false);
@@ -85,11 +86,11 @@ export default function AdminPage() {
 
   const saveEdit = async () => {
     setSaving(true);
-    const { name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at, sec_level } = editData;
+    const { name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at, sec_level, flair_color, flair_icon, awards } = editData;
     await window.fetch(`/api/team-members/${editId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at, sec_level }),
+      body: JSON.stringify({ name, node_color, role, category, status, bio, is_admin, avatar_url, joined_at, sec_level, flair_color, flair_icon, awards }),
     });
     await loadMembers();
     cancelEdit();
@@ -384,9 +385,13 @@ export default function AdminPage() {
                       <td className="px-6 py-5">
                         {isEditing ? (
                           <div className="space-y-2">
-                            <select value={d.role} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs outline-none focus:border-emerald-500/40">
-                              {ROLES.map(r => <option key={r} value={r} className="bg-[#0a1a12]">{r}</option>)}
-                            </select>
+                            <input type="text" value={d.role} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs outline-none focus:border-emerald-500/40" placeholder="Flair" />
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <ColorPicker value={d.flair_color || '#10b981'} onChange={c => setEditData(p => ({ ...p, flair_color: c }))} />
+                              <select value={d.flair_icon || 'zap'} onChange={e => setEditData(p => ({ ...p, flair_icon: e.target.value }))} className="rounded-lg border border-emerald-500/20 bg-white/5 px-2 py-1 text-white text-[10px] outline-none">
+                                {['crown', 'shield', 'sword', 'users', 'zap', 'terminal', 'none'].map(o => <option key={o} value={o} className="bg-[#0a1a12]">{o}</option>)}
+                              </select>
+                            </div>
                             <select value={d.category} onChange={e => setEditData(p => ({ ...p, category: e.target.value }))} className="w-full rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs outline-none focus:border-emerald-500/40">
                               {CATS.map(c => <option key={c} value={c} className="bg-[#0a1a12]">{c}</option>)}
                             </select>
@@ -396,7 +401,7 @@ export default function AdminPage() {
                           </div>
                         ) : (
                           <div>
-                            <div className="text-emerald-400 font-medium text-xs uppercase tracking-wider">{m.role}</div>
+                            <div className="text-emerald-400 font-medium text-xs uppercase tracking-wider" style={{ color: m.flair_color || '#10b981' }}>{m.role}</div>
                             <div className="text-gray-600 text-[10px] uppercase tracking-widest">{m.category}</div>
                             <div className="text-gray-500 text-[9px] font-mono mt-0.5">SEC: {(m.sec_level && SEC_LEVELS.includes(m.sec_level)) ? m.sec_level : 'R0'}</div>
                           </div>
@@ -407,11 +412,11 @@ export default function AdminPage() {
                       <td className="px-6 py-5">
                         {isEditing ? (
                           <select value={d.status} onChange={e => setEditData(p => ({ ...p, status: e.target.value }))} className="rounded-lg border border-emerald-500/20 bg-white/5 px-3 py-1.5 text-white text-xs outline-none focus:border-emerald-500/40">
-                            {['online', 'idle', 'dnd', 'offline'].map(s => <option key={s} value={s} className="bg-[#0a1a12]">{s}</option>)}
+                            {['active', 'inactive'].map(s => <option key={s} value={s} className="bg-[#0a1a12]">{s}</option>)}
                           </select>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full" style={{ background: STATUS_COLORS[m.status] || STATUS_COLORS.offline, boxShadow: `0 0 10px ${STATUS_COLORS[m.status] || STATUS_COLORS.offline}` }} />
+                            <span className="w-2 h-2 rounded-full" style={{ background: STATUS_COLORS[m.status] || STATUS_COLORS.inactive, boxShadow: `0 0 10px ${STATUS_COLORS[m.status] || STATUS_COLORS.inactive}` }} />
                             <span className="text-gray-400 text-xs font-medium capitalize">{m.status}</span>
                           </div>
                         )}
@@ -487,6 +492,9 @@ export default function AdminPage() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
+                            <button onClick={() => setSelectedMemberForAwards(m)} className="p-2 rounded-xl border border-yellow-500/10 text-yellow-500 hover:bg-yellow-500/10 transition-all" title="Manage Awards">
+                              <Award size={16} />
+                            </button>
                             <button onClick={() => startEdit(m)} className="p-2 rounded-xl border border-emerald-500/10 text-emerald-500 hover:bg-emerald-500/10 transition-all" title="Edit Record">
                               <Edit3 size={16} />
                             </button>
@@ -508,6 +516,198 @@ export default function AdminPage() {
       <AnimatePresence>
         {showAdd && <AddMemberModal onClose={() => setShowAdd(false)} onAdded={loadMembers} />}
       </AnimatePresence>
+      <AnimatePresence>
+        {selectedMemberForAwards && (
+          <ManageAwardsModal
+            member={selectedMemberForAwards}
+            onClose={() => setSelectedMemberForAwards(null)}
+            onUpdated={loadMembers}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+const AWARD_FILE_PREFIXES = {
+  Shaqafat: 'Shaqafat',
+  Safir: 'safir',
+  Ittehad: 'ittehad',
+  Khidmat: 'khidmat',
+  Alamgiri: 'alamgiri',
+  Sultani: 'sultani',
+  Khazana: 'khazana',
+  Rehla: 'rehla',
+  Naqsha: 'naqsha',
+  Shaheen: 'shaheen',
+  Sipar: 'sipar',
+  Bandook: 'bandook',
+  Nusrat: 'nusrat',
+  Mistri: 'mistri'
+};
+
+const AWARD_TIER_SUFFIXES = {
+  Ustad: '_1',
+  Uncle: '_2',
+  Launda: '_3',
+  Charsi: '_4'
+};
+
+const getAwardImage = (category, tier) => {
+  const prefix = AWARD_FILE_PREFIXES[category];
+  const suffix = AWARD_TIER_SUFFIXES[tier];
+  if (!prefix || !suffix) return null;
+  return `/KMHQ Awards/${prefix}${suffix}.png`;
+};
+
+function ManageAwardsModal({ member, onClose, onUpdated }) {
+  const [awards, setAwards] = useState(member.awards || []);
+  const [category, setCategory] = useState('Shaqafat');
+  const [tier, setTier] = useState('Ustad');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const addAward = () => {
+    const exists = awards.some(a => a.category === category && a.tier === tier);
+    if (exists) {
+      setError('This award/tier is already assigned to this member.');
+      return;
+    }
+    setError('');
+    setAwards(prev => [...prev, { category, tier }]);
+  };
+
+  const removeAward = (index) => {
+    setAwards(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const save = async () => {
+    setSaving(true);
+    setError('');
+    const res = await window.fetch(`/api/team-members/${member.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ awards }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || 'Failed to update awards.');
+      setSaving(false);
+      return;
+    }
+
+    onUpdated();
+    onClose();
+  };
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="bg-[#0a1a12] border border-emerald-500/20 rounded-2xl max-w-lg w-full p-8 shadow-2xl overflow-y-auto max-h-[90vh]"
+        initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-bold text-white tracking-tight">Manage Awards</h3>
+            <p className="text-xs text-gray-500 mt-1">{member.name}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors"><X size={20} /></button>
+        </div>
+
+        {/* Current Awards List */}
+        <div className="mb-8">
+          <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-3 block">Currently Assigned</label>
+          {awards.length === 0 ? (
+            <p className="text-sm text-gray-600 italic bg-white/2 p-4 rounded-xl border border-white/5 text-center">No awards assigned yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {awards.map((a, i) => {
+                const img = getAwardImage(a.category, a.tier);
+                return (
+                  <div key={i} className="flex items-center justify-between p-3 bg-white/2 border border-white/5 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      {img && <img src={img} alt="" className="w-10 h-10 object-contain" />}
+                      <div>
+                        <div className="text-white text-sm font-bold">{a.category}</div>
+                        <div className="text-emerald-400 text-xs">{a.tier}</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeAward(i)}
+                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all"
+                      title="Remove Award"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Add Award Section */}
+        <div className="border-t border-white/5 pt-6 mb-8">
+          <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-3 block">Assign New Award</label>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="space-y-1">
+              <label className="text-[9px] text-gray-600 uppercase tracking-wider">Category</label>
+              <select
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white text-sm outline-none focus:border-emerald-500/40"
+              >
+                {Object.keys(AWARD_FILE_PREFIXES).map(cat => (
+                  <option key={cat} value={cat} className="bg-[#0a1a12]">{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] text-gray-600 uppercase tracking-wider">Tier</label>
+              <select
+                value={tier}
+                onChange={e => setTier(e.target.value)}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white text-sm outline-none focus:border-emerald-500/40"
+              >
+                {Object.keys(AWARD_TIER_SUFFIXES).map(t => (
+                  <option key={t} value={t} className="bg-[#0a1a12]">{t}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <button
+            onClick={addAward}
+            className="w-full py-2.5 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs uppercase tracking-wider rounded-xl transition-all"
+          >
+            Assign Badge
+          </button>
+        </div>
+
+        {error && <p className="text-red-400 text-xs mb-6 bg-red-500/10 p-3 rounded-lg border border-red-500/20">{error}</p>}
+
+        {/* Footer Actions */}
+        <div className="flex gap-4">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="flex-1 py-3 bg-emerald-500 text-black hover:bg-emerald-400 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Commit Changes'}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

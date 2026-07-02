@@ -1,0 +1,6 @@
+i18n.setData(
+    JSON.parse(
+        "{\"dependency-mapping-jira-all-linked-work-items\":\"All linked work items\",\"dependency-mapping-jira-all-links\":\"All links\",\"dependency-mapping-jira-create-link-instruction\":\"You can create a link by drawing a line between two Jira cards.\",\"dependency-mapping-jira-hide-all-disabled-tooltip\":\"All links hidden\",\"dependency-mapping-jira-hide-all-links-button\":\"Hide all links\",\"dependency-mapping-jira-multiple-work-item-key-with-no-link\":\"No linked work items for the selected cards\",\"dependency-mapping-jira-no-dependency-heading-v2\":\"There are no linked work items for {key}.\",\"dependency-mapping-jira-no-selection-state-heading\":\"Select an issue to view its dependencies\",\"dependency-mapping-jira-no-selection-state-instruction-v2\":\"Dependencies of any selected work items will show here if they exist.\",\"dependency-mapping-jira-show-all-disabled-tooltip\":\"Showing all links\",\"dependency-mapping-jira-show-all-links-button\":\"Show all links\",\"organizer-draft-mode-status-label\":\"DRAFT MODE\",\"spark-path-default-label\":\"Path {count}\"}"
+    ),
+    'en'
+);

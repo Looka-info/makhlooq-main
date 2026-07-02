@@ -16,33 +16,30 @@ import NetworkGraph from './NetworkGraph';
 // ============================================================
 
 const ROLES = [
-  'Field Marshal', 'General', 'Commander', 'Colonel',
-  'Major', 'Captain', 'Officer'
+  'High Council', 'Advisor', 'Quaid - Founder', 'KMHQ'
 ];
 
 const CATEGORIES = [
-  'MAKHLOOQ- E1',
-  'CITIZEN - E2',
-  'SOLDIER - E3',
-  'CORPORAL - E4',
-  'SERGEANT - E5',
-  'LIEUTENANT - O1',
-  'OFFICER - O2',
-  'CAPTAIN - O3',
-  'MAJOR - O4',
-  'COLONEL - O5',
-  'COMMANDER - C1',
-  'GENERAL - C2',
-  'FIELD MARSHAL - C3'
+  'Field Marshal',
+  'General',
+  'Commander',
+  'Colonel',
+  'Major',
+  'Captain',
+  'Officer',
+  'Lieutenant',
+  'Sergeant',
+  'Corporal',
+  'Soldier',
+  'Citizen',
+  'Makhlooq'
 ];
 
 const SEC_LEVELS = ['R0', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6'];
 
 const STATUS_META = {
-  online:  { color: '#00ff41', label: 'ONLINE',  dot: 'bg-[#00ff41] shadow-[0_0_8px_#00ff41] animate-pulse' },
-  idle:    { color: '#f59e0b', label: 'IDLE',    dot: 'bg-amber-400' },
-  dnd:     { color: '#ef4444', label: 'DND',     dot: 'bg-red-500' },
-  offline: { color: '#2a3a2a', label: 'OFFLINE', dot: 'bg-[#1a3020]' },
+  active:   { color: '#00ff41', label: 'ACTIVE',   dot: 'bg-[#00ff41] shadow-[0_0_8px_#00ff41] animate-pulse' },
+  inactive: { color: '#2a3a2a', label: 'INACTIVE', dot: 'bg-[#1a3020]' },
 };
 
 const PRESET_COLORS = [
@@ -51,9 +48,126 @@ const PRESET_COLORS = [
   '#06b6d4','#84cc16','#f97316','#8b5cf6'
 ];
 
-const ROLE_ORDER = {
-  'Field Marshal':1,'General':2,'Commander':3,'Colonel':4,
-  'Major':5,'Captain':6,'Officer':7
+const FLAIR_ORDER = {
+  'Quaid - Founder': 1,
+  'High Council': 2,
+  'Advisor': 3,
+  'KMHQ': 4
+};
+
+const RANK_ORDER = {
+  'Field Marshal': 1,
+  'General': 2,
+  'Commander': 3,
+  'Colonel': 4,
+  'Major': 5,
+  'Captain': 6,
+  'Officer': 7,
+  'Lieutenant': 8,
+  'Sergeant': 9,
+  'Corporal': 10,
+  'Soldier': 11,
+  'Citizen': 12,
+  'Makhlooq': 13
+};
+
+const ICON_MAP = {
+  crown: Crown,
+  shield: Shield,
+  sword: Sword,
+  users: Users,
+  zap: Zap,
+  terminal: Terminal
+};
+
+const AWARD_TIERS = {
+  Ustad: { label: 'Ustad (19 Merits)', suffix: '_1' },
+  Uncle: { label: 'Uncle (13 Merits)', suffix: '_2' },
+  Launda: { label: 'Launda (7 Merits)', suffix: '_3' },
+  Charsi: { label: 'Charsi (3 Merits)', suffix: '_4' }
+};
+
+const AWARD_CATEGORIES = {
+  Shaqafat: { label: 'Shaqafat (Valor & Combat)', filePrefix: 'Shaqafat' },
+  Safir: { label: 'Safir (Navigations)', filePrefix: 'safir' },
+  Ittehad: { label: 'Ittehad (Teamwork)', filePrefix: 'ittehad' },
+  Khidmat: { label: 'Khidmat (Service & Dedication)', filePrefix: 'khidmat' },
+  Alamgiri: { label: 'Alamgiri (Strategist)', filePrefix: 'alamgiri' },
+  Sultani: { label: 'Sultani (Diplomacy)', filePrefix: 'sultani' },
+  Khazana: { label: 'Khazana (Generosity)', filePrefix: 'khazana' },
+  Rehla: { label: 'Rehla (Discovery)', filePrefix: 'rehla' },
+  Naqsha: { label: 'Naqsha (Exploration & Mapping)', filePrefix: 'naqsha' },
+  Shaheen: { label: 'Shaheen (Ariel Dominance)', filePrefix: 'shaheen' },
+  Sipar: { label: 'Sipar (Defense)', filePrefix: 'sipar' },
+  Bandook: { label: 'Bandook (High Value Kills)', filePrefix: 'bandook' },
+  Nusrat: { label: 'Nusrat (Medical Support)', filePrefix: 'nusrat' },
+  Mistri: { label: 'Mistri (Engineering Support)', filePrefix: 'mistri' }
+};
+
+const AWARD_DETAILS = {
+  Shaqafat: {
+    desc: 'For unmatched bravery and domination in battle, defending the fleet and seizing victory.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Safir: {
+    desc: 'For exceptional navigation and piloting, ensuring mission success and survival against the odds.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Ittehad: {
+    desc: 'For outstanding teamwork and leadership in major operations, keeping the fleet united under fire.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Khidmat: {
+    desc: 'For unwavering commitment and selfless contributions to the fleet\'s goals and welfare.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Alamgiri: {
+    desc: 'For significant strides in developing the RoE and the fleet\'s strategic backbone and operation SOPs.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Sultani: {
+    desc: 'For forging alliances, discovering uncharted systems, and expanding the influence of Khalai Makhlooq.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Khazana: {
+    desc: 'For significant material or financial support that empowers the fleet’s strength and survival.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Rehla: {
+    desc: 'For discovering new systems, planets, and starpaths.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Naqsha: {
+    desc: 'For mapping valuable zones and hidden resources.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Shaheen: {
+    desc: 'For aerial dominance and unmatched dogfighting.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Sipar: {
+    desc: 'For defending vital assets and comrades against overwhelming odds.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Bandook: {
+    desc: 'For elite marksmanship and critical kills in combat, clearing the field of threats.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Nusrat: {
+    desc: 'For life-saving medical, logistical, and morale support.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  },
+  Mistri: {
+    desc: 'For engineering support under enemy fire.',
+    requirement: { Ustad: '19 Merits', Uncle: '13 Merits', Launda: '7 Merits', Charsi: '3 Merits' }
+  }
+};
+
+const getAwardImage = (category, tier) => {
+  const prefix = AWARD_CATEGORIES[category]?.filePrefix;
+  const suffix = AWARD_TIERS[tier]?.suffix;
+  if (!prefix || !suffix) return null;
+  return `/KMHQ Awards/${prefix}${suffix}.png`;
 };
 
 // ============================================================
@@ -67,12 +181,14 @@ const formatDate = (date) => {
 
 const getRoleConfig = (role) => {
   const r = role?.toLowerCase() || '';
-  if (r.includes('marshal') || r.includes('general') || r.includes('founder'))
-    return { Icon: Crown,  accent: '#fbbf24', label: 'COMMAND' };
-  if (r.includes('commander') || r.includes('colonel'))
-    return { Icon: Shield, accent: '#f87171', label: 'COMMAND' };
-  if (r.includes('major') || r.includes('captain'))
-    return { Icon: Sword,  accent: '#60a5fa', label: 'OFFICER' };
+  if (r.includes('founder') || r.includes('quaid'))
+    return { Icon: Crown,  accent: '#fbbf24', label: 'FOUNDER' };
+  if (r.includes('council'))
+    return { Icon: Shield, accent: '#f87171', label: 'COUNCIL' };
+  if (r.includes('advisor'))
+    return { Icon: Terminal, accent: '#60a5fa', label: 'ADVISOR' };
+  if (r.includes('kmhq'))
+    return { Icon: Zap,      accent: '#10b981', label: 'KMHQ' };
   return { Icon: Users, accent: '#00ff41', label: 'CREW' };
 };
 
@@ -81,8 +197,10 @@ const getRoleConfig = (role) => {
 // ============================================================
 
 const MemberCard = ({ member, onClick }) => {
-  const { Icon, accent } = getRoleConfig(member.role);
-  const status = STATUS_META[member.status] || STATUS_META.offline;
+  const { Icon: fallbackIcon, accent: fallbackAccent } = getRoleConfig(member.role);
+  const accent = member.flair_color || fallbackAccent || '#10b981';
+  const Icon = member.flair_icon === 'none' ? null : (ICON_MAP[member.flair_icon?.toLowerCase()] || fallbackIcon);
+  const status = STATUS_META[member.status] || STATUS_META.inactive;
   const initial = member.name?.[0]?.toUpperCase() || '?';
 
   return (
@@ -156,24 +274,41 @@ const MemberCard = ({ member, onClick }) => {
               : <span className="group-hover:animate-[text-glitch_0.6s_steps(1)_infinite]">{initial}</span>
             }
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="truncate text-2xl font-black leading-none tracking-[-0.04em] text-white group-hover:animate-[text-glitch_0.8s_steps(1)_infinite]">
-              {member.name || member.discord_tag || 'UNKNOWN'}
-            </h3>
+          <div>
+            <h3 className="text-xl font-bold tracking-tight text-white transition-colors group-hover:text-lime-200">{member.name}</h3>
             <span
-              className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em]"
+              className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase px-3 py-1 bg-emerald-500/10 border border-emerald-500/20"
               style={{
                 color: accent,
                 background: `${accent}12`,
-                border: `1px solid ${accent}30`,
+                borderColor: `${accent}30`,
                 borderRadius: '999px',
               }}
             >
-              <Icon size={12} />
-              {member.role || 'Member'}
+              {Icon && <Icon size={12} />}
+              {member.role || 'KMHQ'}
             </span>
           </div>
         </div>
+
+        {/* Awards list preview */}
+        {member.awards && member.awards.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {member.awards.map((award, i) => {
+              const imgUrl = getAwardImage(award.category, award.tier);
+              const title = `${award.category} - ${award.tier}`;
+              return imgUrl ? (
+                <img
+                  key={i}
+                  src={imgUrl}
+                  alt={title}
+                  title={title}
+                  className="w-7 h-7 object-contain opacity-75 group-hover:opacity-100 transition-opacity drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+                />
+              ) : null;
+            })}
+          </div>
+        )}
 
         {/* Bio */}
         {member.bio && (
@@ -184,7 +319,7 @@ const MemberCard = ({ member, onClick }) => {
 
         {/* Footer */}
         <div className="mt-1 flex items-center justify-between border-t border-lime-300/10 pt-4 font-mono text-[11px] tracking-[0.16em] text-lime-100/35 group-hover:border-lime-300/25">
-          <span className="uppercase text-lime-100/50">{member.category || 'MAKHLOOQ- E1'}</span>
+          <span className="uppercase text-lime-100/50">{member.category || 'Makhlooq'}</span>
           <div className="flex items-center gap-1">
             <Clock size={12} />
             <span>{formatDate(member.joined_at)}</span>
@@ -202,14 +337,14 @@ const MemberCard = ({ member, onClick }) => {
 const StatsBar = ({ members }) => {
   const online  = members.filter(m => m.status === 'online').length;
   const command = members.filter(m =>
-    ['commander','admiral','captain','lead'].some(r => m.role?.toLowerCase().includes(r))
+    ['founder', 'council', 'advisor'].some(r => m.role?.toLowerCase().includes(r))
   ).length;
 
   const stats = [
     { label: 'Crew', value: members.length,  color: '#ffffff', Icon: Users    },
     { label: 'Active Now',    value: online,           color: '#10b981', Icon: Wifi, pulse: true },
-    { label: 'Commanders',   value: command,          color: '#3b82f6', Icon: Shield   },
-    { label: 'Divisions', value: CATEGORIES.length,color: '#8b5cf6', Icon: Filter   },
+    { label: 'Leadership',   value: command,          color: '#3b82f6', Icon: Shield   },
+    { label: 'Ranks',         value: CATEGORIES.length,color: '#8b5cf6', Icon: Filter   },
   ];
 
   return (
@@ -242,7 +377,7 @@ const StatsBar = ({ members }) => {
 // FILTER BAR
 // ============================================================
 
-const FilterBar = ({ search, setSearch, roleFilter, setRoleFilter, categoryFilter, setCategoryFilter }) => (
+const FilterBar = ({ search, setSearch, roleFilter, setRoleFilter, categoryFilter, setCategoryFilter, availableRoles = [] }) => (
   <div className="grid gap-4 rounded-[2rem] border border-lime-300/10 bg-black/35 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:grid-cols-[1.7fr_1fr_1fr]">
     <div className="space-y-2">
       <label className="px-1 text-sm font-black uppercase tracking-[0.18em] text-lime-100/45">Crew Search</label>
@@ -259,14 +394,14 @@ const FilterBar = ({ search, setSearch, roleFilter, setRoleFilter, categoryFilte
     </div>
 
     <div className="space-y-2">
-      <label className="px-1 text-sm font-black uppercase tracking-[0.18em] text-lime-100/45">Role</label>
+      <label className="px-1 text-sm font-black uppercase tracking-[0.18em] text-lime-100/45">Flair</label>
       <select
         value={roleFilter}
         onChange={e => setRoleFilter(e.target.value)}
         className="w-full cursor-pointer appearance-none rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-4 text-base text-white transition-all hover:bg-lime-300/[0.055] focus:border-lime-300/35 focus:outline-none"
       >
-        <option value="" className="bg-[#0a0a0a]">All Roles</option>
-        {ROLES.map(role => <option key={role} value={role} className="bg-[#0a0a0a]">{role}</option>)}
+        <option value="" className="bg-[#0a0a0a]">All Flairs</option>
+        {availableRoles.map(role => <option key={role} value={role} className="bg-[#0a0a0a]">{role}</option>)}
       </select>
     </div>
 
@@ -290,8 +425,10 @@ const FilterBar = ({ search, setSearch, roleFilter, setRoleFilter, categoryFilte
 
 const ProfileModal = ({ member, onClose }) => {
   if (!member) return null;
-  const { Icon, accent } = getRoleConfig(member.role);
-  const status = STATUS_META[member.status] || STATUS_META.offline;
+  const { Icon: fallbackIcon, accent: fallbackAccent } = getRoleConfig(member.role);
+  const accent = member.flair_color || fallbackAccent || '#10b981';
+  const Icon = member.flair_icon === 'none' ? null : (ICON_MAP[member.flair_icon?.toLowerCase()] || fallbackIcon);
+  const status = STATUS_META[member.status] || STATUS_META.inactive;
   const initial = member.name?.[0]?.toUpperCase() || '?';
 
   return (
@@ -377,14 +514,14 @@ const ProfileModal = ({ member, onClose }) => {
                 className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase px-2 py-1 mb-3"
                 style={{ color: accent, background: `${accent}12`, border: `1px solid ${accent}30`, borderRadius:'2px' }}
               >
-                <Icon size={10} />{member.role || 'MEMBER'}
+                {Icon && <Icon size={10} />}{member.role || 'KMHQ'}
               </div>
               {/* Meta fields */}
               <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 {[
-                  { label: 'RANK', val: member.category || 'MAKHLOOQ- E1' },
+                  { label: 'RANK', val: member.category || 'Makhlooq' },
                   { label: 'DEPLOYED', val: formatDate(member.joined_at) },
-                  { label: 'SEC_LEVEL', val: (member.sec_level && SEC_LEVELS.includes(member.sec_level)) ? member.sec_level : 'R0' },
+                  { label: 'CLEARANCE', val: (member.sec_level && SEC_LEVELS.includes(member.sec_level)) ? member.sec_level : 'R0' },
                   { label: 'UID', val: member.discord_uid || '0x??????' },
                 ].map(f => (
                   <div key={f.label} className="border-l-2 pl-2" style={{ borderColor: `${accent}30` }}>
@@ -395,6 +532,42 @@ const ProfileModal = ({ member, onClose }) => {
               </div>
             </div>
           </div>
+
+          {/* Awards */}
+          {member.awards && member.awards.length > 0 && (
+            <div className="border-t pt-4 pb-2" style={{ borderColor: `${accent}15` }}>
+              <div className="font-mono text-[8px] tracking-[0.2em] text-[#2a5c35] uppercase mb-3">SERVICE_AWARDS //</div>
+              <div className="flex flex-wrap gap-3">
+                {member.awards.map((award, i) => {
+                  const imgUrl = getAwardImage(award.category, award.tier);
+                  const details = AWARD_DETAILS[award.category];
+                  const title = `${award.category} - ${award.tier}`;
+                  return (
+                    <div key={i} className="group/award relative flex items-center gap-2 p-1.5 rounded bg-white/[0.02] border border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] transition-all">
+                      {imgUrl && (
+                        <img src={imgUrl} alt={title} className="w-8 h-8 object-contain" />
+                      )}
+                      <div className="flex flex-col pr-1">
+                        <span className="font-mono text-[10px] text-white font-bold leading-none">{award.category}</span>
+                        <span className="font-mono text-[8px] text-emerald-400 font-medium mt-0.5">{award.tier}</span>
+                      </div>
+                      
+                      {/* Tooltip on hover */}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 hidden group-hover/award:block bg-[#020d05] border border-emerald-500/30 p-3 rounded shadow-xl text-left z-50 pointer-events-none">
+                        <div className="font-bold text-[10px] text-white uppercase tracking-wider">{award.category} ({award.tier})</div>
+                        {details && (
+                          <div className="text-[9px] text-gray-400 mt-1 leading-normal font-sans">{details.desc}</div>
+                        )}
+                        {details && details.requirement[award.tier] && (
+                          <div className="text-[8px] text-emerald-500 font-mono mt-1.5">Requirement: {details.requirement[award.tier]}</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Bio */}
           <div className="border-t pt-4" style={{ borderColor: `${accent}15` }}>
@@ -468,13 +641,14 @@ const JoinCommunityCTA = ({ joinCTA = {} }) => (
 
 const AddMemberModal = ({ onClose, onAdded }) => {
   const blank = {
-    discord_uid:'', discord_tag:'', name:'', role:'Officer',
-    category:'MAKHLOOQ- E1', sec_level:'R0', node_color:'#10b981', bio:'', status:'offline', is_admin:false, avatar_url:''
+    discord_uid:'', discord_tag:'', name:'', role:'KMHQ',
+    category:'Makhlooq', sec_level:'R0', node_color:'#10b981', bio:'', status:'active', is_admin:false, avatar_url:'',
+    flair_color:'#10b981', flair_icon:'zap', awards: []
   };
   const [form, setForm] = useState(blank);
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState('');
-
+  
   const save = async () => {
     if (!form.discord_uid || !form.name) { setError('Discord UID and name are required.'); return; }
     setSaving(true);
@@ -529,20 +703,64 @@ const AddMemberModal = ({ onClose, onAdded }) => {
             </div>
           ))}
 
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label:'ROLE', key:'role', opts:ROLES },
-              { label:'RANK', key:'category', opts:CATEGORIES },
-              { label:'SEC_LEVEL', key:'sec_level', opts:SEC_LEVELS },
-            ].map(f => (
-              <div key={f.key} className="space-y-1.5">
-                <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">{f.label}</label>
-                <select value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">FLAIR (CUSTOM WRITABLE)</label>
+              <input type="text" value={form.role}
+                placeholder="e.g. Rogue Architect"
+                onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
+                className={inputCls} style={inputStyle}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">FLAIR ICON</label>
+                <select value={form.flair_icon} onChange={e => setForm(p => ({ ...p, flair_icon: e.target.value }))}
                   className={inputCls} style={{ ...inputStyle, color:'#10b981' }}>
-                  {f.opts.map(o => <option key={o} value={o} className="bg-[#020d05]">{o}</option>)}
+                  {['crown', 'shield', 'sword', 'users', 'zap', 'terminal', 'none'].map(o => (
+                    <option key={o} value={o} className="bg-[#020d05]">{o.toUpperCase()}</option>
+                  ))}
                 </select>
               </div>
-            ))}
+              <div className="space-y-1.5">
+                <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">STATUS</label>
+                <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
+                  className={inputCls} style={{ ...inputStyle, color:'#10b981' }}>
+                  {['active', 'inactive'].map(o => (
+                    <option key={o} value={o} className="bg-[#020d05]">{o.toUpperCase()}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">FLAIR COLOR</label>
+              <div className="grid grid-cols-6 gap-2">
+                {PRESET_COLORS.map(c => (
+                  <button key={c} type="button" onClick={() => setForm(p => ({ ...p, flair_color: c }))}
+                    className="aspect-square rounded-lg border-2 transition-all hover:scale-110 active:scale-95"
+                    style={{ background:c, borderColor: form.flair_color===c ? 'white' : 'transparent', boxShadow: form.flair_color===c ? `0 0 15px ${c}40` : 'none' }} />
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">RANK</label>
+                <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
+                  className={inputCls} style={{ ...inputStyle, color:'#10b981' }}>
+                  {CATEGORIES.map(o => <option key={o} value={o} className="bg-[#020d05]">{o}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="block font-mono text-[9px] tracking-[0.2em] text-emerald-500/50 uppercase font-bold px-1">CLEARANCE</label>
+                <select value={form.sec_level} onChange={e => setForm(p => ({ ...p, sec_level: e.target.value }))}
+                  className={inputCls} style={{ ...inputStyle, color:'#10b981' }}>
+                  {SEC_LEVELS.map(o => <option key={o} value={o} className="bg-[#020d05]">{o}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -791,6 +1009,11 @@ export default function FleetDirectoryPage({ pageData }) {
 
   const isAdmin = currentUserMember?.is_admin || session?.source === 'env' || false;
 
+  const availableRoles = useMemo(() => {
+    const set = new Set(members.map(m => m.role).filter(Boolean));
+    return Array.from(set).sort();
+  }, [members]);
+
   const filteredMembers = useMemo(() => {
     let f = [...members];
     if (search) {
@@ -800,13 +1023,16 @@ export default function FleetDirectoryPage({ pageData }) {
     if (roleFilter) f = f.filter(m => m.role === roleFilter);
     if (categoryFilter) f = f.filter(m => m.category === categoryFilter);
     f.sort((a,b) => {
-      const oa = ROLE_ORDER[a.role] || 99, ob = ROLE_ORDER[b.role] || 99;
-      return oa !== ob ? oa - ob : (a.name||'').localeCompare(b.name||'');
+      const oa = FLAIR_ORDER[a.role] || 99, ob = FLAIR_ORDER[b.role] || 99;
+      if (oa !== ob) return oa - ob;
+      const ra = RANK_ORDER[a.category] || 99, rb = RANK_ORDER[b.category] || 99;
+      if (ra !== rb) return ra - rb;
+      return (a.name||'').localeCompare(b.name||'');
     });
     return f;
   }, [members, search, roleFilter, categoryFilter]);
 
-  const onlineCount = members.filter(m => m.status === 'online').length;
+  const onlineCount = members.filter(m => m.status === 'active').length;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#020402] text-white selection:bg-lime-300/30" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -835,7 +1061,7 @@ export default function FleetDirectoryPage({ pageData }) {
               <span className="h-1 w-1 rounded-full bg-lime-300/30" />
               <span className="text-lime-300/70">{onlineCount} active</span>
               <span className="h-1 w-1 rounded-full bg-lime-300/30" />
-              <span>{CATEGORIES.length} divisions</span>
+              <span>{CATEGORIES.length} ranks</span>
             </div>
           </div>
 
@@ -892,6 +1118,7 @@ export default function FleetDirectoryPage({ pageData }) {
               search={search} setSearch={setSearch}
               roleFilter={roleFilter} setRoleFilter={setRoleFilter}
               categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
+              availableRoles={availableRoles}
             />
           </div>
           <div className="flex-shrink-0 flex items-center bg-white/[0.02] border border-white/5 backdrop-blur-md rounded-[1.25rem] p-1 self-start xl:self-auto">

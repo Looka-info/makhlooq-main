@@ -5,16 +5,16 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
 const STATUS_META = {
-  online: { color: '#22c55e', label: 'Online' },
-  idle: { color: '#f59e0b', label: 'Idle' },
-  dnd: { color: '#ef4444', label: 'Do Not Disturb' },
-  offline: { color: '#4b5563', label: 'Offline' },
+  active: { color: '#22c55e', label: 'Active' },
+  inactive: { color: '#4b5563', label: 'Inactive' },
 };
 
 export default function ProfileModal({ member, onClose }) {
   if (!member) return null;
+
+  const { Icon, accent } = getRoleConfig(member.role);
+  const status = STATUS_META[member.status] || STATUS_META.inactive;
   const color = member.node_color || '#10b981';
-  const status = STATUS_META[member.status] || STATUS_META.offline;
 
   return (
     <motion.div

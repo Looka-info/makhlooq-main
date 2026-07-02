@@ -25,12 +25,8 @@ export default function TeamMembersList({ members, onSelect, searchQuery = '', a
   // Get status dot color
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case 'online':
+      case 'active':
         return 'bg-green-500';
-      case 'idle':
-        return 'bg-yellow-500';
-      case 'dnd':
-        return 'bg-red-500';
       default:
         return 'bg-gray-500';
     }
@@ -161,7 +157,7 @@ export default function TeamMembersList({ members, onSelect, searchQuery = '', a
                 {/* Status */}
                 <div className="col-span-2 flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${statusColor} animate-pulse`} />
-                  <span className="text-xs text-gray-400 capitalize">{member.status || 'offline'}</span>
+                  <span className="text-xs text-gray-400 capitalize">{member.status || 'inactive'}</span>
                 </div>
               </motion.div>
             );
@@ -211,7 +207,7 @@ export default function TeamMembersList({ members, onSelect, searchQuery = '', a
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-400 px-0">
                   <span>{formatDate(member.joined_at)}</span>
-                  <span className="capitalize">{member.status || 'offline'}</span>
+                  <span className="capitalize">{member.status || 'inactive'}</span>
                 </div>
               </motion.div>
             );

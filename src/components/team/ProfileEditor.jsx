@@ -49,7 +49,7 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
           </div>
           <span
             className="absolute -top-2 -right-2 w-6 h-6 rounded-full border-4 border-[#040806] shadow-lg"
-            style={{ background: form.status === 'online' ? '#22c55e' : form.status === 'idle' ? '#f59e0b' : form.status === 'dnd' ? '#ef4444' : '#6b7280' }}
+            style={{ background: form.status === 'active' ? '#22c55e' : '#6b7280' }}
           />
         </div>
         <div>
@@ -85,7 +85,7 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
         <h3 className="text-sm font-bold text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
           <Palette size={16} className="text-emerald-500" /> Profile Color Vibe
         </h3>
-        <div className="grid grid-cols-6 gap-3 mb-8">
+        <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mb-8">
           {PRESET_COLORS.map(c => (
             <button
               key={c}
@@ -115,16 +115,14 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
       <div className="rounded-3xl border border-white/5 bg-[#040c08]/40 p-8 backdrop-blur-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
-            <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Online Mood</label>
+            <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Active Status</label>
             <select
               value={form.status}
               onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
               className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white text-sm outline-none focus:border-emerald-500/40 transition-colors"
             >
-              <option value="online" className="bg-[#0a1a12]">Online / Ready</option>
-              <option value="idle" className="bg-[#0a1a12]">Away / Chai Break</option>
-              <option value="dnd" className="bg-[#0a1a12]">Do Not Disturb / Busy Hun</option>
-              <option value="offline" className="bg-[#0a1a12]">Invisible / Ghost Mode</option>
+              <option value="active" className="bg-[#0a1a12]">Active</option>
+              <option value="inactive" className="bg-[#0a1a12]">Inactive</option>
             </select>
           </div>
           <div className="space-y-4">

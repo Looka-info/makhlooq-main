@@ -3,12 +3,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const ROLE_TIER = {
-  'field marshal': 'center',
-  'general': 'high',
-  'commander': 'high',
-  'colonel': 'high',
-  'major': 'high',
-  'captain': 'high',
+  'quaid - founder': 'center',
+  'high council': 'high',
+  'advisor': 'high',
+  'kmhq': 'small',
 };
 
 const NODE_CONFIG = {
@@ -18,17 +16,18 @@ const NODE_CONFIG = {
 };
 
 const STATUS_META = {
-  online: { color: '#22c55e', label: 'Online' },
-  idle: { color: '#f59e0b', label: 'Idle' },
-  dnd: { color: '#ef4444', label: 'Do Not Disturb' },
-  offline: { color: '#4b5563', label: 'Offline' },
+  active: { color: '#22c55e', label: 'Active' },
+  inactive: { color: '#4b5563', label: 'Inactive' },
 };
 
-function getTier(role = '') {
-  const r = role.toLowerCase();
-  for (const [key, val] of Object.entries(ROLE_TIER)) {
-    if (r.includes(key)) return val;
-  }
+function getTier(member = {}) {
+  const icon = (member.flair_icon || '').toLowerCase();
+  if (icon === 'crown') return 'center';
+  if (icon === 'shield' || icon === 'sword' || icon === 'terminal') return 'high';
+
+  const r = (member.role || '').toLowerCase();
+  if (r.includes('founder') || r.includes('quaid')) return 'center';
+  if (r.includes('council') || r.includes('advisor')) return 'high';
   return 'small';
 }
 
@@ -36,7 +35,7 @@ function initNodes(members, W, H) {
   const cx = W / 2, cy = H / 2;
   const n = members.length;
   return members.map((m, i) => {
-    const tier = getTier(m.role);
+    const tier = getTier(m);
     const ring = tier === 'high'
       ? Math.min(W, H) * 0.20
       : Math.min(W, H) * 0.38;

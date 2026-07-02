@@ -200,13 +200,13 @@ export default function UserProfilePage() {
             />
 
             {/* Action Bar */}
-            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6">
-              <div className="bg-[#0a1a12]/80 border border-emerald-500/20 backdrop-blur-xl rounded-2xl p-4 flex items-center justify-between shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
+            <div className="mt-8 w-full max-w-2xl mx-auto">
+              <div className="bg-[#0a1a12] border border-emerald-500/20 rounded-2xl p-6 flex flex-col sm:flex-row gap-4 sm:gap-0 items-center justify-between shadow-2xl">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Changes ready</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                   <AnimatePresence>
                     {saved && (
                       <motion.div 
@@ -221,9 +221,9 @@ export default function UserProfilePage() {
                   </AnimatePresence>
                   <button
                     onClick={save}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                    className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
                   >
-                    <Save size={16} /> Save
+                    <Save size={16} /> Save profile
                   </button>
                 </div>
               </div>

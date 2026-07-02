@@ -10,22 +10,22 @@ export const PRESET_COLORS = [
   '#06b6d4', '#84cc16', '#f97316', '#8b5cf6',
 ];
 
-export const STATUS_COLORS = { online: '#22c55e', idle: '#f59e0b', dnd: '#ef4444', offline: '#6b7280' };
-export const ROLES = ['Field Marshal', 'General', 'Commander', 'Colonel', 'Major', 'Captain', 'Officer'];
+export const STATUS_COLORS = { active: '#22c55e', inactive: '#6b7280' };
+export const ROLES = ['High Council', 'Advisor', 'Quaid - Founder', 'KMHQ'];
 export const CATS = [
-  'MAKHLOOQ- E1',
-  'CITIZEN - E2',
-  'SOLDIER - E3',
-  'CORPORAL - E4',
-  'SERGEANT - E5',
-  'LIEUTENANT - O1',
-  'OFFICER - O2',
-  'CAPTAIN - O3',
-  'MAJOR - O4',
-  'COLONEL - O5',
-  'COMMANDER - C1',
-  'GENERAL - C2',
-  'FIELD MARSHAL - C3'
+  'Field Marshal',
+  'General',
+  'Commander',
+  'Colonel',
+  'Major',
+  'Captain',
+  'Officer',
+  'Lieutenant',
+  'Sergeant',
+  'Corporal',
+  'Soldier',
+  'Citizen',
+  'Makhlooq'
 ];
 export const SEC_LEVELS = ['R0', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6'];
 
@@ -64,7 +64,7 @@ export function ColorPicker({ value, onChange }) {
 }
 
 export function AddMemberModal({ onClose, onAdded }) {
-  const blank = { discord_uid: '', discord_tag: '', name: '', role: 'Officer', category: 'MAKHLOOQ- E1', sec_level: 'R0', node_color: '#10b981', bio: '', status: 'offline', is_admin: false, avatar_url: '' };
+  const blank = { discord_uid: '', discord_tag: '', name: '', role: 'KMHQ', category: 'Makhlooq', sec_level: 'R0', node_color: '#10b981', bio: '', status: 'active', is_admin: false, avatar_url: '', flair_color: '#10b981', flair_icon: 'zap' };
   const [form, setForm] = useState(blank);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -125,12 +125,22 @@ export function AddMemberModal({ onClose, onAdded }) {
           {field('discord_uid', 'Discord UID *')}
           {field('discord_tag', 'Discord Tag')}
           {field('name', 'Display Name *')}
-          {field('role', 'Role', 'text', ROLES)}
+          {field('role', 'Flair')}
+          {field('flair_icon', 'Flair Icon', 'text', ['crown', 'shield', 'sword', 'users', 'zap', 'terminal', 'none'])}
+
+          <div className="py-2">
+            <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2 block">Flair Color</label>
+            <div className="flex items-center gap-3">
+              <ColorPicker value={form.flair_color} onChange={c => setForm(f => ({ ...f, flair_color: c }))} />
+              <span className="text-white text-xs font-mono bg-white/5 px-2 py-1 rounded">{form.flair_color}</span>
+            </div>
+          </div>
+
           {field('category', 'Rank', 'text', CATS)}
-          {field('sec_level', 'Security Level', 'text', SEC_LEVELS)}
+          {field('sec_level', 'Clearance Level', 'text', SEC_LEVELS)}
+          {field('status', 'Status', 'text', ['active', 'inactive'])}
           {field('avatar_url', 'Avatar URL', 'url')}
           {field('bio', 'Bio')}
-          {field('status', 'Status', 'text', ['online', 'idle', 'dnd', 'offline'])}
 
           <div className="py-2">
             <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2 block">Node Color</label>
