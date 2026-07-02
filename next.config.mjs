@@ -2,6 +2,11 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    resolveAlias: {
+      'react/compiler-runtime': 'react-compiler-runtime',
+    },
+  },
   experimental: {
     turbopackServerFastRefresh: true,
   },
