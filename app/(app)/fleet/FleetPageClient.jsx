@@ -965,11 +965,11 @@ export default function FleetPageClient({ data: initialData }) {
 
               {/* Ships grid — scrollable */}
               <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   {standardFleets.map((ship, i) => {
                     const isExpanded = expandedSlug === ship.id;
                     return (
-                      <div key={ship.id} className="relative aspect-[4/3]">
+                      <div key={ship.id} className="relative aspect-[16/10]">
                         <button
                           onClick={() => {
                             if (ship.count > 1) {
@@ -987,8 +987,8 @@ export default function FleetPageClient({ data: initialData }) {
                           {/* Stacking effect */}
                           {ship.count > 1 && !isExpanded && (
                             <>
-                              <div className="absolute inset-0 bg-white/[0.05] border border-white/10 rounded-xl translate-x-1 translate-y-1 -z-10" />
-                              <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-xl translate-x-2 translate-y-2 -z-20" />
+                              <div className="absolute inset-0 bg-white/[0.05] border border-white/10 rounded-xl translate-x-1.5 translate-y-1.5 -z-10" />
+                              <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-xl translate-x-3 translate-y-3 -z-20" />
                             </>
                           )}
 
@@ -999,19 +999,19 @@ export default function FleetPageClient({ data: initialData }) {
                             }
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                            <div className="absolute top-1.5 left-1.5 bg-white/10 text-white/70 font-black text-[8px] uppercase tracking-wide px-1.5 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
+                            <div className="absolute top-2 left-2 bg-white/10 text-white/70 font-black text-[9px] uppercase tracking-wide px-2 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
                               {getSfTag(i)}
                             </div>
 
                             {ship.count > 1 && (
-                              <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur border border-white/10 text-white px-1.5 py-0.5 rounded text-[9px] font-mono font-bold">
+                              <div className="absolute top-2 right-2 bg-black/60 backdrop-blur border border-white/10 text-white px-1.5 py-0.5 rounded text-[9px] font-mono font-bold">
                                 ×{ship.count}
                               </div>
                             )}
 
-                            <div className="absolute bottom-0 left-0 right-0 p-2 text-left">
-                              <div className="text-[8px] font-mono text-lime-300/60 uppercase truncate">{ship.manufacturer}</div>
-                              <div className="text-[11px] font-black uppercase text-white leading-tight truncate">{ship.name}</div>
+                            <div className="absolute bottom-0 left-0 right-0 p-2.5 text-left">
+                              <div className="text-[9px] font-mono text-lime-300/60 uppercase truncate">{ship.manufacturer}</div>
+                              <div className="text-xs font-black uppercase text-white leading-tight truncate">{ship.name}</div>
                             </div>
                           </div>
                         </button>
