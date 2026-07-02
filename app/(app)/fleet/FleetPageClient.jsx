@@ -807,7 +807,7 @@ export default function FleetPageClient({ data: initialData }) {
                                 const globalIdx = globalOffset + i;
                                 const isExpanded = expandedSlug === ship.id;
                                 return (
-                                  <div key={ship.id} className="relative aspect-[16/10]">
+                                  <div key={ship.id} className="relative aspect-[16/8]">
                                     <button
                                       onClick={() => {
                                         if (ship.count > 1) {
@@ -889,7 +889,7 @@ export default function FleetPageClient({ data: initialData }) {
 
                               {/* Fill slide with empty blocks if it has fewer than 4 items */}
                               {slideShips.length < 4 && Array.from({ length: 4 - slideShips.length }).map((_, emptyIdx) => (
-                                <div key={`empty-${emptyIdx}`} className="relative aspect-[16/10] border border-dashed border-white/5 rounded-xl opacity-20" />
+                                <div key={`empty-${emptyIdx}`} className="relative aspect-[16/8] border border-dashed border-white/5 rounded-xl opacity-20" />
                               ))}
                             </div>
                           );
@@ -965,7 +965,7 @@ export default function FleetPageClient({ data: initialData }) {
 
               {/* Ships grid — scrollable */}
               <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-3 gap-2">
                   {standardFleets.map((ship, i) => {
                     const isExpanded = expandedSlug === ship.id;
                     return (
