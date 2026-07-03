@@ -4,12 +4,12 @@ import React from 'react';
 import { motion } from 'motion/react';
 
 export default function TeamStatsBar({ members }) {
-  const online = members.filter(m => m.status === 'online').length;
+  const active = members.filter(m => m.status === 'active').length;
   const command = members.filter(m => ['commander', 'admiral', 'captain', 'lead'].some(r => m.role.toLowerCase().includes(r))).length;
 
   const stats = [
     { label: 'Total Personnel', value: members.length, color: 'text-white' },
-    { label: 'Active Online', value: online, color: 'text-emerald-400', pulse: true },
+    { label: 'Active Personnel', value: active, color: 'text-emerald-400', pulse: true },
     { label: 'Command Staff', value: command, color: 'text-cyan-400' },
     { label: 'Deployments', value: 12, color: 'text-purple-400' },
   ];

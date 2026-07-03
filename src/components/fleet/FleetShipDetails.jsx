@@ -83,8 +83,8 @@ export default function FleetShipDetails({ ship, stackedCeos = [] }) {
             </div>
           ) : null}
 
-          {/* Description — only if space */}
-          <p className="mt-2.5 text-[11px] leading-relaxed text-white/35 line-clamp-2 pr-2 hidden xl:block">
+          {/* Description */}
+          <p className="mt-2.5 text-sm md:text-base leading-relaxed text-white/80 line-clamp-4 pr-2 block">
             {ship.description}
           </p>
         </div>

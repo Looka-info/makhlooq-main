@@ -6,10 +6,10 @@ import {
   Search, Filter, Users, Crown, Shield,
   Sword, User, X, ChevronRight, Calendar, Activity,
   Plus, Upload, Palette, Shield as ShieldIcon, LogIn,
-  Terminal, Wifi, WifiOff, Clock, Zap, LogOut
+  Terminal, Wifi, WifiOff, Clock, Zap, LogOut, RefreshCw
 } from 'lucide-react';
 import ProfileEditor from './ProfileEditor';
-import NetworkGraph from './NetworkGraph';
+import RanksRolesChart from './RanksRolesChart';
 
 // ============================================================
 // CONSTANTS
@@ -199,6 +199,7 @@ const getRoleConfig = (role) => {
 const MemberCard = ({ member, onClick }) => {
   const { Icon: fallbackIcon, accent: fallbackAccent } = getRoleConfig(member.role);
   const accent = member.flair_color || fallbackAccent || '#10b981';
+  const frameColor = member.node_color || accent;
   const Icon = member.flair_icon === 'none' ? null : (ICON_MAP[member.flair_icon?.toLowerCase()] || fallbackIcon);
   const status = STATUS_META[member.status] || STATUS_META.inactive;
   const initial = member.name?.[0]?.toUpperCase() || '?';
@@ -219,14 +220,14 @@ const MemberCard = ({ member, onClick }) => {
       whileHover={{
         y: -8,
         scale: 1.015,
-        borderColor: accent,
-        boxShadow: `0 34px 100px rgba(0,0,0,0.45), 0 0 42px ${accent}22`,
+        borderColor: frameColor,
+        boxShadow: `0 34px 100px rgba(0,0,0,0.45), 0 0 42px ${frameColor}22`,
         transition: { duration: 0.18 },
       }}
     >
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
+        style={{ background: `linear-gradient(90deg, transparent, ${frameColor}, transparent)` }} />
 
       {/* Scanlines */}
       <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -237,12 +238,12 @@ const MemberCard = ({ member, onClick }) => {
         'bottom-0 left-0 border-b border-l','bottom-0 right-0 border-b border-r'].map((c,i) => (
         <div key={i}
           className={`absolute w-3 h-3 ${c} opacity-0 group-hover:opacity-100 transition-all duration-200`}
-          style={{ borderColor: accent }} />
+          style={{ borderColor: frameColor }} />
       ))}
 
       {/* Glitch bar */}
       <div className="absolute right-0 top-0 bottom-0 w-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
-        style={{ background: accent, animation: 'bar-flicker 0.5s steps(3) infinite' }} />
+        style={{ background: frameColor, animation: 'bar-flicker 0.5s steps(3) infinite' }} />
 
       <div className="relative p-6">
         {/* Header row */}
@@ -263,10 +264,10 @@ const MemberCard = ({ member, onClick }) => {
           <div
             className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden text-2xl font-black"
             style={{
-              background: `${accent}15`,
-              border: `1px solid ${accent}40`,
+              background: `${frameColor}15`,
+              border: `1px solid ${frameColor}40`,
               clipPath: 'polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))',
-              color: accent,
+              color: frameColor,
             }}
           >
             {member.avatar_url
@@ -335,38 +336,36 @@ const MemberCard = ({ member, onClick }) => {
 // ============================================================
 
 const StatsBar = ({ members }) => {
-  const online  = members.filter(m => m.status === 'online').length;
+  const active  = members.filter(m => m.status === 'active').length;
   const command = members.filter(m =>
     ['founder', 'council', 'advisor'].some(r => m.role?.toLowerCase().includes(r))
   ).length;
 
   const stats = [
     { label: 'Crew', value: members.length,  color: '#ffffff', Icon: Users    },
-    { label: 'Active Now',    value: online,           color: '#10b981', Icon: Wifi, pulse: true },
-    { label: 'Leadership',   value: command,          color: '#3b82f6', Icon: Shield   },
-    { label: 'Ranks',         value: CATEGORIES.length,color: '#8b5cf6', Icon: Filter   },
+    { label: 'Active Now',    value: active,           color: '#10b981', Icon: Wifi, pulse: true },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3">
       {stats.map((s, i) => (
         <motion.div
           key={s.label}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
-          className="relative overflow-hidden rounded-[1.65rem] border border-lime-300/10 bg-white/[0.035] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.25)] transition-colors hover:border-lime-300/25 hover:bg-lime-300/[0.045]"
+          className="relative overflow-hidden rounded-2xl border border-lime-300/10 bg-white/[0.035] px-4 py-3 shadow-[0_8px_30px_rgba(0,0,0,0.20)] transition-colors hover:border-lime-300/25 hover:bg-lime-300/[0.045] flex items-center gap-4"
         >
-          <div className="mb-5 flex items-center justify-between">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-              <s.Icon size={22} className="text-lime-100/70" />
+          <div className="flex-shrink-0 rounded-xl border border-white/10 bg-white/5 p-2 flex items-center justify-center">
+            <s.Icon size={18} className="text-lime-100/70" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-black tracking-[-0.06em] text-white">{s.value}</span>
+              {s.pulse && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />}
             </div>
-            {s.pulse && <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />}
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-lime-100/35 mt-0.5">{s.label}</div>
           </div>
-          <div className="text-4xl font-black tracking-[-0.07em] text-white md:text-5xl">
-            {s.value}
-          </div>
-          <div className="mt-3 text-sm font-black uppercase tracking-[0.2em] text-lime-100/35">{s.label}</div>
         </motion.div>
       ))}
     </div>
@@ -427,6 +426,7 @@ const ProfileModal = ({ member, onClose }) => {
   if (!member) return null;
   const { Icon: fallbackIcon, accent: fallbackAccent } = getRoleConfig(member.role);
   const accent = member.flair_color || fallbackAccent || '#10b981';
+  const frameColor = member.node_color || accent;
   const Icon = member.flair_icon === 'none' ? null : (ICON_MAP[member.flair_icon?.toLowerCase()] || fallbackIcon);
   const status = STATUS_META[member.status] || STATUS_META.inactive;
   const initial = member.name?.[0]?.toUpperCase() || '?';
@@ -444,10 +444,10 @@ const ProfileModal = ({ member, onClose }) => {
         className="relative w-full max-w-lg overflow-hidden"
         style={{
           background: 'linear-gradient(160deg, #020f05 0%, #010c04 100%)',
-          border: `1px solid ${accent}40`,
+          border: `1px solid ${frameColor}40`,
           borderRadius: '4px',
           fontFamily: "'Rajdhani', sans-serif",
-          boxShadow: `0 0 60px ${accent}10`,
+          boxShadow: `0 0 60px ${frameColor}10`,
         }}
         initial={{ scale: 0.92, y: 24, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -455,14 +455,14 @@ const ProfileModal = ({ member, onClose }) => {
         onClick={e => e.stopPropagation()}
       >
         {/* HUD Header */}
-        <div className="flex items-center justify-between px-4 h-9 border-b" style={{ borderColor: `${accent}25`, background: `${accent}08` }}>
+        <div className="flex items-center justify-between px-4 h-9 border-b" style={{ borderColor: `${frameColor}25`, background: `${frameColor}08` }}>
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-sm animate-pulse" style={{ background: accent }} />
-            <span className="font-mono text-[9px] tracking-[0.25em] uppercase" style={{ color: accent }}>
+            <div className="w-1.5 h-1.5 rounded-sm animate-pulse" style={{ background: frameColor }} />
+            <span className="font-mono text-[9px] tracking-[0.25em] uppercase" style={{ color: frameColor }}>
               CITIZEN_DOSSIER // ACCESS_GRANTED
             </span>
           </div>
-          <button onClick={onClose} className="transition-colors p-1" style={{ color: accent }}>
+          <button onClick={onClose} className="transition-colors p-1" style={{ color: frameColor }}>
             <X size={14} />
           </button>
         </div>
@@ -475,7 +475,7 @@ const ProfileModal = ({ member, onClose }) => {
         {['top-2 left-2 border-t border-l','top-2 right-2 border-t border-r',
           'bottom-2 left-2 border-b border-l','bottom-2 right-2 border-b border-r'].map((c,i) => (
           <div key={i} className={`absolute w-4 h-4 ${c} pointer-events-none`}
-            style={{ borderColor: `${accent}50` }} />
+            style={{ borderColor: `${frameColor}50` }} />
         ))}
 
         <div className="relative px-6 pt-5 pb-6">
@@ -486,10 +486,10 @@ const ProfileModal = ({ member, onClose }) => {
               <div
                 className="w-24 h-24 flex items-center justify-center text-4xl font-bold overflow-hidden"
                 style={{
-                  background: `${accent}10`,
-                  border: `2px solid ${accent}60`,
+                  background: `${frameColor}10`,
+                  border: `2px solid ${frameColor}60`,
                   clipPath: 'polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))',
-                  color: accent,
+                  color: frameColor,
                 }}
               >
                 {member.avatar_url
@@ -499,7 +499,7 @@ const ProfileModal = ({ member, onClose }) => {
               </div>
               {/* Status pill */}
               <div className="mt-2 flex items-center justify-center gap-1.5 py-1 border font-mono text-[8px] tracking-widest uppercase"
-                style={{ borderColor: `${accent}25`, background: `${accent}08`, color: accent }}>
+                style={{ borderColor: `${frameColor}25`, background: `${frameColor}08`, color: frameColor }}>
                 <div className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                 {status.label}
               </div>
@@ -524,7 +524,7 @@ const ProfileModal = ({ member, onClose }) => {
                   { label: 'CLEARANCE', val: (member.sec_level && SEC_LEVELS.includes(member.sec_level)) ? member.sec_level : 'R0' },
                   { label: 'UID', val: member.discord_uid || '0x??????' },
                 ].map(f => (
-                  <div key={f.label} className="border-l-2 pl-2" style={{ borderColor: `${accent}30` }}>
+                  <div key={f.label} className="border-l-2 pl-2" style={{ borderColor: `${frameColor}30` }}>
                     <div className="font-mono text-[7px] tracking-[0.2em] text-[#2a5c35] uppercase mb-0.5">{f.label}</div>
                     <div className="font-mono text-[10px] text-white uppercase tracking-wide truncate">{f.val}</div>
                   </div>
@@ -535,7 +535,7 @@ const ProfileModal = ({ member, onClose }) => {
 
           {/* Awards */}
           {member.awards && member.awards.length > 0 && (
-            <div className="border-t pt-4 pb-2" style={{ borderColor: `${accent}15` }}>
+            <div className="border-t pt-4 pb-2" style={{ borderColor: `${frameColor}15` }}>
               <div className="font-mono text-[8px] tracking-[0.2em] text-[#2a5c35] uppercase mb-3">SERVICE_AWARDS //</div>
               <div className="flex flex-wrap gap-3">
                 {member.awards.map((award, i) => {
@@ -570,16 +570,16 @@ const ProfileModal = ({ member, onClose }) => {
           )}
 
           {/* Bio */}
-          <div className="border-t pt-4" style={{ borderColor: `${accent}15` }}>
+          <div className="border-t pt-4" style={{ borderColor: `${frameColor}15` }}>
             <div className="font-mono text-[8px] tracking-[0.2em] text-[#2a5c35] uppercase mb-2">SUBJECT_BIO //</div>
-            <p className="font-mono text-[11px] leading-relaxed" style={{ color: `${accent}90` }}>
+            <p className="font-mono text-[11px] leading-relaxed" style={{ color: `${frameColor}90` }}>
               {member.bio || 'NO BIO DATA FOUND'}
             </p>
           </div>
         </div>
 
         {/* Footer shimmer */}
-        <div className="h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${accent}40, transparent)` }} />
+        <div className="h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${frameColor}40, transparent)` }} />
       </motion.div>
     </motion.div>
   );
@@ -822,7 +822,7 @@ const EditProfileModal = ({ member, onClose, onUpdated }) => {
     const res = await fetch('/api/team/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ node_color: form.node_color, bio: form.bio, status: form.status }),
+      body: JSON.stringify({ node_color: form.node_color, bio: form.bio, status: form.status, joined_at: form.joined_at }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { setError(data.error || 'Failed to update dossier.'); setSaving(false); return; }
@@ -944,6 +944,7 @@ export default function FleetDirectoryPage({ pageData }) {
 
   const [currentUserMember, setCurrentUserMember] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'network'
+  const [syncing, setSyncing] = useState(false);
 
   const fetchMembers = useCallback(async () => {
     setLoading(true);
@@ -989,13 +990,6 @@ export default function FleetDirectoryPage({ pageData }) {
         setCurrentUserMember(null); 
         setAuthError('Authentication service unreachable.');
       });
-
-    // Poll for updates every 15 seconds
-    const interval = setInterval(fetchMembers, 15000);
-
-    return () => {
-      clearInterval(interval);
-    };
   }, [fetchMembers]);
 
   const loginWithDiscord = () => {
@@ -1005,6 +999,24 @@ export default function FleetDirectoryPage({ pageData }) {
   const logout = async () => {
     await fetch('/api/auth/discord/logout', { method: 'POST' });
     setSession(null);
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/discord/sync', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        alert(`Successfully synced ${data.synced} members!`);
+        fetchMembers();
+      } else {
+        alert(`Sync failed: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      alert(`Error during sync: ${err.message}`);
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const isAdmin = currentUserMember?.is_admin || session?.source === 'env' || false;
@@ -1039,69 +1051,74 @@ export default function FleetDirectoryPage({ pageData }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(163,230,53,0.12),transparent_28%),radial-gradient(circle_at_82%_22%,rgba(255,255,255,0.07),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_25%,transparent_75%,rgba(0,0,0,0.7))]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(163,230,53,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(163,230,53,0.08)_1px,transparent_1px)] [background-size:78px_78px]" />
 
-      <div className="relative z-10 w-full px-4 py-8 sm:px-6 sm:py-10 2xl:px-8">
+      <div className="relative z-10 w-full px-4 py-4 sm:px-6 sm:py-5 2xl:px-8">
         {/* ── HEADER ── */}
         <motion.section
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="mb-10 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:items-end"
+          className="mb-5 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:items-end"
         >
           <div>
             <div className="font-mono text-sm font-black uppercase tracking-[0.4em] text-lime-300/55">{kicker}</div>
-            <div className="mt-4 leading-[0.78] tracking-[-0.11em]">
-              <div className="text-[18vw] font-black uppercase text-transparent [-webkit-text-stroke:1px_rgba(217,249,157,0.28)] md:text-[9rem] lg:text-[11rem]">{headingLine1}</div>
-              <div className="text-[18vw] font-black uppercase text-white md:text-[9rem] lg:text-[11rem]">{headingLine2}</div>
+            <div className="mt-2 leading-[0.82] tracking-[-0.09em]">
+              <div className="text-[12vw] font-black uppercase text-transparent [-webkit-text-stroke:1px_rgba(217,249,157,0.28)] md:text-[5rem] lg:text-[6rem]">{headingLine1}</div>
+              <div className="text-[12vw] font-black uppercase text-white md:text-[5rem] lg:text-[6rem]">{headingLine2}</div>
             </div>
-            <p className="mt-5 max-w-2xl text-xl leading-relaxed text-white/50 md:text-2xl">
+            <p className="mt-2 max-w-2xl text-sm leading-snug text-white/40">
               {description}
             </p>
-            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm font-black uppercase tracking-[0.22em] text-lime-100/40">
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-black uppercase tracking-[0.22em] text-lime-100/40">
               <span>{members.length} personnel</span>
               <span className="h-1 w-1 rounded-full bg-lime-300/30" />
               <span className="text-lime-300/70">{onlineCount} active</span>
-              <span className="h-1 w-1 rounded-full bg-lime-300/30" />
-              <span>{CATEGORIES.length} ranks</span>
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-lime-300/10 bg-white/[0.035] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl md:p-8">
+          <div className="rounded-2xl border border-lime-300/10 bg-white/[0.035] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-black uppercase tracking-[0.34em] text-lime-300/50">{accessCard.kicker || "Crew Access"}</div>
-                <div className="mt-2 text-3xl font-black tracking-[-0.06em] text-white">{accessCard.heading || "Scene Live"}</div>
+                <div className="mt-1 text-xl font-black tracking-[-0.05em] text-white">{accessCard.heading || "Scene Live"}</div>
               </div>
               <div className="rounded-full border border-lime-300/20 bg-lime-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-lime-200">
                 {accessCard.badge || "Live"}
               </div>
             </div>
-            <p className="mt-5 max-w-md text-base leading-relaxed text-white/48">
+            <p className="mt-2 max-w-md text-xs leading-relaxed text-white/40">
               {accessCard.description || "Entry is through Discord, then you set up your profile. Admins get extra tools; otherwise, chill mode."}
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-3 flex flex-wrap gap-2">
               {session ? (
                 <>
                   {currentUserMember && (
                     <button onClick={() => setShowEditModal(true)}
-                      className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-white/10 active:scale-95">
-                      <User size={16} /> My Profile
+                      className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-white/10 active:scale-95">
+                      <User size={13} /> My Profile
                     </button>
                   )}
-                  {isAdmin && (
-                    <button onClick={() => setShowAddModal(true)}
-                      className="flex items-center gap-2 rounded-2xl bg-lime-300 px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-black transition-all hover:bg-lime-200 active:scale-95">
-                      <Plus size={16} /> Add Member
-                    </button>
+                   {isAdmin && (
+                    <>
+                      <button onClick={() => setShowAddModal(true)}
+                        className="flex items-center gap-2 rounded-xl bg-lime-300 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-black transition-all hover:bg-lime-200 active:scale-95">
+                        <Plus size={13} /> Add Member
+                      </button>
+                      <button onClick={handleSync} disabled={syncing}
+                        className="flex items-center gap-2 rounded-xl border border-lime-300/20 bg-lime-300/10 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-lime-300 transition-all hover:bg-lime-300/25 active:scale-95 disabled:opacity-50">
+                        <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
+                        {syncing ? 'Syncing...' : 'Sync Members'}
+                      </button>
+                    </>
                   )}
                   <button onClick={logout}
-                    className="flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-red-300 transition-all hover:bg-red-500/20 active:scale-95">
-                    <LogOut size={16} /> Sign Out
+                    className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-300 transition-all hover:bg-red-500/20 active:scale-95">
+                    <LogOut size={13} /> Sign Out
                   </button>
                 </>
               ) : (
                 <button onClick={loginWithDiscord}
-                  className="flex items-center gap-3 rounded-2xl bg-[#5865F2] px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-[#4752C4] active:scale-95">
-                  <LogIn size={18} /> Sign In with Discord
+                  className="flex items-center gap-2 rounded-xl bg-[#5865F2] px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-[#4752C4] active:scale-95">
+                  <LogIn size={14} /> Sign In with Discord
                 </button>
               )}
             </div>
@@ -1112,7 +1129,7 @@ export default function FleetDirectoryPage({ pageData }) {
         <StatsBar members={members} />
 
         {/* Filters */}
-        <div className="mt-10 mb-8 flex flex-col xl:flex-row xl:items-end gap-6 justify-between">
+        <div className="mt-6 mb-4 flex flex-col xl:flex-row xl:items-end gap-6 justify-between">
           <div className="flex-1 min-w-0">
             <FilterBar
               search={search} setSearch={setSearch}
@@ -1140,7 +1157,7 @@ export default function FleetDirectoryPage({ pageData }) {
                   : 'text-lime-100/40 hover:text-white'
               }`}
             >
-              Tactical Graph
+              Ranks & Roles
             </button>
           </div>
         </div>
@@ -1226,12 +1243,7 @@ export default function FleetDirectoryPage({ pageData }) {
               </div>
             </div>
           ) : viewMode === 'network' ? (
-            <div className="rounded-[2.5rem] border border-lime-300/10 bg-black/40 shadow-2xl overflow-hidden backdrop-blur-xl relative">
-              <NetworkGraph
-                members={filteredMembers}
-                onSelect={(member) => setSelectedMember(member)}
-              />
-            </div>
+            <RanksRolesChart />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <AnimatePresence mode="popLayout">
@@ -1249,8 +1261,8 @@ export default function FleetDirectoryPage({ pageData }) {
             <span>{filteredMembers.length} Crew Members</span>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-lime-300" />
-                <span>{filteredMembers.filter(m => m.status==='online').length} Online</span>
+                <div className="h-2 w-2 rounded-full bg-lime-300 animate-pulse" />
+                <span>{filteredMembers.filter(m => m.status === 'active').length} Active</span>
               </div>
             </div>
           </div>

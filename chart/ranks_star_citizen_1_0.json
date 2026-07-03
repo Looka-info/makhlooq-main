@@ -1,0 +1,504 @@
+{
+  "title": "Rank and Roles for Star Citizen 1.0",
+  "version": "1.0.0",
+  "legend": {
+    "YELLOW": {
+      "type": "Single Role",
+      "description": "Positions that are single-focus or primary role"
+    },
+    "RED": {
+      "type": "Training Required",
+      "description": "Positions indicating active training or qualification in progress"
+    },
+    "ORANGE": {
+      "type": "Dual Role",
+      "description": "Positions allowing multiple responsibilities"
+    },
+    "SILVER": {
+      "type": "Non-Polaris Crew",
+      "description": "Positions not directly in the Polaris flight group"
+    }
+  },
+  "modules": [
+    {
+      "name": "FLIGHT",
+      "icon": "✈",
+      "ranks": [
+        {
+          "id": "f0",
+          "title": "Flight School",
+          "level": "REQ",
+          "color": "RED",
+          "requirements": [
+            "Recruitment entry requirement"
+          ]
+        },
+        {
+          "id": "f1",
+          "title": "Pilot Cadet",
+          "level": "E1",
+          "color": "RED",
+          "requirements": [
+            "Flight School Test Passed 50%+"
+          ]
+        },
+        {
+          "id": "f2",
+          "title": "CoPilot",
+          "level": "O1",
+          "color": "ORANGE",
+          "requirements": [
+            "Flight School Test Passed 75%+",
+            "Multicrew vessel training hours: 4+"
+          ]
+        },
+        {
+          "id": "f3",
+          "title": "Pilot",
+          "level": "O2",
+          "color": "YELLOW",
+          "requirements": [
+            "Flight School Test Passed 75%+",
+            "Multicrew vessel training hours: 8+"
+          ]
+        },
+        {
+          "id": "f4",
+          "title": "Flight Lieutenant",
+          "level": "O2",
+          "color": "YELLOW",
+          "requirements": [
+            "Officers Board Interview",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Flight School Test Passed 75%+",
+            "Personal spacecraft training hours: 8+",
+            "BFM & AFM training: 8+ hours",
+            "Advanced evasive maneuvers",
+            "Extensive knowledge of flight systems"
+          ]
+        },
+        {
+          "id": "f5",
+          "title": "Flight Captain",
+          "level": "O3",
+          "color": "YELLOW",
+          "requirements": [
+            "Flight Lieutenant experience: 2 battles",
+            "Officers Board Interview",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Flight School Test Passed 75%+",
+            "Personal spacecraft training hours: 8+",
+            "BFM & AFM training: 8+ hours",
+            "Advanced evasive maneuvers",
+            "Extensive knowledge of flight systems"
+          ]
+        },
+        {
+          "id": "f6",
+          "title": "Squadron Leader",
+          "level": "O4",
+          "color": "YELLOW",
+          "requirements": [
+            "Flight Captain experience: 5 battles",
+            "Officers Board Interview",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Flight School Test Passed 75%+",
+            "Personal spacecraft training hours: 15+",
+            "BFM & AFM training: 15+ hours",
+            "Advanced evasive maneuvers",
+            "Extensive knowledge of flight systems"
+          ]
+        },
+        {
+          "id": "f7",
+          "title": "Wing Commander",
+          "level": "C1",
+          "color": "YELLOW",
+          "requirements": [
+            "Squadron Leader experience: 10 battles & 1 war",
+            "Commanders Board Approval",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Flight School Test Passed 90%+",
+            "Personal spacecraft training hours: 50+",
+            "BFM & AFM training: 60+ hours",
+            "Mastery over fighter craft and tactics",
+            "Mastery over Battle tactics"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SHIP CREW",
+      "icon": "🛸",
+      "ranks": [
+        {
+          "id": "s0",
+          "title": "Ordinary Starman",
+          "level": "E1",
+          "color": "SILVER",
+          "requirements": [
+            "Basic crew member status"
+          ]
+        },
+        {
+          "id": "s1",
+          "title": "Adept Starman",
+          "level": "E3",
+          "color": "RED",
+          "requirements": [
+            "Adept Starman Test Passed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ENGINEERING",
+      "icon": "⚙",
+      "ranks": [
+        {
+          "id": "e1",
+          "title": "Engineering Private",
+          "level": "E3",
+          "color": "RED",
+          "requirements": [
+            "Adept Starman Test Passed",
+            "Ship and component knowledge",
+            "Usage of multi-tool, cambio, maxlift",
+            "Basic weapons handling training",
+            "Ship requirement knowledge"
+          ]
+        },
+        {
+          "id": "e2",
+          "title": "Ship Engineer",
+          "level": "E4",
+          "color": "ORANGE",
+          "requirements": [
+            "Adept Starman Test Passed",
+            "Extensive ship and component knowledge",
+            "Mastery on usage of multi-tool, cambio, maxlift",
+            "Basic weapons handling training",
+            "Ship requirement and customizing knowledge"
+          ]
+        },
+        {
+          "id": "e3",
+          "title": "Engineering Officer",
+          "level": "O1",
+          "color": "YELLOW",
+          "requirements": [
+            "Officers Board Interview",
+            "Adept Starman Test Passed",
+            "Engineering experience"
+          ]
+        },
+        {
+          "id": "e4",
+          "title": "Hangar Engineer",
+          "level": "O2",
+          "color": "ORANGE",
+          "requirements": [
+            "Hangar & Upper Deck component specialist"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LOGISTICS",
+      "icon": "📦",
+      "ranks": [
+        {
+          "id": "l1",
+          "title": "Logistics Private",
+          "level": "E3",
+          "color": "RED",
+          "requirements": [
+            "Adept Starman Test Passed",
+            "Basic ship cargo knowledge"
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "Logistics Officer",
+          "level": "O1",
+          "color": "YELLOW",
+          "requirements": [
+            "Officers Board Interview",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Advanced ship Cargo knowledge",
+            "Cargo hauling rep 3 or higher",
+            "Mastery on usage of multi-tool, maxlift",
+            "Extensive knowledge of items and procurement"
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "Logistics Coordinator",
+          "level": "O3",
+          "color": "ORANGE",
+          "requirements": [
+            "Officers Board Interview",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Advanced ship Cargo knowledge",
+            "Cargo hauling rep 3 or higher",
+            "Mastery on usage of multi-tool, maxlift",
+            "Extensive knowledge of items and procurement"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GUNNERY",
+      "icon": "🎯",
+      "ranks": [
+        {
+          "id": "g1",
+          "title": "Gunnery Private",
+          "level": "E3",
+          "color": "RED",
+          "requirements": [
+            "Adept Starman Test Passed",
+            "Basic ship weapon knowledge",
+            "Basic Turret weapon loadout knowledge",
+            "Basic Turret gunning training, use of turret systems",
+            "Knowledge of turret custom controls",
+            "Basic knowledge of opponent ship layouts and weak points"
+          ]
+        },
+        {
+          "id": "g2",
+          "title": "Gunmaster",
+          "level": "E4",
+          "color": "ORANGE",
+          "requirements": [
+            "Advanced turret and weapon loading station mastery"
+          ]
+        },
+        {
+          "id": "g3",
+          "title": "Gun Specialist",
+          "level": "O1",
+          "color": "YELLOW",
+          "requirements": [
+            "Mastery of ship weapon systems and logistics"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GROUND OPS",
+      "icon": "⚔",
+      "ranks": [
+        {
+          "id": "i0",
+          "title": "Ordinary Enlistment",
+          "level": "E1",
+          "color": "SILVER",
+          "requirements": [
+            "Basic entry ground recruitment"
+          ]
+        },
+        {
+          "id": "i1",
+          "title": "Gunman",
+          "level": "E2",
+          "color": "SILVER",
+          "requirements": [
+            "Basic weapon and loadout knowledge"
+          ]
+        },
+        {
+          "id": "i2",
+          "title": "Gunman First Class",
+          "level": "E3",
+          "color": "SILVER",
+          "requirements": [
+            "Ground vehicle operation"
+          ]
+        },
+        {
+          "id": "i3",
+          "title": "Ground Infantry",
+          "level": "E4",
+          "color": "RED",
+          "requirements": [
+            "Adept Starman Test Passed",
+            "Basic FPS weapon knowledge",
+            "Basic weapon loadout knowledge",
+            "Basic FPS movement training",
+            "Basic Ground vehicle operation",
+            "Basic ground offense and defense tactics",
+            "Basic Anti-Air measures",
+            "Combat School Test Passed 50%+"
+          ]
+        },
+        {
+          "id": "i4",
+          "title": "Weapons Specialist",
+          "level": "E5",
+          "color": "ORANGE",
+          "requirements": [
+            "Ground Infantry requirements met",
+            "Adept Starman Test Passed",
+            "Extensive knowledge of FPS weapons",
+            "Combat School Test Passed 75%+"
+          ]
+        },
+        {
+          "id": "i5",
+          "title": "Combat Captain",
+          "level": "O3",
+          "color": "YELLOW",
+          "requirements": [
+            "Officers Board Interview",
+            "Ground Infantry requirements met",
+            "Adept Starman Test Passed",
+            "FPS Tactics & Communications training",
+            "Extensive knowledge of FPS weapons",
+            "Combat School Test Passed 75%+"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MEDICAL",
+      "icon": "✚",
+      "ranks": [
+        {
+          "id": "m1",
+          "title": "Medic",
+          "level": "E2",
+          "color": "RED",
+          "requirements": [
+            "Basic medical support training"
+          ]
+        },
+        {
+          "id": "m2",
+          "title": "Medical Officer",
+          "level": "O1",
+          "color": "YELLOW",
+          "requirements": [
+            "Advanced medical support & coordination"
+          ]
+        },
+        {
+          "id": "m3",
+          "title": "Surgeon",
+          "level": "O3",
+          "color": "YELLOW",
+          "requirements": [
+            "Full medical mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "COMMAND",
+      "icon": "★",
+      "ranks": [
+        {
+          "id": "c1",
+          "title": "Commanding Officer",
+          "level": "C1",
+          "color": "YELLOW",
+          "requirements": [
+            "Commanders Board Approval",
+            "50 battles, 5 wars experience",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Flight School Test Passed",
+            "Mastery over large spacecraft and tactics",
+            "Mastery over Battle tactics"
+          ]
+        },
+        {
+          "id": "c2",
+          "title": "Fleet Captain",
+          "level": "C2",
+          "color": "YELLOW",
+          "requirements": [
+            "Commanders Board Approval",
+            "10 battles, 2 wars experience",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Flight School Test Passed",
+            "Mastery over large spacecraft and tactics",
+            "Mastery over Battle tactics"
+          ]
+        },
+        {
+          "id": "c3",
+          "title": "Wing Commander",
+          "level": "C1",
+          "color": "YELLOW",
+          "requirements": [
+            "Commanders Board Approval",
+            "Squadron Leader experience: 10 battles & 1 war",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Flight School Test Passed 90%+",
+            "Personal spacecraft training hours: 50+",
+            "BFM & AFM training: 60+ hours",
+            "Mastery over fighter craft and tactics",
+            "Mastery over Battle tactics"
+          ]
+        },
+        {
+          "id": "c4",
+          "title": "Commander in Chief",
+          "level": "C3",
+          "color": "GREEN",
+          "requirements": [
+            "Elected by High Council",
+            "Commanding Officer experience: 50 battles & 5 wars",
+            "Combat School Test Passed",
+            "Adept Starman Test Passed",
+            "Flight School Test Passed",
+            "Mastery over large spacecraft and tactics",
+            "Mastery over Battle tactics"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HIGH COUNCIL",
+      "icon": "👑",
+      "ranks": [
+        {
+          "id": "hc1",
+          "title": "Colonel",
+          "level": "COL",
+          "color": "PURPLE",
+          "requirements": [
+            "High Council Membership"
+          ]
+        },
+        {
+          "id": "hc2",
+          "title": "Major",
+          "level": "MAJ",
+          "color": "BLUE",
+          "requirements": [
+            "Senior Leadership Role"
+          ]
+        },
+        {
+          "id": "hc3",
+          "title": "Fighter Pilot",
+          "level": "SPL",
+          "color": "ORANGE",
+          "requirements": [
+            "Elite Pilot Designation"
+          ]
+        }
+      ]
+    }
+  ]
+}

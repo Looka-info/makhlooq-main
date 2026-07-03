@@ -101,7 +101,7 @@ export const TeamMembers: CollectionConfig = {
     {
       name: 'node_color',
       type: 'text',
-      label: 'Node Color',
+      label: 'Frame Color',
       defaultValue: '#10b981',
     },
     {

@@ -18,7 +18,7 @@ export default function UserProfilePage() {
   const [uploading, setUploading] = useState(false);
 
   // Form state
-  const [form, setForm] = useState({ node_color: '#10b981', bio: '', status: 'online' });
+  const [form, setForm] = useState({ node_color: '#10b981', bio: '', status: 'active' });
 
   useEffect(() => {
     let mounted = true;
@@ -42,7 +42,8 @@ export default function UserProfilePage() {
         setForm({
           node_color: data.member.node_color || '#10b981',
           bio: data.member.bio || '',
-          status: data.member.status || 'online',
+          status: data.member.status || 'active',
+          joined_at: data.member.joined_at || '',
         });
         setError('');
       } else {
@@ -77,7 +78,7 @@ export default function UserProfilePage() {
     const res = await fetch('/api/team/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ node_color: form.node_color, bio: form.bio, status: form.status }),
+      body: JSON.stringify({ node_color: form.node_color, bio: form.bio, status: form.status, joined_at: form.joined_at }),
     });
     const data = await res.json().catch(() => ({}));
 

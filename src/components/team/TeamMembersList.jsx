@@ -219,7 +219,7 @@ export default function TeamMembersList({ members, onSelect, searchQuery = '', a
       <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between text-xs text-gray-500">
         <span>{sortedMembers.length} member{sortedMembers.length !== 1 ? 's' : ''}</span>
         <span>
-          {sortedMembers.filter(m => m.status?.toLowerCase() === 'online').length} online
+          {sortedMembers.filter(m => m.status?.toLowerCase() === 'active').length} active
         </span>
       </div>
     </div>

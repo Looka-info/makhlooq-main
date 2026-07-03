@@ -64,7 +64,7 @@ export function ColorPicker({ value, onChange }) {
 }
 
 export function AddMemberModal({ onClose, onAdded }) {
-  const blank = { discord_uid: '', discord_tag: '', name: '', role: 'KMHQ', category: 'Makhlooq', sec_level: 'R0', node_color: '#10b981', bio: '', status: 'active', is_admin: false, avatar_url: '', flair_color: '#10b981', flair_icon: 'zap' };
+  const blank = { discord_uid: '', discord_tag: '', name: '', role: 'KMHQ', category: 'Makhlooq', sec_level: 'R0', node_color: '#10b981', bio: '', status: 'active', is_admin: false, avatar_url: '', flair_color: '#10b981', flair_icon: 'zap', joined_at: new Date().toISOString().split('T')[0] };
   const [form, setForm] = useState(blank);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -139,11 +139,12 @@ export function AddMemberModal({ onClose, onAdded }) {
           {field('category', 'Rank', 'text', CATS)}
           {field('sec_level', 'Clearance Level', 'text', SEC_LEVELS)}
           {field('status', 'Status', 'text', ['active', 'inactive'])}
+          {field('joined_at', 'Deployed Date', 'date')}
           {field('avatar_url', 'Avatar URL', 'url')}
           {field('bio', 'Bio')}
 
           <div className="py-2">
-            <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2 block">Node Color</label>
+            <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2 block">Frame Color</label>
             <div className="flex items-center gap-3">
               <ColorPicker value={form.node_color} onChange={c => setForm(f => ({ ...f, node_color: c }))} />
               <span className="text-white text-xs font-mono bg-white/5 px-2 py-1 rounded">{form.node_color}</span>

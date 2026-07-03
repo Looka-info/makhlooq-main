@@ -269,7 +269,7 @@ export default function AdminPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[
             { label: 'Total Crew', value: approvedMembers.length },
-            { label: 'Online Crew', value: approvedMembers.filter(m => m.status === 'online').length },
+            { label: 'Active Crew', value: approvedMembers.filter(m => m.status === 'active').length },
             { label: 'Admin Power', value: approvedMembers.filter(m => m.is_admin).length },
             { label: 'Pending Review', value: pendingMembers.length, highlight: pendingMembers.length > 0 },
           ].map(s => (
@@ -338,7 +338,7 @@ export default function AdminPage() {
             <table className="w-full text-sm text-left">
               <thead>
                 <tr className="border-b border-white/5 bg-white/2">
-                  {['Crew', 'Role / Rank', 'Status', 'Color Vibe', 'Deployed', 'Power', 'Actions'].map(h => (
+                  {['Crew', 'Role / Rank', 'Status', 'Frame Color', 'Deployed', 'Power', 'Actions'].map(h => (
                     <th key={h} className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">{h}</th>
                   ))}
                 </tr>

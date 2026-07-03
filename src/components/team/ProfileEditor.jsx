@@ -83,7 +83,7 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
       {/* Node color */}
       <div className="rounded-3xl border border-white/5 bg-[#040c08]/40 p-8 backdrop-blur-sm">
         <h3 className="text-sm font-bold text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
-          <Palette size={16} className="text-emerald-500" /> Profile Color Vibe
+          <Palette size={16} className="text-emerald-500" /> Frame Color
         </h3>
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mb-8">
           {PRESET_COLORS.map(c => (
@@ -111,7 +111,7 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
         </div>
       </div>
 
-      {/* Status & Bio */}
+      {/* Status, Joining Date & Bio */}
       <div className="rounded-3xl border border-white/5 bg-[#040c08]/40 p-8 backdrop-blur-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
@@ -124,6 +124,16 @@ export default function ProfileEditor({ member, form, setForm, onUploadAvatar, u
               <option value="active" className="bg-[#0a1a12]">Active</option>
               <option value="inactive" className="bg-[#0a1a12]">Inactive</option>
             </select>
+
+            <div className="pt-2 space-y-2">
+              <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Joining Date</label>
+              <input
+                type="date"
+                value={form.joined_at ? form.joined_at.split('T')[0] : ''}
+                onChange={e => setForm(f => ({ ...f, joined_at: e.target.value }))}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white text-sm outline-none focus:border-emerald-500/40 transition-colors font-mono"
+              />
+            </div>
           </div>
           <div className="space-y-4">
             <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Biography</label>
